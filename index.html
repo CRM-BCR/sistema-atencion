@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema CRM Bancario - Panel Administrativo</title>
+    <title>Sistema CRM Bancario</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- SDK de Supabase -->
@@ -18,19 +18,18 @@
         <div class="bg-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-md border border-slate-700">
             <div class="text-center mb-6">
                 <h1 class="text-2xl font-bold text-blue-400">Sistema CRM Bancario</h1>
-                <p class="text-sm text-slate-400 mt-1">Acceso para Operadores y Administradores</p>
             </div>
             
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-1">Correo Electrónico</label>
-                    <input type="email" id="email" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-white" placeholder="correo@bancrecer.com.ve">
+                    <input type="email" id="email" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-white">
                 </div>
                 
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-1">Contraseña</label>
                     <div class="relative flex items-center">
-                        <input type="password" id="password" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-white pr-12" placeholder="••••••••">
+                        <input type="password" id="password" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-white pr-12">
                         <button type="button" id="toggle-password" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-lg select-none cursor-pointer z-20">
                             👁️
                         </button>
@@ -68,7 +67,7 @@
 
         <main class="max-w-6xl mx-auto p-6 w-full flex-grow space-y-6">
             
-            <!-- PANEL DE DASHBOARD EN VIVO (EXCLUSIVO ADMINISTRADORES) -->
+            <!-- PANEL DE DASHBOARD EN VIVO -->
             <div id="dashboard-panel" class="hidden bg-slate-800 p-6 rounded-xl border border-indigo-500/50 shadow-xl space-y-6">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-3">
                     <div>
@@ -80,7 +79,7 @@
                     </button>
                 </div>
 
-                <!-- TARJETAS DE RESUMEN GENERAL -->
+                <!-- TARJETAS DE RESUMEN -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 text-center">
                         <p class="text-xs text-slate-400">Total de Registros en el Sistema</p>
@@ -92,7 +91,7 @@
                     </div>
                 </div>
 
-                <!-- FILTROS OPERATIVOS -->
+                <!-- FILTROS -->
                 <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 space-y-3">
                     <h3 class="text-sm font-semibold text-slate-300">Filtros de Rendimiento Operativo</h3>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -134,7 +133,7 @@
                     </div>
                 </div>
 
-                <!-- DESGLOSE POR USUARIO Y MOTIVOS FRECUENTES -->
+                <!-- DESGLOSE -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
                         <h3 class="text-sm font-semibold text-blue-300 mb-2">Registros por Usuario</h3>
@@ -147,11 +146,11 @@
                 </div>
             </div>
 
-            <!-- PANEL DE ADMINISTRADOR (EXCLUSIVO PARA ELIO Y ORIANY) -->
+            <!-- PANEL DE ADMINISTRADOR -->
             <div id="admin-panel" class="hidden bg-slate-800 p-6 rounded-xl border border-blue-500/50 shadow-xl space-y-6">
                 <div>
                     <h2 class="text-lg font-semibold text-blue-400 mb-2">Panel de Administración - Gestión de Operadores</h2>
-                    <p class="text-xs text-slate-400 mb-4">Agrega nuevos correos autorizados. Contraseña asignada por defecto para operadores: <code class="text-yellow-400">Operador*2026</code></p>
+                    <p class="text-xs text-slate-400 mb-4">Los operadores ingresan directamente con su correo corporativo y la clave: <code class="text-yellow-400">Operador*2026</code></p>
                     
                     <div class="flex gap-3">
                         <input type="email" id="nuevo-operador-email" class="flex-grow px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" placeholder="correo.operador@bancrecer.com.ve">
@@ -164,7 +163,6 @@
 
                 <hr class="border-slate-700">
 
-                <!-- MODULO EXCLUSIVO DE EXPORTACIÓN A EXCEL -->
                 <div>
                     <h3 class="text-md font-semibold text-emerald-400 mb-1">Exportación General de Datos</h3>
                     <p class="text-xs text-slate-400 mb-3">Descarga una copia completa de todas las gestiones registradas en formato Excel (.xlsx).</p>
@@ -249,11 +247,6 @@
             const SUPABASE_KEY = 'sb_publishable_S5LJcX40QJ8HPVIRU7l75w_LYNzVWQk';
             const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            const OPERADORES_BASE = [
-                'jose.lindarte@bancrecer.com.ve',
-                'keishvanysalazar@bancrecer.com.ve'
-            ];
-
             const authScreen = document.getElementById('auth-screen');
             const appScreen = document.getElementById('app-screen');
             const authMessage = document.getElementById('auth-message');
@@ -305,12 +298,17 @@
                 });
             }
 
-            function checkSession() {
-                const savedUser = localStorage.getItem('crm_user');
-                if (savedUser) {
-                    showApp(savedUser);
+            async function checkSession() {
+                const { data: { session } } = await _supabase.auth.getSession();
+                if (session && session.user) {
+                    showApp(session.user.email);
                 } else {
-                    showLogin();
+                    const savedUser = localStorage.getItem('crm_user');
+                    if (savedUser) {
+                        showApp(savedUser);
+                    } else {
+                        showLogin();
+                    }
                 }
             }
 
@@ -335,14 +333,8 @@
                 appScreen.classList.add('hidden');
             }
 
-            function obtenerListaOperadores() {
-                let dinamicos = JSON.parse(localStorage.getItem('crm_operadores_global') || '[]');
-                let listaDinamicaEmails = dinamicos.map(op => op.email);
-                return [...new Set([...OPERADORES_BASE, ...listaDinamicaEmails])];
-            }
-
             if (btnLogin) {
-                btnLogin.addEventListener('click', function() {
+                btnLogin.addEventListener('click', async function() {
                     const email = emailInput.value.trim().toLowerCase();
                     const password = passwordInput.value;
 
@@ -352,17 +344,20 @@
                         return;
                     }
 
-                    let listaOperadores = obtenerListaOperadores();
+                    let esAdminValido = false;
+                    if (email === 'elio.ravelo@bancrecer.com.ve' || email === 'oriany.albarran@bancrecer.com.ve') {
+                        const { data, error } = await _supabase.auth.signInWithPassword({
+                            email: email,
+                            password: password
+                        });
+                        if (!error && data.session) {
+                            esAdminValido = true;
+                        }
+                    }
 
-                    let esAdmin = (
-                        (email === 'elio.ravelo@bancrecer.com.ve' && password === 'Bancrecer*2026') ||
-                        (email === 'oriany.albarran@bancrecer.com.ve' && password === 'Bancrecer*2026')
-                    );
-                    
-                    // REGLA UNIVERSAL: Cualquier correo con dominio bancrecer.com.ve entra con la clave de operador
                     let esOperadorValido = (email.endsWith('@bancrecer.com.ve') && password === 'Operador*2026');
 
-                    if (esAdmin || esOperadorValido) {
+                    if (esAdminValido || esOperadorValido) {
                         authMessage.textContent = "¡Acceso concedido!";
                         authMessage.className = "mt-4 text-center text-sm text-green-400";
                         localStorage.setItem('crm_user', email);
@@ -385,29 +380,13 @@
 
                     const correoOp = nuevoOperadorEmail.value.trim().toLowerCase();
 
-                    if (!correoOp || !correoOp.includes('@')) {
-                        adminMessage.textContent = "Ingresa un correo electrónico válido.";
+                    if (!correoOp || !correoOp.includes('@') || !correoOp.endsWith('@bancrecer.com.ve')) {
+                        adminMessage.textContent = "Ingresa un correo institucional válido (@bancrecer.com.ve).";
                         adminMessage.className = "mt-3 text-sm font-medium text-red-400";
                         return;
                     }
 
-                    let operadores = JSON.parse(localStorage.getItem('crm_operadores_global') || '[]');
-                    let todosLosPermitidos = obtenerListaOperadores();
-                    
-                    if (
-                        todosLosPermitidos.includes(correoOp) || 
-                        correoOp === 'elio.ravelo@bancrecer.com.ve' || 
-                        correoOp === 'oriany.albarran@bancrecer.com.ve'
-                    ) {
-                        adminMessage.textContent = "Este correo ya está registrado en el sistema.";
-                        adminMessage.className = "mt-3 text-sm font-medium text-red-400";
-                        return;
-                    }
-
-                    operadores.push({ email: correoOp, created_at: new Date().toISOString() });
-                    localStorage.setItem('crm_operadores_global', JSON.stringify(operadores));
-
-                    adminMessage.textContent = `¡Operador ${correoOp} autorizado! Clave: Operador*2026`;
+                    adminMessage.textContent = `¡El operador ${correoOp} ya está autorizado para ingresar con la clave: Operador*2026!`;
                     adminMessage.className = "mt-3 text-sm font-medium text-green-400";
                     nuevoOperadorEmail.value = '';
                 };
@@ -446,7 +425,6 @@
 
                 const mesSeleccionadoActual = filtroMes.value;
                 let htmlOpciones = '<option value="TODOS">Todos los Meses</option>';
-                
                 const mesesOrdenados = Array.from(mesesUnicos).sort().reverse();
                 
                 const nombresMeses = {
@@ -568,8 +546,8 @@
                     
                     const usuarioActual = localStorage.getItem('crm_user');
 
-                    if (!usuarioActual) {
-                        saveMessage.textContent = "Sesión no válida. Por favor inicia sesión nuevamente.";
+                    if (!usuarioActual || !usuarioActual.endsWith('@bancrecer.com.ve')) {
+                        saveMessage.textContent = "Sesión no válida o sin dominio corporativo autorizado.";
                         saveMessage.className = "mt-3 text-sm font-medium text-red-400";
                         setTimeout(() => showLogin(), 1500);
                         return;
@@ -608,7 +586,7 @@
 
                     if (error) {
                         console.error("Error al guardar:", error);
-                        saveMessage.textContent = "Error al guardar: " + error.message;
+                        saveMessage.textContent = "Error al guardar (Verifique políticas RLS de dominio): " + error.message;
                         saveMessage.className = "mt-3 text-sm font-medium text-red-400";
                     } else {
                         saveMessage.textContent = `¡Guardado por ${usuarioActual} el ${fechaHoraLocal}!`;
@@ -740,7 +718,8 @@
             }
 
             if (logoutBtn) {
-                logoutBtn.onclick = function() {
+                logoutBtn.onclick = async function() {
+                    await _supabase.auth.signOut();
                     localStorage.removeItem('crm_user');
                     showLogin();
                 };
