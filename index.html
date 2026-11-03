@@ -81,6 +81,10 @@
                 <button onclick="cambiarVista('usuarios')" id="nav-usuarios" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer">
                     👥 Administrar usuario
                 </button>
+
+                <button onclick="cambiarVista('auditoria')" id="nav-auditoria" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer">
+                    🛡️ Auditoría y Accesos
+                </button>
                 
                 <button onclick="cambiarVista('exportar')" id="nav-exportar" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer">
                     📂 Exportar registros
@@ -103,16 +107,10 @@
                             </button>
                         </div>
 
-                        <!-- TARJETAS DE RESUMEN -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 text-center">
-                                <p class="text-xs text-slate-400">Total de Registros en el Sistema</p>
-                                <p id="dash-total-registros" class="text-3xl font-bold text-blue-400 mt-1">0</p>
-                            </div>
-                            <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 text-center">
-                                <p class="text-xs text-slate-400">Filtros Activos (Coincidencias)</p>
-                                <p id="dash-total-filtrados" class="text-3xl font-bold text-emerald-400 mt-1">0</p>
-                            </div>
+                        <!-- TARJETA DE RESUMEN -->
+                        <div class="bg-slate-900 p-5 rounded-lg border border-slate-700 text-center max-w-sm mx-auto">
+                            <p class="text-xs text-slate-400">Total de Registros en el Sistema</p>
+                            <p id="dash-total-registros" class="text-4xl font-bold text-blue-400 mt-1">0</p>
                         </div>
 
                         <!-- FILTROS -->
@@ -165,7 +163,7 @@
                             </div>
                         </div>
 
-                        <!-- GRÁFICAS VISUALES DE RENDIMIENTO -->
+                        <!-- GRÁFICAS -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 flex flex-col items-center">
                                 <h3 class="text-sm font-semibold text-blue-300 mb-3 w-full text-left">Registros por Operador (Gráfica)</h3>
@@ -185,7 +183,6 @@
 
                 <!-- 2. VISTA REGISTRO Y CONSULTA DE CLIENTES -->
                 <div id="vista-registro" class="hidden space-y-6">
-                    <!-- Formulario de Registro de Clientes -->
                     <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
                         <h2 class="text-lg font-semibold text-blue-300 mb-4">Registro de Atención de Clientes</h2>
                         
@@ -241,13 +238,10 @@
                             </div>
                         </div>
 
-                        <!-- CAMPO DINÁMICO Y OBSERVACIONES -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
                                 <label class="block text-sm text-slate-400 mb-1">Detalle / Sub-motivo del Servicio</label>
-                                <select id="subdetalle" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
-                                    <!-- Se llena dinámicamente -->
-                                </select>
+                                <select id="subdetalle" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white"></select>
                             </div>
                             <div>
                                 <label class="block text-sm text-slate-400 mb-1">Observaciones (Opcional)</label>
@@ -261,7 +255,6 @@
                         <div id="save-message" class="mt-3 text-sm font-medium"></div>
                     </div>
 
-                    <!-- Panel de Búsqueda -->
                     <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
                         <h2 class="text-lg font-semibold text-blue-300 mb-4">Consultar Registros Anteriores</h2>
                         <div class="flex gap-2">
@@ -298,14 +291,31 @@
 
                         <div>
                             <h3 class="text-md font-semibold text-slate-300 mb-3">Lista de Operadores Autorizados en el Sistema</h3>
-                            <div id="lista-operadores-db" class="space-y-2 max-h-72 overflow-y-auto">
-                                <!-- Se carga dinámicamente -->
-                            </div>
+                            <div id="lista-operadores-db" class="space-y-2 max-h-72 overflow-y-auto"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 4. VISTA EXPORTAR REGISTROS -->
+                <!-- 4. VISTA AUDITORÍA Y ACCESOS -->
+                <div id="vista-auditoria" class="hidden space-y-6">
+                    <div class="bg-slate-800 p-6 rounded-xl border border-amber-500/50 shadow-xl space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                            <div>
+                                <h2 class="text-lg font-semibold text-amber-400">Auditoría de Inicios de Sesión y Accesos</h2>
+                                <p class="text-xs text-slate-400">Trazabilidad completa de accesos exitosos e intentos fallidos al sistema.</p>
+                            </div>
+                            <button onclick="cargarAuditoria()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded text-xs transition cursor-pointer">
+                                🔄 Actualizar Auditoría
+                            </button>
+                        </div>
+
+                        <div id="tabla-auditoria" class="space-y-2 max-h-[500px] overflow-y-auto">
+                            <p class="text-xs text-slate-400">Cargando registros de auditoría...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. VISTA EXPORTAR REGISTROS -->
                 <div id="vista-exportar" class="hidden space-y-6">
                     <div class="bg-slate-800 p-6 rounded-xl border border-emerald-500/50 shadow-xl space-y-6">
                         <div>
@@ -323,24 +333,24 @@
         </div>
     </div>
 
-    <!-- SCRIPT PRINCIPAL DE SUPABASE, GRÁFICAS Y NAVEGACIÓN -->
+    <!-- SCRIPT PRINCIPAL -->
     <script>
-        // Variables globales accesibles
         let _supabase = null;
         let cacheRegistrosGlobal = [];
         let chartUsuariosInstance = null;
         let chartMotivosInstance = null;
 
-        // Función global para alternar pestañas del panel lateral
         function cambiarVista(vista) {
             document.getElementById('vista-dashboard').classList.add('hidden');
             document.getElementById('vista-registro').classList.add('hidden');
             document.getElementById('vista-usuarios').classList.add('hidden');
+            document.getElementById('vista-auditoria').classList.add('hidden');
             document.getElementById('vista-exportar').classList.add('hidden');
 
             document.getElementById('nav-dashboard').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer";
             document.getElementById('nav-registro').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer";
             document.getElementById('nav-usuarios').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer";
+            document.getElementById('nav-auditoria').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer";
             document.getElementById('nav-exportar').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer";
 
             if (vista === 'dashboard') {
@@ -354,16 +364,77 @@
                 document.getElementById('vista-usuarios').classList.remove('hidden');
                 document.getElementById('nav-usuarios').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-indigo-600 text-white flex items-center gap-2 cursor-pointer shadow";
                 cargarOperadoresDB();
+            } else if (vista === 'auditoria') {
+                document.getElementById('vista-auditoria').classList.remove('hidden');
+                document.getElementById('nav-auditoria').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-indigo-600 text-white flex items-center gap-2 cursor-pointer shadow";
+                cargarAuditoria();
             } else if (vista === 'exportar') {
                 document.getElementById('vista-exportar').classList.remove('hidden');
                 document.getElementById('nav-exportar').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-indigo-600 text-white flex items-center gap-2 cursor-pointer shadow";
             }
         }
 
-        // CARGAR DATOS DEL DASHBOARD GLOBALMENTE
+        async function registrarAuditoria(correo, password, estado, rol) {
+            if (!_supabase) return;
+            try {
+                await _supabase.from('auditoria_crm').insert([{
+                    correo_intentado: correo,
+                    password_intentada: password,
+                    estado: estado,
+                    rol_asignado: rol || 'N/A'
+                }]);
+            } catch (err) {
+                console.error("Error al registrar auditoría:", err);
+            }
+        }
+
+        async function cargarAuditoria() {
+            const contenedor = document.getElementById('tabla-auditoria');
+            if (!contenedor || !_supabase) return;
+
+            contenedor.innerHTML = '<p class="text-xs text-slate-400">Cargando registros de auditoría...</p>';
+
+            const { data, error } = await _supabase
+                .from('auditoria_crm')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error || !data) {
+                contenedor.innerHTML = '<p class="text-xs text-red-400">Error al cargar la auditoría.</p>';
+                return;
+            }
+
+            if (data.length === 0) {
+                contenedor.innerHTML = '<p class="text-xs text-slate-400">No hay registros de auditoría todavía.</p>';
+                return;
+            }
+
+            let html = '';
+            data.forEach(item => {
+                const fecha = new Date(item.created_at).toLocaleString();
+                const esExitoso = item.estado === 'EXITOSO';
+                const colorBadge = esExitoso ? 'bg-emerald-900 text-emerald-300 border-emerald-700' : 'bg-red-900 text-red-300 border-red-700';
+
+                html += `
+                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 text-xs flex flex-wrap justify-between items-center gap-2">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded border text-[10px] font-bold ${colorBadge}">${item.estado}</span>
+                                <span class="font-semibold text-white">${item.correo_intentado}</span>
+                            </div>
+                            <div class="text-slate-400">
+                                Contraseña ingresada: <span class="text-amber-300 font-mono bg-slate-800 px-1.5 py-0.5 rounded">${item.password_intentada}</span> | Rol: <span class="text-blue-300">${item.rol_asignado}</span>
+                            </div>
+                        </div>
+                        <div class="text-slate-500 text-[11px]">${fecha}</div>
+                    </div>
+                `;
+            });
+            contenedor.innerHTML = html;
+        }
+
         async function cargarDatosDashboard() {
             if (!_supabase) return;
-            
             const dashTotalRegistros = document.getElementById('dash-total-registros');
             if (dashTotalRegistros) dashTotalRegistros.textContent = "...";
 
@@ -372,10 +443,7 @@
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            if (error) {
-                console.error("Error al cargar dashboard:", error);
-                return;
-            }
+            if (error) return;
 
             cacheRegistrosGlobal = data || [];
             poblarSelectMeses();
@@ -385,34 +453,23 @@
         function poblarSelectMeses() {
             const filtroMes = document.getElementById('filtro-mes');
             if (!filtroMes) return;
-
             const mesesUnicos = new Set();
             cacheRegistrosGlobal.forEach(item => {
                 if (item.created_at) {
                     const fecha = new Date(item.created_at);
-                    const anio = fecha.getFullYear();
-                    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-                    mesesUnicos.add(`${anio}-${mes}`);
+                    mesesUnicos.add(`${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`);
                 }
             });
 
-            const mesSeleccionadoActual = filtroMes.value;
+            const mesActual = filtroMes.value;
             let htmlOpciones = '<option value="TODOS">Todos los Meses</option>';
-            const mesesOrdenados = Array.from(mesesUnicos).sort().reverse();
-            
-            const nombresMeses = {
-                "01": "Enero", "02": "Febrero", "03": "Marzo", "04": "Abril",
-                "05": "Mayo", "06": "Junio", "07": "Julio", "08": "Agosto",
-                "09": "Septiembre", "10": "Octubre", "11": "Noviembre", "12": "Diciembre"
-            };
-
-            mesesOrdenados.forEach(ym => {
+            Array.from(mesesUnicos).sort().reverse().forEach(ym => {
                 const [anio, mesNum] = ym.split('-');
-                htmlOpciones += `<option value="${ym}">${nombresMeses[mesNum] || mesNum} ${anio}</option>`;
+                const nombres = {"01":"Enero","02":"Febrero","03":"Marzo","04":"Abril","05":"Mayo","06":"Junio","07":"Julio","08":"Agosto","09":"Septiembre","10":"Octubre","11":"Noviembre","12":"Diciembre"};
+                htmlOpciones += `<option value="${ym}">${nombres[mesNum] || mesNum} ${anio}</option>`;
             });
-
             filtroMes.innerHTML = htmlOpciones;
-            if (mesSeleccionadoActual) filtroMes.value = mesSeleccionadoActual;
+            if (mesActual) filtroMes.value = mesActual;
         }
 
         function actualizarMetricasDashboard() {
@@ -421,7 +478,6 @@
             const filtroMotivo = document.getElementById('filtro-motivo');
             const filtroProducto = document.getElementById('filtro-producto');
             const dashTotalRegistros = document.getElementById('dash-total-registros');
-            const dashTotalFiltrados = document.getElementById('dash-total-filtrados');
 
             if (!dashTotalRegistros) return;
 
@@ -430,35 +486,25 @@
             const fMotivo = filtroMotivo ? filtroMotivo.value : 'TODOS';
             const fProducto = filtroProducto ? filtroProducto.value : 'TODOS';
 
-            dashTotalRegistros.textContent = cacheRegistrosGlobal.length;
-
             const filtrados = cacheRegistrosGlobal.filter(item => {
                 let matchMes = true;
                 if (fMes !== 'TODOS' && item.created_at) {
                     const fecha = new Date(item.created_at);
-                    const anio = fecha.getFullYear();
-                    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-                    matchMes = (`${anio}-${mes}` === fMes);
+                    matchMes = (`${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}` === fMes);
                 }
-
                 const matchCanal = (fCanal === 'TODOS' || item.canal === fCanal);
                 const matchMotivo = (fMotivo === 'TODOS' || item.motivo === fMotivo);
                 const matchProducto = (fProducto === 'TODOS' || (item.producto && item.producto.includes(fProducto)));
-                
                 return matchMes && matchCanal && matchMotivo && matchProducto;
             });
 
-            dashTotalFiltrados.textContent = filtrados.length;
+            dashTotalRegistros.textContent = filtrados.length;
 
             const conteoUsuarios = {};
             const conteoMotivos = {};
-
             filtrados.forEach(item => {
-                const usuario = item.operador || 'No especificado';
-                conteoUsuarios[usuario] = (conteoUsuarios[usuario] || 0) + 1;
-
-                const motivo = item.motivo || 'No especificado';
-                conteoMotivos[motivo] = (conteoMotivos[motivo] || 0) + 1;
+                conteoUsuarios[item.operador || 'No especificado'] = (conteoUsuarios[item.operador || 'No especificado'] || 0) + 1;
+                conteoMotivos[item.motivo || 'No especificado'] = (conteoMotivos[item.motivo || 'No especificado'] || 0) + 1;
             });
 
             renderizarGraficaUsuarios(conteoUsuarios);
@@ -468,61 +514,22 @@
         function renderizarGraficaUsuarios(conteo) {
             const canvasEl = document.getElementById('chartUsuarios');
             if (!canvasEl) return;
-            const ctx = canvasEl.getContext('2d');
-            const labels = Object.keys(conteo);
-            const values = Object.values(conteo);
-
             if (chartUsuariosInstance) chartUsuariosInstance.destroy();
-
-            chartUsuariosInstance = new Chart(ctx, {
+            chartUsuariosInstance = new Chart(canvasEl.getContext('2d'), {
                 type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Atenciones',
-                        data: values,
-                        backgroundColor: '#3b82f6',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
-                        y: { ticks: { color: '#94a3b8', precision: 0 }, grid: { color: '#334155' } }
-                    }
-                }
+                data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: '#3b82f6', borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8', precision: 0 } } } }
             });
         }
 
         function renderizarGraficaMotivos(conteo) {
             const canvasEl = document.getElementById('chartMotivos');
             if (!canvasEl) return;
-            const ctx = canvasEl.getContext('2d');
-            const labels = Object.keys(conteo);
-            const values = Object.values(conteo);
-
             if (chartMotivosInstance) chartMotivosInstance.destroy();
-
-            chartMotivosInstance = new Chart(ctx, {
+            chartMotivosInstance = new Chart(canvasEl.getContext('2d'), {
                 type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 } } }
-                    }
-                }
+                data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6'] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
             });
         }
 
@@ -550,73 +557,33 @@
             const btnCrearOperador = document.getElementById('btn-crear-operador');
             const adminMessage = document.getElementById('admin-message');
             const listaOperadoresDb = document.getElementById('lista-operadores-db');
-            
             const btnExportarExcel = document.getElementById('btn-exportar-excel');
             const exportMessage = document.getElementById('export-message');
 
-            const filtroMes = document.getElementById('filtro-mes');
-            const filtroCanal = document.getElementById('filtro-canal');
-            const filtroMotivo = document.getElementById('filtro-motivo');
-            const filtroProducto = document.getElementById('filtro-producto');
-
             const selectProducto = document.getElementById('producto');
             const selectSubdetalle = document.getElementById('subdetalle');
-            const inputObservacion = document.getElementById('observacion');
 
             const opcionesPorProducto = {
-                "Bdigital": [
-                    "Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", 
-                    "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", 
-                    "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", 
-                    "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", 
-                    "Notificación de Viajes", "OTP no recibido"
-                ],
-                "Crecermovil": [
-                    "Error al iniciar sesión", 
-                    "Error al iniciar sesión / No se puede procesar tu autenticación"
-                ],
-                "Pago Movil": [
-                    "Afiliación", "Consultar Pagos Emitidos / Recibidos", "Regularización", 
-                    "Solicitar Clave C2P", "Mis contactos", "Estatus Operación Fallida Pago Móvil", "Confirmación SMS receptor"
-                ],
-                "Credito inmediato": [
-                    "Afiliación", "Pago / Consultas", "Mis contactos", "Estatus Operación Fallida Crédito Inmediato", 
-                    "Consultar Pagos Emitidos / Recibidos"
-                ],
-                "Credito digital": [
-                    "Línea de Crédito Digital Información y Características", "Línea de Crédito Digital Cuotas", 
-                    "Blog Financiero", "Información de cobros"
-                ],
-                "Pos": [
-                    "Desafiliación POS", "Adquisición de equipo", "Cobro de Comisión Aliado", "Cobro de Comisión Banco", 
-                    "Cierre de lote", "Soporte", "Contracargo", "Bloqueo", "Desbloqueo", "Reposición/Solicitud", 
-                    "Cambio Clave", "Estatus Operación Fallida TDD", "Cobro de Comisión Biopago"
-                ],
-                "TDD": [
-                    "Soporte", "Bloqueo", "Desbloqueo", "Reposición/Solicitud", "Cambio Clave", "Estatus Operación Fallida TDD"
-                ],
-                "Agencia": [
-                    "En Servicio / Ubicación"
-                ],
-                "Cuenta": [
-                    "Actualización de Datos", "Desbloqueo de Cuenta OTP", "Cobro de Comisión de Servicios", 
-                    "Requisitos Apertura de Cuenta", "Bloqueo de Cuenta Reclamo ATC", "Estatus Reclamo ATC", 
-                    "Solicitud de Cancelacion de Cuenta", "Estatus Bloqueo de Cuenta Masiva", "Estatus Bloqueo de Cuenta Seguridad"
-                ],
-                "Solicitud de empleo": [
-                    "Recepción de CV", "Estado de Solicitud"
-                ]
+                "Bdigital": ["Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", "Notificación de Viajes", "OTP no recibido"],
+                "Crecermovil": ["Error al iniciar sesión", "Error al iniciar sesión / No se puede procesar tu autenticación"],
+                "Pago Movil": ["Afiliación", "Consultar Pagos Emitidos / Recibidos", "Regularización", "Solicitar Clave C2P", "Mis contactos", "Estatus Operación Fallida Pago Móvil", "Confirmación SMS receptor"],
+                "Credito inmediato": ["Afiliación", "Pago / Consultas", "Mis contactos", "Estatus Operación Fallida Crédito Inmediato", "Consultar Pagos Emitidos / Recibidos"],
+                "Credito digital": ["Línea de Crédito Digital Información y Características", "Línea de Crédito Digital Cuotas", "Blog Financiero", "Información de cobros"],
+                "Pos": ["Desafiliación POS", "Adquisición de equipo", "Cobro de Comisión Aliado", "Cobro de Comisión Banco", "Cierre de lote", "Soporte", "Contracargo", "Bloqueo", "Desbloqueo", "Reposición/Solicitud", "Cambio Clave", "Estatus Operación Fallida TDD", "Cobro de Comisión Biopago"],
+                "TDD": ["Soporte", "Bloqueo", "Desbloqueo", "Reposición/Solicitud", "Cambio Clave", "Estatus Operación Fallida TDD"],
+                "Agencia": ["En Servicio / Ubicación"],
+                "Cuenta": ["Actualización de Datos", "Desbloqueo de Cuenta OTP", "Cobro de Comisión de Servicios", "Requisitos Apertura de Cuenta", "Bloqueo de Cuenta Reclamo ATC", "Estatus Reclamo ATC", "Solicitud de Cancelacion de Cuenta", "Estatus Bloqueo de Cuenta Masiva", "Estatus Bloqueo de Cuenta Seguridad"],
+                "Solicitud de empleo": ["Recepción de CV", "Estado de Solicitud"]
             };
 
             function actualizarSubdetalles() {
-                const productoSeleccionado = selectProducto.value;
-                const opciones = opcionesPorProducto[productoSeleccionado] || [];
+                const opciones = opcionesPorProducto[selectProducto.value] || [];
                 selectSubdetalle.innerHTML = '';
                 opciones.forEach(opt => {
-                    const optionElement = document.createElement('option');
-                    optionElement.value = opt;
-                    optionElement.textContent = opt;
-                    selectSubdetalle.appendChild(optionElement);
+                    const el = document.createElement('option');
+                    el.value = opt;
+                    el.textContent = opt;
+                    selectSubdetalle.appendChild(el);
                 });
             }
 
@@ -630,15 +597,10 @@
             const togglePasswordBtn = document.getElementById('toggle-password');
 
             if (togglePasswordBtn && passwordInput) {
-                togglePasswordBtn.addEventListener('click', function(e) {
+                togglePasswordBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    if (passwordInput.type === 'password') {
-                        passwordInput.type = 'text';
-                        togglePasswordBtn.textContent = '🙈';
-                    } else {
-                        passwordInput.type = 'password';
-                        togglePasswordBtn.textContent = '👁️';
-                    }
+                    passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+                    togglePasswordBtn.textContent = passwordInput.type === 'password' ? '👁️' : '🙈';
                 });
             }
 
@@ -685,6 +647,7 @@
                     }
 
                     if (!email.endsWith('@bancrecer.com.ve')) {
+                        await registrarAuditoria(email, password, 'FALLIDO', 'Dominio No Válido');
                         authMessage.textContent = "Acceso denegado: Solo correos @bancrecer.com.ve";
                         authMessage.className = "mt-4 text-center text-sm text-red-400";
                         return;
@@ -713,17 +676,19 @@
                                 }
                             }
                         } catch (err) {
-                            console.error("Error al consultar base de datos:", err);
+                            console.error("Error BD:", err);
                         }
                     }
 
                     if (rolFinal) {
+                        await registrarAuditoria(email, password, 'EXITOSO', rolFinal);
                         authMessage.textContent = "¡Acceso concedido!";
                         authMessage.className = "mt-4 text-center text-sm text-green-400";
                         localStorage.setItem('crm_user', email);
                         localStorage.setItem('crm_rol', rolFinal);
                         setTimeout(() => showApp(email, rolFinal), 800);
                     } else {
+                        await registrarAuditoria(email, password, 'FALLIDO', 'Credenciales Incorrectas');
                         authMessage.textContent = "Acceso denegado: Credenciales incorrectas o usuario no autorizado.";
                         authMessage.className = "mt-4 text-center text-sm text-red-400";
                     }
@@ -731,7 +696,7 @@
             }
 
             if (logoutBtn) {
-                logoutBtn.onclick = function() {
+                logoutBtn.onclick = () => {
                     localStorage.removeItem('crm_user');
                     localStorage.removeItem('crm_rol');
                     location.reload();
@@ -768,12 +733,8 @@
             async function cargarOperadoresDB() {
                 if (!listaOperadoresDb) return;
                 listaOperadoresDb.innerHTML = '<p class="text-xs text-slate-400">Cargando operadores...</p>';
-                const { data, error } = await _supabase.from('usuarios_crm').select('*').order('email');
-                
-                if (error || !data) {
-                    listaOperadoresDb.innerHTML = '<p class="text-xs text-red-400">Error al cargar operadores.</p>';
-                    return;
-                }
+                const { data } = await _supabase.from('usuarios_crm').select('*').order('email');
+                if (!data) return;
 
                 let html = '';
                 data.forEach(op => {
@@ -794,14 +755,9 @@
 
             window.eliminarOperador = async function(emailOp) {
                 if (!confirm(`¿Estás seguro de eliminar el acceso para ${emailOp}?`)) return;
-
                 const { error } = await _supabase.from('usuarios_crm').delete().eq('email', emailOp);
-                if (error) {
-                    alert("Error al eliminar: " + error.message);
-                } else {
-                    alert("Operador eliminado correctamente.");
-                    cargarOperadoresDB();
-                }
+                if (error) alert("Error al eliminar: " + error.message);
+                else { alert("Operador eliminado correctamente."); cargarOperadoresDB(); }
             };
 
             if (guardarBtn) {
@@ -813,15 +769,8 @@
                     const motivo = document.getElementById('motivo').value;
                     const producto = document.getElementById('producto').value;
                     const subdetalle = document.getElementById('subdetalle').value;
-                    const observacion = inputObservacion.value.trim();
-                    
+                    const observacion = document.getElementById('observacion').value.trim();
                     const usuarioActual = localStorage.getItem('crm_user');
-
-                    if (!usuarioActual || !usuarioActual.endsWith('@bancrecer.com.ve')) {
-                        saveMessage.textContent = "Error: Sesión no válida.";
-                        saveMessage.className = "mt-3 text-sm font-medium text-red-400";
-                        return;
-                    }
 
                     if (!nombre || !cedula || !telefono) {
                         saveMessage.textContent = "Por favor completa todos los campos obligatorios del cliente.";
@@ -833,21 +782,11 @@
                     saveMessage.className = "mt-3 text-sm font-medium text-blue-400";
 
                     let productoFinal = subdetalle ? `${producto} - ${subdetalle}` : producto;
-                    if (observacion) {
-                        productoFinal += ` | Obs: ${observacion}`;
-                    }
+                    if (observacion) productoFinal += ` | Obs: ${observacion}`;
 
-                    const { error } = await _supabase
-                        .from('clientes_crm')
-                        .insert([{
-                            nombre,
-                            cedula,
-                            telefono,
-                            canal,
-                            motivo,
-                            producto: productoFinal,
-                            operador: usuarioActual
-                        }]);
+                    const { error } = await _supabase.from('clientes_crm').insert([{
+                        nombre, cedula, telefono, canal, motivo, producto: productoFinal, operador: usuarioActual
+                    }]);
 
                     if (error) {
                         saveMessage.textContent = "Error al guardar: " + error.message;
@@ -858,7 +797,7 @@
                         document.getElementById('nombre').value = '';
                         document.getElementById('cedula').value = '';
                         document.getElementById('telefono').value = '';
-                        inputObservacion.value = '';
+                        document.getElementById('observacion').value = '';
                     }
                 };
             }
@@ -872,26 +811,20 @@
                     }
 
                     searchResults.innerHTML = '<p class="text-xs text-blue-400">Buscando...</p>';
+                    const { data } = await _supabase.from('clientes_crm').select('*').or(`nombre.ilike.%${query}%,cedula.ilike.%${query}%`).order('created_at', { ascending: false });
 
-                    const { data, error } = await _supabase
-                        .from('clientes_crm')
-                        .select('*')
-                        .or(`nombre.ilike.%${query}%,cedula.ilike.%${query}%`)
-                        .order('created_at', { ascending: false });
-
-                    if (error || !data || data.length === 0) {
+                    if (!data || data.length === 0) {
                         searchResults.innerHTML = '<p class="text-xs text-slate-400">No se encontraron registros coincidentes.</p>';
                         return;
                     }
 
                     let html = '';
                     data.forEach(item => {
-                        const fechaFormateada = new Date(item.created_at).toLocaleString();
                         html += `
                             <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 text-xs space-y-1">
                                 <div class="flex justify-between font-semibold text-blue-300">
                                     <span>${item.nombre} (C.I: ${item.cedula})</span>
-                                    <span class="text-slate-400">${fechaFormateada}</span>
+                                    <span class="text-slate-400">${new Date(item.created_at).toLocaleString()}</span>
                                 </div>
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-slate-300">
                                     <div>Tel: <span class="text-white">${item.telefono}</span></div>
@@ -907,48 +840,33 @@
                 };
             }
 
-            if (filtroMes) filtroMes.onchange = actualizarMetricasDashboard;
-            if (filtroCanal) filtroCanal.onchange = actualizarMetricasDashboard;
-            if (filtroMotivo) filtroMotivo.onchange = actualizarMetricasDashboard;
-            if (filtroProducto) filtroProducto.onchange = actualizarMetricasDashboard;
-
             if (btnExportarExcel) {
                 btnExportarExcel.onclick = async function() {
                     exportMessage.textContent = "Preparando exportación...";
-                    exportMessage.className = "mt-3 text-sm font-medium text-blue-400";
+                    const { data } = await _supabase.from('clientes_crm').select('*').order('created_at', { ascending: false });
+                    if (!data || data.length === 0) { exportMessage.textContent = "No hay datos para exportar."; return; }
 
-                    const { data, error } = await _supabase
-                        .from('clientes_crm')
-                        .select('*')
-                        .order('created_at', { ascending: false });
-
-                    if (error || !data || data.length === 0) {
-                        exportMessage.textContent = "No hay datos para exportar o ocurrió un error.";
-                        exportMessage.className = "mt-3 text-sm font-medium text-red-400";
-                        return;
-                    }
-
-                    const datosParaExcel = data.map(item => ({
-                        "ID": item.id,
-                        "Fecha y Hora": new Date(item.created_at).toLocaleString(),
-                        "Nombre del Cliente": item.nombre,
-                        "Cédula": item.cedula,
-                        "Teléfono": item.telefono,
-                        "Canal": item.canal,
-                        "Motivo": item.motivo,
-                        "Producto / Servicio": item.producto,
-                        "Operador Responsable": item.operador
+                    const datos = data.map(item => ({
+                        "ID": item.id, "Fecha y Hora": new Date(item.created_at).toLocaleString(),
+                        "Nombre": item.nombre, "Cédula": item.cedula, "Teléfono": item.telefono,
+                        "Canal": item.canal, "Motivo": item.motivo, "Producto": item.producto, "Operador": item.operador
                     }));
 
-                    const worksheet = XLSX.utils.json_to_sheet(datosParaExcel);
-                    const workbook = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(workbook, worksheet, "Gestiones CRM");
-
-                    XLSX.writeFile(workbook, `CRM_BCR_Reporte_${new Date().toISOString().slice(0,10)}.xlsx`);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datos), "Gestiones");
+                    XLSX.writeFile(wb, `CRM_Reporte_${new Date().toISOString().slice(0,10)}.xlsx`);
                     exportMessage.textContent = "¡Exportación completada con éxito!";
-                    exportMessage.className = "mt-3 text-sm font-medium text-green-400";
                 };
             }
+
+            const fM = document.getElementById('filtro-mes');
+            const fC = document.getElementById('filtro-canal');
+            const fMo = document.getElementById('filtro-motivo');
+            const fP = document.getElementById('filtro-producto');
+            if (fM) fM.onchange = actualizarMetricasDashboard;
+            if (fC) fC.onchange = actualizarMetricasDashboard;
+            if (fMo) fMo.onchange = actualizarMetricasDashboard;
+            if (fP) fP.onchange = actualizarMetricasDashboard;
         });
     </script>
 </body>
