@@ -131,6 +131,7 @@
                                 <option value="Pago Movil">Pago Movil</option>
                                 <option value="Credito digital">Credito digital</option>
                                 <option value="Credito inmediato">Credito inmediato</option>
+                                <option value="Credito">Credito</option>
                                 <option value="Pos">Pos</option>
                                 <option value="TDD">TDD</option>
                                 <option value="Agencia">Agencia</option>
@@ -232,6 +233,7 @@
                             <option value="Pago Movil">Pago Movil</option>
                             <option value="Credito digital">Credito digital</option>
                             <option value="Credito inmediato">Credito inmediato</option>
+                            <option value="Credito">Credito</option>
                             <option value="Pos">Pos</option>
                             <option value="TDD">TDD</option>
                             <option value="Agencia">Agencia</option>
@@ -239,6 +241,14 @@
                             <option value="Solicitud de empleo">Solicitud de empleo</option>
                         </select>
                     </div>
+                </div>
+
+                <!-- CAMPO DINÁMICO ADICIONAL SEGÚN PRODUCTO O SERVICIO -->
+                <div id="contenedor-subdetalle" class="mt-4">
+                    <label class="block text-sm text-slate-400 mb-1">Detalle / Sub-motivo del Servicio</label>
+                    <select id="subdetalle" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
+                        <!-- Se llena dinámicamente con JavaScript -->
+                    </select>
                 </div>
 
                 <button id="guardar-btn" class="mt-5 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition cursor-pointer">
@@ -303,13 +313,86 @@
             const filtroMotivo = document.getElementById('filtro-motivo');
             const filtroProducto = document.getElementById('filtro-producto');
 
+            const selectProducto = document.getElementById('producto');
+            const selectSubdetalle = document.getElementById('subdetalle');
+
             let cacheRegistrosGlobal = [];
+
+            // MAPA DE OPCIONES DINÁMICAS SEGÚN EL PRODUCTO SELECCIONADO
+            const opcionesPorProducto = {
+                "Bdigital": [
+                    "Afiliación", "olvido de usuario", "recuperar contraseña", "desbloqueo de usuario", 
+                    "desafiliación", "recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", 
+                    "disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", 
+                    "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", 
+                    "Notificación de Viajes", "OTP no recibido"
+                ],
+                "Crecermovil": [
+                    "Afiliación", "olvido de usuario", "recuperar contraseña", "desbloqueo de usuario", 
+                    "desafiliación", "recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", 
+                    "disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", 
+                    "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", 
+                    "Notificación de Viajes", "OTP no recibido"
+                ],
+                "Pago Movil": [
+                    "Afiliación", "Consultar Pagos Emitidos / Recibidos", "Regularización", 
+                    "Solicitar Clave C2P", "Mis contactos", "Estatus Operación Fallida Pago Móvil", "Confirmación SMS receptor"
+                ],
+                "Credito inmediato": [
+                    "Afiliación", "Pago / Consultas", "Mis contactos", "Estatus Operación Fallida Crédito Inmediato", 
+                    "Consultar Pagos Emitidos / Recibidos"
+                ],
+                "Credito digital": [
+                    "Línea de Crédito Digital Información y Características", "Línea de Crédito Digital Cuotas", 
+                    "Blog Financiero", "Información de cobros"
+                ],
+                "Credito": [
+                    "Línea de Crédito Digital Información y Características", "Línea de Crédito Digital Cuotas", 
+                    "Blog Financiero", "Información de cobros"
+                ],
+                "Pos": [
+                    "Desafiliación POS", "Adquisición de equipo", "Cobro de Comisión Aliado", "Cobro de Comisión Banco", 
+                    "Cierre de lote", "Soporte", "Contracargo", "Bloqueo", "Desbloqueo", "Reposición/Solicitud", 
+                    "Cambio Clave", "Estatus Operación Fallida TDD", "Cobro de Comisión Biopago"
+                ],
+                "TDD": [
+                    "Soporte", "Bloqueo", "Desbloqueo", "Reposición/Solicitud", "Cambio Clave", "Estatus Operación Fallida TDD"
+                ],
+                "Agencia": [
+                    "En Servicio / Ubicación"
+                ],
+                "Cuenta": [
+                    "Actualización de Datos", "Desbloqueo de Cuenta OTP", "Cobro de Comisión de Servicios", 
+                    "Requisitos Apertura de Cuenta", "Bloqueo de Cuenta Reclamo ATC", "Estatus Reclamo ATC", 
+                    "Solicitud de Cancelacion de Cuenta", "Estatus Bloqueo de Cuenta Masiva", "Estatus Bloqueo de Cuenta Seguridad"
+                ],
+                "Solicitud de empleo": [
+                    "Recepción de CV", "Estado de Solicitud"
+                ]
+            };
+
+            function actualizarSubdetalles() {
+                const productoSeleccionado = selectProducto.value;
+                const opciones = opcionesPorProducto[productoSeleccionado] || [];
+                
+                selectSubdetalle.innerHTML = '';
+                opciones.forEach(opt => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = opt;
+                    optionElement.textContent = opt;
+                    selectSubdetalle.appendChild(optionElement);
+                });
+            }
+
+            if (selectProducto) {
+                selectProducto.addEventListener('change', actualizarSubdetalles);
+                actualizarSubdetalles();
+            }
 
             const passwordInput = document.getElementById('password');
             const emailInput = document.getElementById('email');
             const togglePasswordBtn = document.getElementById('toggle-password');
 
-            // Mostrar/Ocultar contraseña
             if (togglePasswordBtn && passwordInput) {
                 togglePasswordBtn.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -323,7 +406,6 @@
                 });
             }
 
-            // Verificar sesión activa al cargar
             checkSession();
 
             async function checkSession() {
@@ -356,7 +438,6 @@
                 appScreen.classList.add('hidden');
             }
 
-            // LOGIN VALIDANDO CONTRA LA TABLA usuarios_crm CON RESPALDO DE EMERGENCIA
             if (btnLogin) {
                 btnLogin.addEventListener('click', async function() {
                     const email = emailInput.value.trim().toLowerCase();
@@ -416,7 +497,6 @@
                 });
             }
 
-            // LOGOUT
             if (logoutBtn) {
                 logoutBtn.onclick = function() {
                     localStorage.removeItem('crm_user');
@@ -425,7 +505,6 @@
                 };
             }
 
-            // CREAR / AUTORIZAR NUEVO OPERADOR DESDE EL PANEL ADMIN
             if (btnCrearOperador) {
                 btnCrearOperador.onclick = async function() {
                     const correoOp = nuevoOperadorEmail.value.trim().toLowerCase();
@@ -452,7 +531,6 @@
                 };
             }
 
-            // GUARDAR REGISTRO DE CLIENTE
             if (guardarBtn) {
                 guardarBtn.onclick = async function() {
                     const nombre = document.getElementById('nombre').value.trim();
@@ -461,6 +539,7 @@
                     const canal = document.getElementById('canal').value;
                     const motivo = document.getElementById('motivo').value;
                     const producto = document.getElementById('producto').value;
+                    const subdetalle = document.getElementById('subdetalle').value;
                     
                     const usuarioActual = localStorage.getItem('crm_user');
 
@@ -487,7 +566,7 @@
                             telefono,
                             canal,
                             motivo,
-                            producto,
+                            producto: subdetalle ? `${producto} - ${subdetalle}` : producto,
                             operador: usuarioActual
                         }]);
 
@@ -504,7 +583,6 @@
                 };
             }
 
-            // BUSCAR REGISTROS ANTERIORES
             if (searchBtn) {
                 searchBtn.onclick = async function() {
                     const query = searchQuery.value.trim();
@@ -554,7 +632,6 @@
                 };
             }
 
-            // DASHBOARD Y MÉTRICAS
             async function cargarDatosDashboard() {
                 dashPorUsuario.innerHTML = '<p class="text-slate-400">Cargando métricas...</p>';
                 dashPorMotivo.innerHTML = '<p class="text-slate-400">Cargando motivos...</p>';
@@ -626,7 +703,7 @@
 
                     const matchCanal = (fCanal === 'TODOS' || item.canal === fCanal);
                     const matchMotivo = (fMotivo === 'TODOS' || item.motivo === fMotivo);
-                    const matchProducto = (fProducto === 'TODOS' || item.producto === fProducto);
+                    const matchProducto = (fProducto === 'TODOS' || item.producto.includes(fProducto));
                     
                     return matchMes && matchCanal && matchMotivo && matchProducto;
                 });
@@ -696,7 +773,6 @@
             if (filtroMotivo) filtroMotivo.onchange = actualizarMetricasDashboard;
             if (filtroProducto) filtroProducto.onchange = actualizarMetricasDashboard;
 
-            // EXPORTAR A EXCEL (.XLSX)
             if (btnExportarExcel) {
                 btnExportarExcel.onclick = async function() {
                     exportMessage.textContent = "Preparando exportación...";
