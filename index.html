@@ -93,9 +93,14 @@
                 <!-- 1. VISTA DASHBOARD Y MÉTRICAS -->
                 <div id="vista-dashboard" class="space-y-6">
                     <div class="bg-slate-800 p-6 rounded-xl border border-indigo-500/50 shadow-xl space-y-6">
-                        <div class="border-b border-slate-700 pb-3">
-                            <h2 class="text-lg font-semibold text-indigo-400">Dashboard y Métricas en Vivo</h2>
-                            <p class="text-xs text-slate-400">Monitoreo general de gestiones, operadores y filtros operativos.</p>
+                        <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+                            <div>
+                                <h2 class="text-lg font-semibold text-indigo-400">Dashboard y Métricas en Vivo</h2>
+                                <p class="text-xs text-slate-400">Monitoreo general de gestiones, operadores y filtros operativos.</p>
+                            </div>
+                            <button onclick="cargarDatosDashboard()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs transition cursor-pointer">
+                                🔄 Actualizar Datos
+                            </button>
                         </div>
 
                         <!-- TARJETAS DE RESUMEN -->
@@ -320,6 +325,12 @@
 
     <!-- SCRIPT PRINCIPAL DE SUPABASE, GRÁFICAS Y NAVEGACIÓN -->
     <script>
+        // Variables globales accesibles
+        let _supabase = null;
+        let cacheRegistrosGlobal = [];
+        let chartUsuariosInstance = null;
+        let chartMotivosInstance = null;
+
         // Función global para alternar pestañas del panel lateral
         function cambiarVista(vista) {
             document.getElementById('vista-dashboard').classList.add('hidden');
@@ -349,10 +360,176 @@
             }
         }
 
+        // CARGAR DATOS DEL DASHBOARD GLOBALMENTE
+        async function cargarDatosDashboard() {
+            if (!_supabase) return;
+            
+            const dashTotalRegistros = document.getElementById('dash-total-registros');
+            if (dashTotalRegistros) dashTotalRegistros.textContent = "...";
+
+            const { data, error } = await _supabase
+                .from('clientes_crm')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Error al cargar dashboard:", error);
+                return;
+            }
+
+            cacheRegistrosGlobal = data || [];
+            poblarSelectMeses();
+            actualizarMetricasDashboard();
+        }
+
+        function poblarSelectMeses() {
+            const filtroMes = document.getElementById('filtro-mes');
+            if (!filtroMes) return;
+
+            const mesesUnicos = new Set();
+            cacheRegistrosGlobal.forEach(item => {
+                if (item.created_at) {
+                    const fecha = new Date(item.created_at);
+                    const anio = fecha.getFullYear();
+                    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+                    mesesUnicos.add(`${anio}-${mes}`);
+                }
+            });
+
+            const mesSeleccionadoActual = filtroMes.value;
+            let htmlOpciones = '<option value="TODOS">Todos los Meses</option>';
+            const mesesOrdenados = Array.from(mesesUnicos).sort().reverse();
+            
+            const nombresMeses = {
+                "01": "Enero", "02": "Febrero", "03": "Marzo", "04": "Abril",
+                "05": "Mayo", "06": "Junio", "07": "Julio", "08": "Agosto",
+                "09": "Septiembre", "10": "Octubre", "11": "Noviembre", "12": "Diciembre"
+            };
+
+            mesesOrdenados.forEach(ym => {
+                const [anio, mesNum] = ym.split('-');
+                htmlOpciones += `<option value="${ym}">${nombresMeses[mesNum] || mesNum} ${anio}</option>`;
+            });
+
+            filtroMes.innerHTML = htmlOpciones;
+            if (mesSeleccionadoActual) filtroMes.value = mesSeleccionadoActual;
+        }
+
+        function actualizarMetricasDashboard() {
+            const filtroMes = document.getElementById('filtro-mes');
+            const filtroCanal = document.getElementById('filtro-canal');
+            const filtroMotivo = document.getElementById('filtro-motivo');
+            const filtroProducto = document.getElementById('filtro-producto');
+            const dashTotalRegistros = document.getElementById('dash-total-registros');
+            const dashTotalFiltrados = document.getElementById('dash-total-filtrados');
+
+            if (!dashTotalRegistros) return;
+
+            const fMes = filtroMes ? filtroMes.value : 'TODOS';
+            const fCanal = filtroCanal ? filtroCanal.value : 'TODOS';
+            const fMotivo = filtroMotivo ? filtroMotivo.value : 'TODOS';
+            const fProducto = filtroProducto ? filtroProducto.value : 'TODOS';
+
+            dashTotalRegistros.textContent = cacheRegistrosGlobal.length;
+
+            const filtrados = cacheRegistrosGlobal.filter(item => {
+                let matchMes = true;
+                if (fMes !== 'TODOS' && item.created_at) {
+                    const fecha = new Date(item.created_at);
+                    const anio = fecha.getFullYear();
+                    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+                    matchMes = (`${anio}-${mes}` === fMes);
+                }
+
+                const matchCanal = (fCanal === 'TODOS' || item.canal === fCanal);
+                const matchMotivo = (fMotivo === 'TODOS' || item.motivo === fMotivo);
+                const matchProducto = (fProducto === 'TODOS' || (item.producto && item.producto.includes(fProducto)));
+                
+                return matchMes && matchCanal && matchMotivo && matchProducto;
+            });
+
+            dashTotalFiltrados.textContent = filtrados.length;
+
+            const conteoUsuarios = {};
+            const conteoMotivos = {};
+
+            filtrados.forEach(item => {
+                const usuario = item.operador || 'No especificado';
+                conteoUsuarios[usuario] = (conteoUsuarios[usuario] || 0) + 1;
+
+                const motivo = item.motivo || 'No especificado';
+                conteoMotivos[motivo] = (conteoMotivos[motivo] || 0) + 1;
+            });
+
+            renderizarGraficaUsuarios(conteoUsuarios);
+            renderizarGraficaMotivos(conteoMotivos);
+        }
+
+        function renderizarGraficaUsuarios(conteo) {
+            const canvasEl = document.getElementById('chartUsuarios');
+            if (!canvasEl) return;
+            const ctx = canvasEl.getContext('2d');
+            const labels = Object.keys(conteo);
+            const values = Object.values(conteo);
+
+            if (chartUsuariosInstance) chartUsuariosInstance.destroy();
+
+            chartUsuariosInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Atenciones',
+                        data: values,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
+                        y: { ticks: { color: '#94a3b8', precision: 0 }, grid: { color: '#334155' } }
+                    }
+                }
+            });
+        }
+
+        function renderizarGraficaMotivos(conteo) {
+            const canvasEl = document.getElementById('chartMotivos');
+            if (!canvasEl) return;
+            const ctx = canvasEl.getContext('2d');
+            const labels = Object.keys(conteo);
+            const values = Object.values(conteo);
+
+            if (chartMotivosInstance) chartMotivosInstance.destroy();
+
+            chartMotivosInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
             const SUPABASE_URL = 'https://mchlteunhcjzuetzyajz.supabase.co';
             const SUPABASE_KEY = 'sb_publishable_S5LJcX40QJ8HPVIRU7l75w_LYNzVWQk';
-            const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
             const authScreen = document.getElementById('auth-screen');
             const appScreen = document.getElementById('app-screen');
@@ -377,9 +554,6 @@
             const btnExportarExcel = document.getElementById('btn-exportar-excel');
             const exportMessage = document.getElementById('export-message');
 
-            const dashTotalRegistros = document.getElementById('dash-total-registros');
-            const dashTotalFiltrados = document.getElementById('dash-total-filtrados');
-            
             const filtroMes = document.getElementById('filtro-mes');
             const filtroCanal = document.getElementById('filtro-canal');
             const filtroMotivo = document.getElementById('filtro-motivo');
@@ -388,10 +562,6 @@
             const selectProducto = document.getElementById('producto');
             const selectSubdetalle = document.getElementById('subdetalle');
             const inputObservacion = document.getElementById('observacion');
-
-            let cacheRegistrosGlobal = [];
-            let chartUsuariosInstance = null;
-            let chartMotivosInstance = null;
 
             const opcionesPorProducto = {
                 "Bdigital": [
@@ -494,7 +664,6 @@
                     cambiarVista('dashboard');
                 } else {
                     sidebarAdmin.classList.add('hidden');
-                    // Operador estándar va directo a la vista de registro y consulta
                     cambiarVista('registro');
                 }
             }
@@ -569,7 +738,6 @@
                 };
             }
 
-            // GESTIÓN DE OPERADORES DESDE EL PANEL ADMIN
             if (btnCrearOperador) {
                 btnCrearOperador.onclick = async function() {
                     const correoOp = nuevoOperadorEmail.value.trim().toLowerCase();
@@ -598,6 +766,7 @@
             }
 
             async function cargarOperadoresDB() {
+                if (!listaOperadoresDb) return;
                 listaOperadoresDb.innerHTML = '<p class="text-xs text-slate-400">Cargando operadores...</p>';
                 const { data, error } = await _supabase.from('usuarios_crm').select('*').order('email');
                 
@@ -635,7 +804,6 @@
                 }
             };
 
-            // GUARDAR REGISTRO DE CLIENTE
             if (guardarBtn) {
                 guardarBtn.onclick = async function() {
                     const nombre = document.getElementById('nombre').value.trim();
@@ -739,154 +907,11 @@
                 };
             }
 
-            // DASHBOARD Y GRÁFICAS CON CHART.JS
-            async function cargarDatosDashboard() {
-                const { data, error } = await _supabase
-                    .from('clientes_crm')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) return;
-
-                cacheRegistrosGlobal = data || [];
-                poblarSelectMeses();
-                actualizarMetricasDashboard();
-            }
-
-            function poblarSelectMeses() {
-                const mesesUnicos = new Set();
-                cacheRegistrosGlobal.forEach(item => {
-                    if (item.created_at) {
-                        const fecha = new Date(item.created_at);
-                        const anio = fecha.getFullYear();
-                        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-                        mesesUnicos.add(`${anio}-${mes}`);
-                    }
-                });
-
-                const mesSeleccionadoActual = filtroMes.value;
-                let htmlOpciones = '<option value="TODOS">Todos los Meses</option>';
-                const mesesOrdenados = Array.from(mesesUnicos).sort().reverse();
-                
-                const nombresMeses = {
-                    "01": "Enero", "02": "Febrero", "03": "Marzo", "04": "Abril",
-                    "05": "Mayo", "06": "Junio", "07": "Julio", "08": "Agosto",
-                    "09": "Septiembre", "10": "Octubre", "11": "Noviembre", "12": "Diciembre"
-                };
-
-                mesesOrdenados.forEach(ym => {
-                    const [anio, mesNum] = ym.split('-');
-                    htmlOpciones += `<option value="${ym}">${nombresMeses[mesNum] || mesNum} ${anio}</option>`;
-                });
-
-                filtroMes.innerHTML = htmlOpciones;
-                if (mesSeleccionadoActual) filtroMes.value = mesSeleccionadoActual;
-            }
-
-            function actualizarMetricasDashboard() {
-                const fMes = filtroMes.value;
-                const fCanal = filtroCanal.value;
-                const fMotivo = filtroMotivo.value;
-                const fProducto = filtroProducto.value;
-
-                dashTotalRegistros.textContent = cacheRegistrosGlobal.length;
-
-                const filtrados = cacheRegistrosGlobal.filter(item => {
-                    let matchMes = true;
-                    if (fMes !== 'TODOS' && item.created_at) {
-                        const fecha = new Date(item.created_at);
-                        const anio = fecha.getFullYear();
-                        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-                        matchMes = (`${anio}-${mes}` === fMes);
-                    }
-
-                    const matchCanal = (fCanal === 'TODOS' || item.canal === fCanal);
-                    const matchMotivo = (fMotivo === 'TODOS' || item.motivo === fMotivo);
-                    const matchProducto = (fProducto === 'TODOS' || item.producto.includes(fProducto));
-                    
-                    return matchMes && matchCanal && matchMotivo && matchProducto;
-                });
-
-                dashTotalFiltrados.textContent = filtrados.length;
-
-                const conteoUsuarios = {};
-                const conteoMotivos = {};
-
-                filtrados.forEach(item => {
-                    const usuario = item.operador || 'No especificado';
-                    conteoUsuarios[usuario] = (conteoUsuarios[usuario] || 0) + 1;
-
-                    const motivo = item.motivo || 'No especificado';
-                    conteoMotivos[motivo] = (conteoMotivos[motivo] || 0) + 1;
-                });
-
-                renderizarGraficaUsuarios(conteoUsuarios);
-                renderizarGraficaMotivos(conteoMotivos);
-            }
-
-            function renderizarGraficaUsuarios(conteo) {
-                const ctx = document.getElementById('chartUsuarios').getContext('2d');
-                const labels = Object.keys(conteo);
-                const values = Object.values(conteo);
-
-                if (chartUsuariosInstance) chartUsuariosInstance.destroy();
-
-                chartUsuariosInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Atenciones',
-                            data: values,
-                            backgroundColor: '#3b82f6',
-                            borderRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
-                            y: { ticks: { color: '#94a3b8', precision: 0 }, grid: { color: '#334155' } }
-                        }
-                    }
-                });
-            }
-
-            function renderizarGraficaMotivos(conteo) {
-                const ctx = document.getElementById('chartMotivos').getContext('2d');
-                const labels = Object.keys(conteo);
-                const values = Object.values(conteo);
-
-                if (chartMotivosInstance) chartMotivosInstance.destroy();
-
-                chartMotivosInstance = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            data: values,
-                            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 } } }
-                        }
-                    }
-                });
-            }
-
             if (filtroMes) filtroMes.onchange = actualizarMetricasDashboard;
             if (filtroCanal) filtroCanal.onchange = actualizarMetricasDashboard;
             if (filtroMotivo) filtroMotivo.onchange = actualizarMetricasDashboard;
             if (filtroProducto) filtroProducto.onchange = actualizarMetricasDashboard;
 
-            // EXPORTAR A EXCEL (.XLSX)
             if (btnExportarExcel) {
                 btnExportarExcel.onclick = async function() {
                     exportMessage.textContent = "Preparando exportación...";
