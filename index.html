@@ -249,7 +249,6 @@
             const SUPABASE_KEY = 'sb_publishable_S5LJcX40QJ8HPVIRU7l75w_LYNzVWQk';
             const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // Lista base de operadores directamente autorizados en el código global
             const OPERADORES_BASE = [
                 'jose.lindarte@bancrecer.com.ve',
                 'keishvanysalazar@bancrecer.com.ve'
@@ -360,9 +359,10 @@
                         (email === 'oriany.albarran@bancrecer.com.ve' && password === 'Bancrecer*2026')
                     );
                     
-                    let esOperador = listaOperadores.includes(email) && password === 'Operador*2026';
+                    // REGLA UNIVERSAL: Cualquier correo con dominio bancrecer.com.ve entra con la clave de operador
+                    let esOperadorValido = (email.endsWith('@bancrecer.com.ve') && password === 'Operador*2026');
 
-                    if (esAdmin || esOperador) {
+                    if (esAdmin || esOperadorValido) {
                         authMessage.textContent = "¡Acceso concedido!";
                         authMessage.className = "mt-4 text-center text-sm text-green-400";
                         localStorage.setItem('crm_user', email);
