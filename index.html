@@ -118,6 +118,8 @@
                                 <option value="Consulta">Consulta</option>
                                 <option value="Reclamo">Reclamo</option>
                                 <option value="Solicitud">Solicitud</option>
+                                <option value="Incidencia">Incidencia</option>
+                                <option value="Soporte">Soporte</option>
                             </select>
                         </div>
                         <div>
@@ -128,6 +130,12 @@
                                 <option value="Crecermovil">Crecermovil</option>
                                 <option value="Pago Movil">Pago Movil</option>
                                 <option value="Credito digital">Credito digital</option>
+                                <option value="Credito inmediato">Credito inmediato</option>
+                                <option value="Pos">Pos</option>
+                                <option value="TDD">TDD</option>
+                                <option value="Agencia">Agencia</option>
+                                <option value="Cuenta">Cuenta</option>
+                                <option value="Solicitud de empleo">Solicitud de empleo</option>
                             </select>
                         </div>
                     </div>
@@ -212,6 +220,8 @@
                             <option value="Consulta">Consulta</option>
                             <option value="Reclamo">Reclamo</option>
                             <option value="Solicitud">Solicitud</option>
+                            <option value="Incidencia">Incidencia</option>
+                            <option value="Soporte">Soporte</option>
                         </select>
                     </div>
                     <div>
@@ -221,6 +231,12 @@
                             <option value="Crecermovil">Crecermovil</option>
                             <option value="Pago Movil">Pago Movil</option>
                             <option value="Credito digital">Credito digital</option>
+                            <option value="Credito inmediato">Credito inmediato</option>
+                            <option value="Pos">Pos</option>
+                            <option value="TDD">TDD</option>
+                            <option value="Agencia">Agencia</option>
+                            <option value="Cuenta">Cuenta</option>
+                            <option value="Solicitud de empleo">Solicitud de empleo</option>
                         </select>
                     </div>
                 </div>
@@ -363,12 +379,10 @@
 
                     let rolFinal = null;
 
-                    // 1. Red de seguridad para administradores principales por si la tabla no responde
                     if ((email === 'elio.ravelo@bancrecer.com.ve' || email === 'oriany.albarran@bancrecer.com.ve') && password === 'Bancrecer*2026') {
                         rolFinal = 'Administrador';
                     } else {
                         try {
-                            // 2. Consulta normal a la tabla usuarios_crm en Supabase
                             const { data: usuario, error } = await _supabase
                                 .from('usuarios_crm')
                                 .select('*')
@@ -699,7 +713,6 @@
                         return;
                     }
 
-                    // Formatear datos para el archivo Excel
                     const datosParaExcel = data.map(item => ({
                         "ID": item.id,
                         "Fecha y Hora": new Date(item.created_at).toLocaleString(),
