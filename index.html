@@ -326,4 +326,369 @@
 
             function obtenerListaOperadores() {
                 let dinamicos = JSON.parse(localStorage.getItem('crm_operadores_global') || '[]');
-                let listaDinamica
+                let listaDinamicaEmails = dinamicos.map(op => op.email);
+                return [...new Set([...OPERADORES_BASE, ...listaDinamicaEmails])];
+            }
+
+            if (btnLogin) {
+                btnLogin.addEventListener('click', function() {
+                    const email = emailInput.value.trim().toLowerCase();
+                    const password = passwordInput.value;
+
+                    if (!email || !password) {
+                        authMessage.textContent = "Por favor ingresa correo y contraseña.";
+                        authMessage.className = "mt-4 text-center text-sm text-red-400";
+                        return;
+                    }
+
+                    let listaOperadores = obtenerListaOperadores();
+
+                    let esAdmin = (
+                        (email === 'elio.ravelo@bancrecer.com.ve' && password === 'Bancrecer*2026') ||
+                        (email === 'oriany.albarran@bancrecer.com.ve' && password === 'Bancrecer*2026')
+                    );
+                    
+                    let esOperador = listaOperadores.includes(email) && password === 'Operador*2026';
+
+                    if (esAdmin || esOperador) {
+                        authMessage.textContent = "¡Acceso concedido!";
+                        authMessage.className = "mt-4 text-center text-sm text-green-400";
+                        localStorage.setItem('crm_user', email);
+                        setTimeout(() => showApp(email), 800);
+                    } else {
+                        authMessage.textContent = "Acceso denegado: Correo o contraseña incorrectos.";
+                        authMessage.className = "mt-4 text-center text-sm text-red-400";
+                    }
+                });
+            }
+
+            if (btnCrearOperador) {
+                btnCrearOperador.onclick = function() {
+                    const currentUser = localStorage.getItem('crm_user');
+                    if (currentUser !== 'elio.ravelo@bancrecer.com.ve' && currentUser !== 'oriany.albarran@bancrecer.com.ve') {
+                        adminMessage.textContent = "No tienes permisos de administrador.";
+                        adminMessage.className = "mt-3 text-sm font-medium text-red-400";
+                        return;
+                    }
+
+                    const correoOp = nuevoOperadorEmail.value.trim().toLowerCase();
+
+                    if (!correoOp || !correoOp.includes('@')) {
+                        adminMessage.textContent = "Ingresa un correo electrónico válido.";
+                        adminMessage.className = "mt-3 text-sm font-medium text-red-400";
+                        return;
+                    }
+
+                    let operadores = JSON.parse(localStorage.getItem('crm_operadores_global') || '[]');
+                    let todosLosPermitidos = obtenerListaOperadores();
+                    
+                    if (
+                        todosLosPermitidos.includes(correoOp) || 
+                        correoOp === 'elio.ravelo@bancrecer.com.ve' || 
+                        correoOp === 'oriany.albarran@bancrecer.com.ve'
+                    ) {
+                        adminMessage.textContent = "Este correo ya está registrado en el sistema.";
+                        adminMessage.className = "mt-3 text-sm font-medium text-red-400";
+                        return;
+                    }
+
+                    operadores.push({ email: correoOp, created_at: new Date().toISOString() });
+                    localStorage.setItem('crm_operadores_global', JSON.stringify(operadores));
+
+                    adminMessage.textContent = `¡Operador ${correoOp} autorizado! Clave: Operador*2026`;
+                    adminMessage.className = "mt-3 text-sm font-medium text-green-400";
+                    nuevoOperadorEmail.value = '';
+                };
+            }
+
+            async function cargarDatosDashboard() {
+                dashPorUsuario.innerHTML = '<p class="text-slate-400">Cargando métricas...</p>';
+                dashPorMotivo.innerHTML = '<p class="text-slate-400">Cargando motivos...</p>';
+
+                const { data, error } = await _supabase
+                    .from('clientes_crm')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error("Error al cargar dashboard:", error);
+                    dashPorUsuario.innerHTML = '<p class="text-red-400">Error al cargar datos.</p>';
+                    return;
+                }
+
+                cacheRegistrosGlobal = data || [];
+                actualizarMetricasDashboard();
+            }
+
+            function actualizarMetricasDashboard() {
+                const fCanal = filtroCanal.value;
+                const fMotivo = filtroMotivo.value;
+                const fProducto = filtroProducto.value;
+
+                dashTotalRegistros.textContent = cacheRegistrosGlobal.length;
+
+                const filtrados = cacheRegistrosGlobal.filter(item => {
+                    const matchCanal = (fCanal === 'TODOS' || item.canal === fCanal);
+                    const matchMotivo = (fMotivo === 'TODOS' || item.motivo === fMotivo);
+                    const matchProducto = (fProducto === 'TODOS' || item.producto === fProducto);
+                    return matchCanal && matchMotivo && matchProducto;
+                });
+
+                dashTotalFiltrados.textContent = filtrados.length;
+
+                const conteoUsuarios = {};
+                const conteoMotivos = {};
+
+                filtrados.forEach(item => {
+                    const usuario = item.operador || 'No especificado';
+                    conteoUsuarios[usuario] = (conteoUsuarios[usuario] || 0) + 1;
+
+                    const motivo = item.motivo || 'No especificado';
+                    conteoMotivos[motivo] = (conteoMotivos[motivo] || 0) + 1;
+                });
+
+                let htmlUsuarios = '';
+                if (Object.keys(conteoUsuarios).length === 0) {
+                    htmlUsuarios = '<p class="text-slate-400">Sin registros para estos filtros.</p>';
+                } else {
+                    for (const [usr, total] of Object.entries(conteoUsuarios)) {
+                        htmlUsuarios += `
+                            <div class="flex justify-between items-center bg-slate-800 px-3 py-1.5 rounded border border-slate-700">
+                                <span class="text-yellow-300 font-medium truncate max-w-[200px]" title="${usr}">${usr}</span>
+                                <span class="bg-blue-600 px-2 py-0.5 rounded text-white font-bold">${total}</span>
+                            </div>
+                        `;
+                    }
+                }
+                dashPorUsuario.innerHTML = htmlUsuarios;
+
+                let htmlMotivos = '';
+                if (Object.keys(conteoMotivos).length === 0) {
+                    htmlMotivos = '<p class="text-slate-400">Sin motivos para estos filtros.</p>';
+                } else {
+                    const motivosOrdenados = Object.entries(conteoMotivos).sort((a, b) => b[1] - a[1]);
+                    motivosOrdenados.forEach(([mot, total]) => {
+                        htmlMotivos += `
+                            <div class="flex justify-between items-center bg-slate-800 px-3 py-1.5 rounded border border-slate-700">
+                                <span class="text-emerald-300 font-medium">${mot}</span>
+                                <span class="bg-emerald-600 px-2 py-0.5 rounded text-white font-bold">${total}</span>
+                            </div>
+                        `;
+                    });
+                }
+                dashPorMotivo.innerHTML = htmlMotivos;
+            }
+
+            if (btnToggleDashboard) {
+                btnToggleDashboard.onclick = function() {
+                    dashboardPanel.classList.toggle('hidden');
+                    if (!dashboardPanel.classList.contains('hidden')) {
+                        cargarDatosDashboard();
+                    }
+                };
+            }
+
+            if (btnCerrarDashboard) {
+                btnCerrarDashboard.onclick = function() {
+                    dashboardPanel.classList.add('hidden');
+                };
+            }
+
+            if (filtroCanal) filtroCanal.onchange = actualizarMetricasDashboard;
+            if (filtroMotivo) filtroMotivo.onchange = actualizarMetricasDashboard;
+            if (filtroProducto) filtroProducto.onchange = actualizarMetricasDashboard;
+
+            if (guardarBtn) {
+                guardarBtn.onclick = async function() {
+                    const nombre = document.getElementById('nombre').value.trim();
+                    const cedula = document.getElementById('cedula').value.trim();
+                    const telefono = document.getElementById('telefono').value.trim();
+                    const canal = document.getElementById('canal').value;
+                    const motivo = document.getElementById('motivo').value;
+                    const producto = document.getElementById('producto').value;
+                    
+                    const usuarioActual = localStorage.getItem('crm_user');
+
+                    if (!usuarioActual) {
+                        saveMessage.textContent = "Sesión no válida. Por favor inicia sesión nuevamente.";
+                        saveMessage.className = "mt-3 text-sm font-medium text-red-400";
+                        setTimeout(() => showLogin(), 1500);
+                        return;
+                    }
+
+                    if (!nombre || !cedula || !telefono) {
+                        saveMessage.textContent = "Por favor completa Nombre, Cédula y Teléfono.";
+                        saveMessage.className = "mt-3 text-sm font-medium text-red-400";
+                        return;
+                    }
+
+                    guardarBtn.disabled = true;
+                    saveMessage.textContent = "Guardando registro...";
+                    saveMessage.className = "mt-3 text-sm font-medium text-blue-400";
+
+                    const ahora = new Date();
+                    const fechaHoraLocal = ahora.toLocaleString('es-VE', { 
+                        year: 'numeric', month: '2-digit', day: '2-digit', 
+                        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true 
+                    });
+
+                    const { data, error } = await _supabase
+                        .from('clientes_crm')
+                        .insert([{
+                            nombre: nombre,
+                            cedula: cedula,
+                            telefono: telefono,
+                            canal: canal,
+                            motivo: motivo,
+                            producto: producto,
+                            operador: usuarioActual,
+                            created_at: ahora.toISOString()
+                        }]);
+
+                    guardarBtn.disabled = false;
+
+                    if (error) {
+                        console.error("Error al guardar:", error);
+                        saveMessage.textContent = "Error al guardar: " + error.message;
+                        saveMessage.className = "mt-3 text-sm font-medium text-red-400";
+                    } else {
+                        saveMessage.textContent = `¡Guardado por ${usuarioActual} el ${fechaHoraLocal}!`;
+                        saveMessage.className = "mt-3 text-sm font-medium text-green-400";
+                        
+                        document.getElementById('nombre').value = '';
+                        document.getElementById('cedula').value = '';
+                        document.getElementById('telefono').value = '';
+
+                        if (!dashboardPanel.classList.contains('hidden')) {
+                            cargarDatosDashboard();
+                        }
+                    }
+                };
+            }
+
+            if (searchBtn) {
+                searchBtn.onclick = async function() {
+                    const query = searchQuery.value.trim();
+                    if (!query) {
+                        searchResults.innerHTML = '<p class="text-sm text-slate-400">Ingresa un nombre o cédula para buscar.</p>';
+                        return;
+                    }
+
+                    searchResults.innerHTML = '<p class="text-sm text-blue-400">Consultando base de datos...</p>';
+
+                    const { data: resultados, error } = await _supabase
+                        .from('clientes_crm')
+                        .select('*')
+                        .or(`nombre.ilike.%${query}%,cedula.ilike.%${query}%`)
+                        .order('created_at', { ascending: false });
+
+                    if (error) {
+                        console.error("Error en búsqueda:", error);
+                        searchResults.innerHTML = `<p class="text-sm text-red-400">Error en la consulta: ${error.message}</p>`;
+                        return;
+                    }
+
+                    if (!resultados || resultados.length === 0) {
+                        searchResults.innerHTML = '<p class="text-sm text-slate-400">No se encontraron registros.</p>';
+                        return;
+                    }
+
+                    let html = '';
+                    resultados.forEach(item => {
+                        const fechaLocal = new Date(item.created_at).toLocaleString('es-VE', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit', hour12: true
+                        });
+
+                        const usuarioResponsable = item.operador ? item.operador : 'No registrado';
+
+                        html += `
+                            <div class="p-3 bg-slate-900 border border-slate-700 rounded-lg text-sm flex justify-between items-center">
+                                <div>
+                                    <p class="font-bold text-blue-300">${item.nombre} <span class="text-xs text-slate-400">(${item.cedula})</span></p>
+                                    <p class="text-xs text-slate-300 mt-1">Tel: ${item.telefono} | Canal: <b>${item.canal}</b> | Motivo: <b>${item.motivo}</b> | Prod: <b>${item.producto}</b></p>
+                                    <p class="text-xs text-amber-400 mt-1 font-medium">👤 Usuario: <span class="bg-slate-800 px-2 py-0.5 rounded text-yellow-300 border border-slate-700">${usuarioResponsable}</span></p>
+                                </div>
+                                <span class="text-xs text-slate-300 bg-slate-800 px-2.5 py-1 rounded border border-slate-700">${fechaLocal}</span>
+                            </div>
+                        `;
+                    });
+                    searchResults.innerHTML = html;
+                };
+            }
+
+            if (btnExportarExcel) {
+                btnExportarExcel.onclick = async function() {
+                    const currentUser = localStorage.getItem('crm_user');
+                    if (currentUser !== 'elio.ravelo@bancrecer.com.ve' && currentUser !== 'oriany.albarran@bancrecer.com.ve') {
+                        exportMessage.textContent = "Acceso denegado: Opción reservada solo para Administradores.";
+                        exportMessage.className = "mt-2 text-xs text-red-400 font-medium";
+                        return;
+                    }
+
+                    exportMessage.textContent = "Generando archivo Excel...";
+                    exportMessage.className = "mt-2 text-xs text-blue-400 font-medium";
+
+                    const { data: todosLosRegistros, error } = await _supabase
+                        .from('clientes_crm')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error || !todosLosRegistros || todosLosRegistros.length === 0) {
+                        exportMessage.textContent = "No hay registros disponibles para exportar.";
+                        exportMessage.className = "mt-2 text-xs text-red-400 font-medium";
+                        return;
+                    }
+
+                    const datosExcel = todosLosRegistros.map((item, index) => {
+                        const fechaFormateada = new Date(item.created_at).toLocaleString('es-VE', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+                        });
+
+                        return {
+                            "N°": index + 1,
+                            "Fecha y Hora": fechaFormateada,
+                            "Usuario": item.operador || 'No especificado',
+                            "Nombre Cliente": item.nombre,
+                            "Cédula": item.cedula,
+                            "Teléfono": item.telefono,
+                            "Canal de Atención": item.canal,
+                            "Motivo de Contacto": item.motivo,
+                            "Producto/Servicio": item.producto
+                        };
+                    });
+
+                    const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, "Gestiones CRM");
+
+                    const objectMaxLength = [];
+                    datosExcel.forEach(row => {
+                        Object.keys(row).forEach((key, colIndex) => {
+                            const value = row[key] ? row[key].toString() : '';
+                            objectMaxLength[colIndex] = Math.max(objectMaxLength[colIndex] || key.length, value.length);
+                        });
+                    });
+                    worksheet['!cols'] = objectMaxLength.map(w => ({ wch: w + 3 }));
+
+                    const fechaHoy = new Date().toISOString().split('T')[0];
+                    XLSX.writeFile(workbook, `CRM_Bancrecer_Gestiones_${fechaHoy}.xlsx`);
+
+                    exportMessage.textContent = "¡Archivo Excel exportado con éxito!";
+                    exportMessage.className = "mt-2 text-xs text-green-400 font-medium";
+                };
+            }
+
+            if (logoutBtn) {
+                logoutBtn.onclick = function() {
+                    localStorage.removeItem('crm_user');
+                    showLogin();
+                };
+            }
+
+            checkSession();
+        });
+    </script>
+</body>
+</html>
