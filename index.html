@@ -249,7 +249,11 @@
             const SUPABASE_KEY = 'sb_publishable_S5LJcX40QJ8HPVIRU7l75w_LYNzVWQk';
             const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            const OPERADORES_BASE = ['jose.lindarte@bancrecer.com.ve'];
+            // Lista base de operadores directamente autorizados en el código global
+            const OPERADORES_BASE = [
+                'jose.lindarte@bancrecer.com.ve',
+                'keishvanysalazar@bancrecer.com.ve'
+            ];
 
             const authScreen = document.getElementById('auth-screen');
             const appScreen = document.getElementById('app-screen');
@@ -443,7 +447,6 @@
                 const mesSeleccionadoActual = filtroMes.value;
                 let htmlOpciones = '<option value="TODOS">Todos los Meses</option>';
                 
-                // Ordenar meses del más reciente al más antiguo
                 const mesesOrdenados = Array.from(mesesUnicos).sort().reverse();
                 
                 const nombresMeses = {
