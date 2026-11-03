@@ -95,7 +95,13 @@
                 <!-- FILTROS OPERATIVOS -->
                 <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 space-y-3">
                     <h3 class="text-sm font-semibold text-slate-300">Filtros de Rendimiento Operativo</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Filtrar por Mes</label>
+                            <select id="filtro-mes" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white">
+                                <option value="TODOS">Todos los Meses</option>
+                            </select>
+                        </div>
                         <div>
                             <label class="block text-xs text-slate-400 mb-1">Filtrar por Canal</label>
                             <select id="filtro-canal" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white">
@@ -271,6 +277,8 @@
             const dashTotalFiltrados = document.getElementById('dash-total-filtrados');
             const dashPorUsuario = document.getElementById('dash-por-usuario');
             const dashPorMotivo = document.getElementById('dash-por-motivo');
+            
+            const filtroMes = document.getElementById('filtro-mes');
             const filtroCanal = document.getElementById('filtro-canal');
             const filtroMotivo = document.getElementById('filtro-motivo');
             const filtroProducto = document.getElementById('filtro-producto');
@@ -417,10 +425,47 @@
                 }
 
                 cacheRegistrosGlobal = data || [];
+                poblarSelectMeses();
                 actualizarMetricasDashboard();
             }
 
+            function poblarSelectMeses() {
+                const mesesUnicos = new Set();
+                cacheRegistrosGlobal.forEach(item => {
+                    if (item.created_at) {
+                        const fecha = new Date(item.created_at);
+                        const anio = fecha.getFullYear();
+                        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+                        mesesUnicos.add(`${anio}-${mes}`);
+                    }
+                });
+
+                const mesSeleccionadoActual = filtroMes.value;
+                let htmlOpciones = '<option value="TODOS">Todos los Meses</option>';
+                
+                // Ordenar meses del más reciente al más antiguo
+                const mesesOrdenados = Array.from(mesesUnicos).sort().reverse();
+                
+                const nombresMeses = {
+                    "01": "Enero", "02": "Febrero", "03": "Marzo", "04": "Abril",
+                    "05": "Mayo", "06": "Junio", "07": "Julio", "08": "Agosto",
+                    "09": "Septiembre", "10": "Octubre", "11": "Noviembre", "12": "Diciembre"
+                };
+
+                mesesOrdenados.forEach(ym => {
+                    const [anio, mesNum] = ym.split('-');
+                    const nombreMes = nombresMeses[mesNum] || mesNum;
+                    htmlOpciones += `<option value="${ym}">${nombreMes} ${anio}</option>`;
+                });
+
+                filtroMes.innerHTML = htmlOpciones;
+                if (mesSeleccionadoActual) {
+                    filtroMes.value = mesSeleccionadoActual;
+                }
+            }
+
             function actualizarMetricasDashboard() {
+                const fMes = filtroMes.value;
                 const fCanal = filtroCanal.value;
                 const fMotivo = filtroMotivo.value;
                 const fProducto = filtroProducto.value;
@@ -428,10 +473,20 @@
                 dashTotalRegistros.textContent = cacheRegistrosGlobal.length;
 
                 const filtrados = cacheRegistrosGlobal.filter(item => {
+                    let matchMes = true;
+                    if (fMes !== 'TODOS' && item.created_at) {
+                        const fecha = new Date(item.created_at);
+                        const anio = fecha.getFullYear();
+                        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+                        const itemYm = `${anio}-${mes}`;
+                        matchMes = (itemYm === fMes);
+                    }
+
                     const matchCanal = (fCanal === 'TODOS' || item.canal === fCanal);
                     const matchMotivo = (fMotivo === 'TODOS' || item.motivo === fMotivo);
                     const matchProducto = (fProducto === 'TODOS' || item.producto === fProducto);
-                    return matchCanal && matchMotivo && matchProducto;
+                    
+                    return matchMes && matchCanal && matchMotivo && matchProducto;
                 });
 
                 dashTotalFiltrados.textContent = filtrados.length;
@@ -494,6 +549,7 @@
                 };
             }
 
+            if (filtroMes) filtroMes.onchange = actualizarMetricasDashboard;
             if (filtroCanal) filtroCanal.onchange = actualizarMetricasDashboard;
             if (filtroMotivo) filtroMotivo.onchange = actualizarMetricasDashboard;
             if (filtroProducto) filtroProducto.onchange = actualizarMetricasDashboard;
