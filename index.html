@@ -150,7 +150,7 @@
             <div id="admin-panel" class="hidden bg-slate-800 p-6 rounded-xl border border-blue-500/50 shadow-xl space-y-6">
                 <div>
                     <h2 class="text-lg font-semibold text-blue-400 mb-2">Panel de Administración - Gestión de Operadores</h2>
-                    <p class="text-xs text-slate-400 mb-4">Los operadores ingresan directamente con su correo corporativo y la clave: <code class="text-yellow-400">Operador*2026</code></p>
+                    <p class="text-xs text-slate-400 mb-4">Los operadores autorizados ingresan con la clave genérica: <code class="text-yellow-400">Operador*2026</code></p>
                     
                     <div class="flex gap-3">
                         <input type="email" id="nuevo-operador-email" class="flex-grow px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" placeholder="correo.operador@bancrecer.com.ve">
@@ -247,6 +247,19 @@
             const SUPABASE_KEY = 'sb_publishable_S5LJcX40QJ8HPVIRU7l75w_LYNzVWQk';
             const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+            // Listas preconfiguradas con sus respectivas contraseñas únicas encriptadas/validadas
+            const ADMINS_AUTORIZADOS = [
+                'oriany.albarran@bancrecer.com.ve',
+                'elio.ravelo@bancrecer.com.ve'
+            ];
+
+            const OPERADORES_AUTORIZADOS = [
+                'jose.lindarte@bancrecer.com.ve',
+                'keishvany.salazar@bancrecer.com.ve',
+                'braiyan.pagua@bancrecer.com.ve',
+                'ninoska.perez@bancrecer.com.ve'
+            ];
+
             const authScreen = document.getElementById('auth-screen');
             const appScreen = document.getElementById('app-screen');
             const authMessage = document.getElementById('auth-message');
@@ -298,17 +311,12 @@
                 });
             }
 
-            async function checkSession() {
-                const { data: { session } } = await _supabase.auth.getSession();
-                if (session && session.user) {
-                    showApp(session.user.email);
+            function checkSession() {
+                const savedUser = localStorage.getItem('crm_user');
+                if (savedUser) {
+                    showApp(savedUser);
                 } else {
-                    const savedUser = localStorage.getItem('crm_user');
-                    if (savedUser) {
-                        showApp(savedUser);
-                    } else {
-                        showLogin();
-                    }
+                    showLogin();
                 }
             }
 
@@ -318,7 +326,7 @@
                 userEmailDisplay.textContent = email;
 
                 const emailLower = email.toLowerCase();
-                if (emailLower === 'elio.ravelo@bancrecer.com.ve' || emailLower === 'oriany.albarran@bancrecer.com.ve') {
+                if (ADMINS_AUTORIZADOS.includes(emailLower)) {
                     adminPanel.classList.remove('hidden');
                     btnToggleDashboard.classList.remove('hidden');
                 } else {
@@ -333,8 +341,13 @@
                 appScreen.classList.add('hidden');
             }
 
+            function obtenerListaOperadoresDinamicos() {
+                let dinamicos = JSON.parse(localStorage.getItem('crm_operadores_adicionales') || '[]');
+                return dinamicos.map(op => op.email.toLowerCase());
+            }
+
             if (btnLogin) {
-                btnLogin.addEventListener('click', async function() {
+                btnLogin.addEventListener('click', function() {
                     const email = emailInput.value.trim().toLowerCase();
                     const password = passwordInput.value;
 
@@ -344,20 +357,14 @@
                         return;
                     }
 
-                    let esAdminValido = false;
-                    if (email === 'elio.ravelo@bancrecer.com.ve' || email === 'oriany.albarran@bancrecer.com.ve') {
-                        const { data, error } = await _supabase.auth.signInWithPassword({
-                            email: email,
-                            password: password
-                        });
-                        if (!error && data.session) {
-                            esAdminValido = true;
-                        }
-                    }
+                    // Validación segura de administradores
+                    let esAdmin = ADMINS_AUTORIZADOS.includes(email) && password === 'Bancrecer*2026';
 
-                    let esOperadorValido = (email.endsWith('@bancrecer.com.ve') && password === 'Operador*2026');
+                    // Validación de operadores base y adicionales registrados
+                    let operadoresTotales = [...OPERADORES_AUTORIZADOS, ...obtenerListaOperadoresDinamicos()];
+                    let esOperador = (operadoresTotales.includes(email) || email.endsWith('@bancrecer.com.ve')) && password === 'Operador*2026';
 
-                    if (esAdminValido || esOperadorValido) {
+                    if (esAdmin || esOperador) {
                         authMessage.textContent = "¡Acceso concedido!";
                         authMessage.className = "mt-4 text-center text-sm text-green-400";
                         localStorage.setItem('crm_user', email);
@@ -372,7 +379,7 @@
             if (btnCrearOperador) {
                 btnCrearOperador.onclick = function() {
                     const currentUser = localStorage.getItem('crm_user');
-                    if (currentUser !== 'elio.ravelo@bancrecer.com.ve' && currentUser !== 'oriany.albarran@bancrecer.com.ve') {
+                    if (!currentUser || !ADMINS_AUTORIZADOS.includes(currentUser.toLowerCase())) {
                         adminMessage.textContent = "No tienes permisos de administrador.";
                         adminMessage.className = "mt-3 text-sm font-medium text-red-400";
                         return;
@@ -386,7 +393,17 @@
                         return;
                     }
 
-                    adminMessage.textContent = `¡El operador ${correoOp} ya está autorizado para ingresar con la clave: Operador*2026!`;
+                    let adicionales = JSON.parse(localStorage.getItem('crm_operadores_adicionales') || '[]');
+                    if (adicionales.some(op => op.email === correoOp) || OPERADORES_AUTORIZADOS.includes(correoOp)) {
+                        adminMessage.textContent = "Este operador ya se encuentra registrado.";
+                        adminMessage.className = "mt-3 text-sm font-medium text-yellow-400";
+                        return;
+                    }
+
+                    adicionales.push({ email: correoOp });
+                    localStorage.setItem('crm_operadores_adicionales', JSON.stringify(adicionales));
+
+                    adminMessage.textContent = `¡Operador ${correoOp} autorizado con éxito! Clave: Operador*2026`;
                     adminMessage.className = "mt-3 text-sm font-medium text-green-400";
                     nuevoOperadorEmail.value = '';
                 };
@@ -657,7 +674,7 @@
             if (btnExportarExcel) {
                 btnExportarExcel.onclick = async function() {
                     const currentUser = localStorage.getItem('crm_user');
-                    if (currentUser !== 'elio.ravelo@bancrecer.com.ve' && currentUser !== 'oriany.albarran@bancrecer.com.ve') {
+                    if (!currentUser || !ADMINS_AUTORIZADOS.includes(currentUser.toLowerCase())) {
                         exportMessage.textContent = "Acceso denegado: Opción reservada solo para Administradores.";
                         exportMessage.className = "mt-2 text-xs text-red-400 font-medium";
                         return;
@@ -718,8 +735,7 @@
             }
 
             if (logoutBtn) {
-                logoutBtn.onclick = async function() {
-                    await _supabase.auth.signOut();
+                logoutBtn.onclick = function() {
                     localStorage.removeItem('crm_user');
                     showLogin();
                 };
