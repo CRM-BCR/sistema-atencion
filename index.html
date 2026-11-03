@@ -10,6 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Librería para Exportar a Excel (.xlsx) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Librería Chart.js para Gráficas Profesionales -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
 
@@ -55,56 +57,188 @@
             </div>
             <div class="flex items-center gap-3 flex-wrap">
                 <span id="user-email-display" class="text-sm text-slate-300"></span>
-                <!-- BOTÓN DE DASHBOARD (EXCLUSIVO ADMINISTRADORES) -->
-                <button id="btn-toggle-dashboard" class="hidden px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-lg transition cursor-pointer flex items-center gap-1 shadow">
-                    📈 Dashboard en Vivo
-                </button>
                 <button id="logout-btn" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-xs font-semibold rounded-lg transition cursor-pointer">
                     Cerrar Sesión
                 </button>
             </div>
         </header>
 
-        <main class="max-w-6xl mx-auto p-6 w-full flex-grow space-y-6">
+        <!-- CONTENEDOR PRINCIPAL CON PANEL LATERAL Y VISTAS -->
+        <div class="flex flex-grow flex-col md:flex-row">
             
-            <!-- PANEL DE DASHBOARD EN VIVO -->
-            <div id="dashboard-panel" class="hidden bg-slate-800 p-6 rounded-xl border border-indigo-500/50 shadow-xl space-y-6">
-                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                    <div>
-                        <h2 class="text-lg font-semibold text-indigo-400">Dashboard y Métricas en Vivo</h2>
-                        <p class="text-xs text-slate-400">Monitoreo general de gestiones, operadores y filtros operativos.</p>
+            <!-- PANEL LATERAL DE ADMINISTRACIÓN (EXCLUSIVO ADMINS) -->
+            <aside id="sidebar-admin" class="hidden w-full md:w-64 bg-slate-800 border-r border-slate-700 p-4 space-y-3 shadow-lg">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Panel de Control</div>
+                <button onclick="cambiarVista('dashboard')" id="nav-dashboard" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-indigo-600 text-white flex items-center gap-2 cursor-pointer shadow">
+                    📊 Dashboard y métricas
+                </button>
+                <button onclick="cambiarVista('usuarios')" id="nav-usuarios" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer">
+                    👥 Administrar usuario
+                </button>
+                <button onclick="cambiarVista('exportar')" id="nav-exportar" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer">
+                    📂 Exportar registros
+                </button>
+            </aside>
+
+            <!-- CONTENIDO DINÁMICO SEGÚN LA VISTA SELECCIONADA -->
+            <main class="flex-grow p-6 space-y-6 max-w-7xl mx-auto w-full">
+                
+                <!-- 1. VISTA DASHBOARD Y MÉTRICAS -->
+                <div id="vista-dashboard" class="space-y-6">
+                    <div class="bg-slate-800 p-6 rounded-xl border border-indigo-500/50 shadow-xl space-y-6">
+                        <div class="border-b border-slate-700 pb-3">
+                            <h2 class="text-lg font-semibold text-indigo-400">Dashboard y Métricas en Vivo</h2>
+                            <p class="text-xs text-slate-400">Monitoreo general de gestiones, operadores y filtros operativos.</p>
+                        </div>
+
+                        <!-- TARJETAS DE RESUMEN -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 text-center">
+                                <p class="text-xs text-slate-400">Total de Registros en el Sistema</p>
+                                <p id="dash-total-registros" class="text-3xl font-bold text-blue-400 mt-1">0</p>
+                            </div>
+                            <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 text-center">
+                                <p class="text-xs text-slate-400">Filtros Activos (Coincidencias)</p>
+                                <p id="dash-total-filtrados" class="text-3xl font-bold text-emerald-400 mt-1">0</p>
+                            </div>
+                        </div>
+
+                        <!-- FILTROS -->
+                        <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 space-y-3">
+                            <h3 class="text-sm font-semibold text-slate-300">Filtros de Rendimiento Operativo</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">Filtrar por Mes</label>
+                                    <select id="filtro-mes" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white">
+                                        <option value="TODOS">Todos los Meses</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">Filtrar por Canal</label>
+                                    <select id="filtro-canal" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white">
+                                        <option value="TODOS">Todos los Canales</option>
+                                        <option value="Llamada">Llamada</option>
+                                        <option value="Correo">Correo</option>
+                                        <option value="WhatsApp">WhatsApp</option>
+                                        <option value="Redes Sociales">Redes Sociales</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">Filtrar por Motivo</label>
+                                    <select id="filtro-motivo" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white">
+                                        <option value="TODOS">Todos los Motivos</option>
+                                        <option value="Consulta">Consulta</option>
+                                        <option value="Reclamo">Reclamo</option>
+                                        <option value="Solicitud">Solicitud</option>
+                                        <option value="Incidencia">Incidencia</option>
+                                        <option value="Soporte">Soporte</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">Filtrar por Producto / Servicio</label>
+                                    <select id="filtro-producto" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white">
+                                        <option value="TODOS">Todos los Productos</option>
+                                        <option value="Bdigital">Bdigital</option>
+                                        <option value="Crecermovil">Crecermovil</option>
+                                        <option value="Pago Movil">Pago Movil</option>
+                                        <option value="Credito digital">Credito digital</option>
+                                        <option value="Credito inmediato">Credito inmediato</option>
+                                        <option value="Pos">Pos</option>
+                                        <option value="TDD">TDD</option>
+                                        <option value="Agencia">Agencia</option>
+                                        <option value="Cuenta">Cuenta</option>
+                                        <option value="Solicitud de empleo">Solicitud de empleo</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GRÁFICAS VISUALES DE RENDIMIENTO -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 flex flex-col items-center">
+                                <h3 class="text-sm font-semibold text-blue-300 mb-3 w-full text-left">Registros por Operador (Gráfica)</h3>
+                                <div class="w-full h-64 relative">
+                                    <canvas id="chartUsuarios"></canvas>
+                                </div>
+                            </div>
+                            <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 flex flex-col items-center">
+                                <h3 class="text-sm font-semibold text-emerald-300 mb-3 w-full text-left">Motivos Frecuentes (Gráfica)</h3>
+                                <div class="w-full h-64 relative flex justify-center">
+                                    <canvas id="chartMotivos"></canvas>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <button id="btn-cerrar-dashboard" class="text-slate-400 hover:text-white text-sm px-2 py-1 bg-slate-900 rounded border border-slate-700 cursor-pointer">
-                        ✕ Cerrar Dashboard
-                    </button>
                 </div>
 
-                <!-- TARJETAS DE RESUMEN -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 text-center">
-                        <p class="text-xs text-slate-400">Total de Registros en el Sistema</p>
-                        <p id="dash-total-registros" class="text-3xl font-bold text-blue-400 mt-1">0</p>
-                    </div>
-                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 text-center">
-                        <p class="text-xs text-slate-400">Filtros Activos (Coincidencias)</p>
-                        <p id="dash-total-filtrados" class="text-3xl font-bold text-emerald-400 mt-1">0</p>
-                    </div>
-                </div>
-
-                <!-- FILTROS -->
-                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 space-y-3">
-                    <h3 class="text-sm font-semibold text-slate-300">Filtros de Rendimiento Operativo</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <!-- 2. VISTA ADMINISTRAR USUARIOS -->
+                <div id="vista-usuarios" class="hidden space-y-6">
+                    <div class="bg-slate-800 p-6 rounded-xl border border-blue-500/50 shadow-xl space-y-6">
                         <div>
-                            <label class="block text-xs text-slate-400 mb-1">Filtrar por Mes</label>
-                            <select id="filtro-mes" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white">
-                                <option value="TODOS">Todos los Meses</option>
-                            </select>
+                            <h2 class="text-lg font-semibold text-blue-400 mb-2">Panel de Administración - Gestión de Operadores</h2>
+                            <p class="text-xs text-slate-400 mb-4">Autoriza nuevos correos institucionales o elimina accesos existentes en la base de datos.</p>
+                            
+                            <div class="flex gap-3">
+                                <input type="email" id="nuevo-operador-email" class="flex-grow px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" placeholder="correo.operador@bancrecer.com.ve">
+                                <select id="nuevo-operador-rol" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm">
+                                    <option value="Operador">Operador</option>
+                                    <option value="Administrador">Administrador</option>
+                                </select>
+                                <button id="btn-crear-operador" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition text-sm cursor-pointer shadow">
+                                    Registrar en DB
+                                </button>
+                            </div>
+                            <div id="admin-message" class="mt-3 text-sm font-medium"></div>
+                        </div>
+
+                        <hr class="border-slate-700">
+
+                        <div>
+                            <h3 class="text-md font-semibold text-slate-300 mb-3">Lista de Operadores Autorizados en el Sistema</h3>
+                            <div id="lista-operadores-db" class="space-y-2 max-h-72 overflow-y-auto">
+                                <!-- Se carga dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. VISTA EXPORTAR REGISTROS -->
+                <div id="vista-exportar" class="hidden space-y-6">
+                    <div class="bg-slate-800 p-6 rounded-xl border border-emerald-500/50 shadow-xl space-y-6">
+                        <div>
+                            <h2 class="text-lg font-semibold text-emerald-400 mb-2">Exportación General de Datos</h2>
+                            <p class="text-xs text-slate-400 mb-4">Descarga una copia completa de todas las gestiones registradas en el sistema en formato Excel (.xlsx).</p>
+                            <button id="btn-exportar-excel" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition text-sm flex items-center gap-2 cursor-pointer shadow-lg">
+                                📊 Descargar Base de Datos Completa a Excel (.xlsx)
+                            </button>
+                            <div id="export-message" class="mt-3 text-sm font-medium"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FORMULARIO DE REGISTRO DE CLIENTES (VISIBLE PARA TODOS) -->
+                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
+                    <h2 class="text-lg font-semibold text-blue-300 mb-4">Registro de Atención de Clientes</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Nombre Completo</label>
+                            <input type="text" id="nombre" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white" placeholder="Ej. Juan Pérez">
                         </div>
                         <div>
-                            <label class="block text-xs text-slate-400 mb-1">Filtrar por Canal</label>
-                            <select id="filtro-canal" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white">
-                                <option value="TODOS">Todos los Canales</option>
+                            <label class="block text-sm text-slate-400 mb-1">Cédula de Identidad</label>
+                            <input type="text" id="cedula" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white" placeholder="Ej. V12345678">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Teléfono</label>
+                            <input type="text" id="telefono" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white" placeholder="Ej. 04121234567">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Canal de Comunicación</label>
+                            <select id="canal" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
                                 <option value="Llamada">Llamada</option>
                                 <option value="Correo">Correo</option>
                                 <option value="WhatsApp">WhatsApp</option>
@@ -112,9 +246,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs text-slate-400 mb-1">Filtrar por Motivo</label>
-                            <select id="filtro-motivo" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white">
-                                <option value="TODOS">Todos los Motivos</option>
+                            <label class="block text-sm text-slate-400 mb-1">Motivo de Contacto</label>
+                            <select id="motivo" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
                                 <option value="Consulta">Consulta</option>
                                 <option value="Reclamo">Reclamo</option>
                                 <option value="Solicitud">Solicitud</option>
@@ -123,9 +256,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs text-slate-400 mb-1">Filtrar por Producto / Servicio</label>
-                            <select id="filtro-producto" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-white">
-                                <option value="TODOS">Todos los Productos</option>
+                            <label class="block text-sm text-slate-400 mb-1">Producto o Servicio</label>
+                            <select id="producto" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
                                 <option value="Bdigital">Bdigital</option>
                                 <option value="Crecermovil">Crecermovil</option>
                                 <option value="Pago Movil">Pago Movil</option>
@@ -139,144 +271,68 @@
                             </select>
                         </div>
                     </div>
+
+                    <!-- CAMPO DINÁMICO Y OBSERVACIONES -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Detalle / Sub-motivo del Servicio</label>
+                            <select id="subdetalle" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
+                                <!-- Se llena dinámicamente -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Observaciones (Opcional)</label>
+                            <input type="text" id="observacion" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white" placeholder="Escribe alguna nota adicional...">
+                        </div>
+                    </div>
+
+                    <button id="guardar-btn" class="mt-5 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition cursor-pointer shadow">
+                        Guardar Registro
+                    </button>
+                    <div id="save-message" class="mt-3 text-sm font-medium"></div>
                 </div>
 
-                <!-- DESGLOSE -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
-                        <h3 class="text-sm font-semibold text-blue-300 mb-2">Registros por Usuario</h3>
-                        <div id="dash-por-usuario" class="space-y-1.5 text-xs text-slate-300 max-h-40 overflow-y-auto"></div>
-                    </div>
-                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
-                        <h3 class="text-sm font-semibold text-emerald-300 mb-2">Motivos Frecuentes</h3>
-                        <div id="dash-por-motivo" class="space-y-1.5 text-xs text-slate-300 max-h-40 overflow-y-auto"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PANEL DE ADMINISTRADOR -->
-            <div id="admin-panel" class="hidden bg-slate-800 p-6 rounded-xl border border-blue-500/50 shadow-xl space-y-6">
-                <div>
-                    <h2 class="text-lg font-semibold text-blue-400 mb-2">Panel de Administración - Gestión de Operadores</h2>
-                    <p class="text-xs text-slate-400 mb-4">Autoriza nuevos correos institucionales para que puedan ingresar al CRM.</p>
-                    
-                    <div class="flex gap-3">
-                        <input type="email" id="nuevo-operador-email" class="flex-grow px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" placeholder="correo.operador@bancrecer.com.ve">
-                        <select id="nuevo-operador-rol" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm">
-                            <option value="Operador">Operador</option>
-                            <option value="Administrador">Administrador</option>
-                        </select>
-                        <button id="btn-crear-operador" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition text-sm cursor-pointer">
-                            Registrar en DB
+                <!-- PANEL DE BÚSQUEDA -->
+                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
+                    <h2 class="text-lg font-semibold text-blue-300 mb-4">Consultar Registros Anteriores</h2>
+                    <div class="flex gap-2">
+                        <input type="text" id="search-query" class="flex-grow px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white" placeholder="Buscar por Nombre o Cédula...">
+                        <button id="search-btn" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition cursor-pointer">
+                            Buscar
                         </button>
                     </div>
-                    <div id="admin-message" class="mt-3 text-sm font-medium"></div>
+                    <div id="search-results" class="mt-4 space-y-2 max-h-60 overflow-y-auto"></div>
                 </div>
-
-                <hr class="border-slate-700">
-
-                <div>
-                    <h3 class="text-md font-semibold text-emerald-400 mb-1">Exportación General de Datos</h3>
-                    <p class="text-xs text-slate-400 mb-3">Descarga una copia completa de todas las gestiones registradas en formato Excel (.xlsx).</p>
-                    <button id="btn-exportar-excel" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition text-sm flex items-center gap-2 cursor-pointer shadow-lg">
-                        📊 Exportar Base de Datos a Excel (.xlsx)
-                    </button>
-                    <div id="export-message" class="mt-2 text-xs font-medium"></div>
-                </div>
-            </div>
-
-            <!-- Formulario de Registro de Clientes -->
-            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
-                <h2 class="text-lg font-semibold text-blue-300 mb-4">Registro de Atención de Clientes</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Nombre Completo</label>
-                        <input type="text" id="nombre" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white" placeholder="Ej. Juan Pérez">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Cédula de Identidad</label>
-                        <input type="text" id="cedula" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white" placeholder="Ej. V12345678">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Teléfono</label>
-                        <input type="text" id="telefono" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white" placeholder="Ej. 04121234567">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Canal de Comunicación</label>
-                        <select id="canal" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
-                            <option value="Llamada">Llamada</option>
-                            <option value="Correo">Correo</option>
-                            <option value="WhatsApp">WhatsApp</option>
-                            <option value="Redes Sociales">Redes Sociales</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Motivo de Contacto</label>
-                        <select id="motivo" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
-                            <option value="Consulta">Consulta</option>
-                            <option value="Reclamo">Reclamo</option>
-                            <option value="Solicitud">Solicitud</option>
-                            <option value="Incidencia">Incidencia</option>
-                            <option value="Soporte">Soporte</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Producto o Servicio</label>
-                        <select id="producto" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
-                            <option value="Bdigital">Bdigital</option>
-                            <option value="Crecermovil">Crecermovil</option>
-                            <option value="Pago Movil">Pago Movil</option>
-                            <option value="Credito digital">Credito digital</option>
-                            <option value="Credito inmediato">Credito inmediato</option>
-                            <option value="Pos">Pos</option>
-                            <option value="TDD">TDD</option>
-                            <option value="Agencia">Agencia</option>
-                            <option value="Cuenta">Cuenta</option>
-                            <option value="Solicitud de empleo">Solicitud de empleo</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- CAMPO DINÁMICO ADICIONAL SEGÚN PRODUCTO O SERVICIO -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Detalle / Sub-motivo del Servicio</label>
-                        <select id="subdetalle" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
-                            <!-- Se llena dinámicamente con JavaScript -->
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Observaciones (Opcional)</label>
-                        <input type="text" id="observacion" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white" placeholder="Escribe alguna nota adicional...">
-                    </div>
-                </div>
-
-                <button id="guardar-btn" class="mt-5 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition cursor-pointer">
-                    Guardar Registro
-                </button>
-                <div id="save-message" class="mt-3 text-sm font-medium"></div>
-            </div>
-
-            <!-- Panel de Búsqueda -->
-            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
-                <h2 class="text-lg font-semibold text-blue-300 mb-4">Consultar Registros Anteriores</h2>
-                <div class="flex gap-2">
-                    <input type="text" id="search-query" class="flex-grow px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white" placeholder="Buscar por Nombre o Cédula...">
-                    <button id="search-btn" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition cursor-pointer">
-                        Buscar
-                    </button>
-                </div>
-                <div id="search-results" class="mt-4 space-y-2 max-h-60 overflow-y-auto"></div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
-    <!-- SCRIPT PRINCIPAL DE SUPABASE Y LÓGICA -->
+    <!-- SCRIPT PRINCIPAL DE SUPABASE, GRÁFICAS Y NAVEGACIÓN -->
     <script>
+        // Función global para alternar pestañas del panel lateral
+        function cambiarVista(vista) {
+            document.getElementById('vista-dashboard').classList.add('hidden');
+            document.getElementById('vista-usuarios').classList.add('hidden');
+            document.getElementById('vista-exportar').classList.add('hidden');
+
+            document.getElementById('nav-dashboard').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer";
+            document.getElementById('nav-usuarios').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer";
+            document.getElementById('nav-exportar').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-slate-900 text-slate-300 hover:bg-slate-700 hover:text-white flex items-center gap-2 cursor-pointer";
+
+            if (vista === 'dashboard') {
+                document.getElementById('vista-dashboard').classList.remove('hidden');
+                document.getElementById('nav-dashboard').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-indigo-600 text-white flex items-center gap-2 cursor-pointer shadow";
+                cargarDatosDashboard();
+            } else if (vista === 'usuarios') {
+                document.getElementById('vista-usuarios').classList.remove('hidden');
+                document.getElementById('nav-usuarios').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-indigo-600 text-white flex items-center gap-2 cursor-pointer shadow";
+                cargarOperadoresDB();
+            } else if (vista === 'exportar') {
+                document.getElementById('vista-exportar').classList.remove('hidden');
+                document.getElementById('nav-exportar').className = "w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition bg-indigo-600 text-white flex items-center gap-2 cursor-pointer shadow";
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
             const SUPABASE_URL = 'https://mchlteunhcjzuetzyajz.supabase.co';
             const SUPABASE_KEY = 'sb_publishable_S5LJcX40QJ8HPVIRU7l75w_LYNzVWQk';
@@ -295,22 +351,18 @@
             const searchQuery = document.getElementById('search-query');
             const searchResults = document.getElementById('search-results');
             
-            const adminPanel = document.getElementById('admin-panel');
+            const sidebarAdmin = document.getElementById('sidebar-admin');
             const nuevoOperadorEmail = document.getElementById('nuevo-operador-email');
             const nuevoOperadorRol = document.getElementById('nuevo-operador-rol');
             const btnCrearOperador = document.getElementById('btn-crear-operador');
             const adminMessage = document.getElementById('admin-message');
+            const listaOperadoresDb = document.getElementById('lista-operadores-db');
             
             const btnExportarExcel = document.getElementById('btn-exportar-excel');
             const exportMessage = document.getElementById('export-message');
 
-            const btnToggleDashboard = document.getElementById('btn-toggle-dashboard');
-            const dashboardPanel = document.getElementById('dashboard-panel');
-            const btnCerrarDashboard = document.getElementById('btn-cerrar-dashboard');
             const dashTotalRegistros = document.getElementById('dash-total-registros');
             const dashTotalFiltrados = document.getElementById('dash-total-filtrados');
-            const dashPorUsuario = document.getElementById('dash-por-usuario');
-            const dashPorMotivo = document.getElementById('dash-por-motivo');
             
             const filtroMes = document.getElementById('filtro-mes');
             const filtroCanal = document.getElementById('filtro-canal');
@@ -322,8 +374,9 @@
             const inputObservacion = document.getElementById('observacion');
 
             let cacheRegistrosGlobal = [];
+            let chartUsuariosInstance = null;
+            let chartMotivosInstance = null;
 
-            // MAPA DE OPCIONES DINÁMICAS
             const opcionesPorProducto = {
                 "Bdigital": [
                     "Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", 
@@ -372,7 +425,6 @@
             function actualizarSubdetalles() {
                 const productoSeleccionado = selectProducto.value;
                 const opciones = opcionesPorProducto[productoSeleccionado] || [];
-                
                 selectSubdetalle.innerHTML = '';
                 opciones.forEach(opt => {
                     const optionElement = document.createElement('option');
@@ -422,12 +474,11 @@
                 userEmailDisplay.textContent = `${email} (${rol})`;
 
                 if (rol === 'Administrador') {
-                    adminPanel.classList.remove('hidden');
-                    btnToggleDashboard.classList.remove('hidden');
+                    sidebarAdmin.classList.remove('hidden');
+                    cambiarVista('dashboard');
                 } else {
-                    adminPanel.classList.add('hidden');
-                    btnToggleDashboard.classList.add('hidden');
-                    dashboardPanel.classList.add('hidden');
+                    sidebarAdmin.classList.add('hidden');
+                    document.getElementById('vista-dashboard').classList.add('hidden');
                 }
             }
 
@@ -483,10 +534,8 @@
                     if (rolFinal) {
                         authMessage.textContent = "¡Acceso concedido!";
                         authMessage.className = "mt-4 text-center text-sm text-green-400";
-                        
                         localStorage.setItem('crm_user', email);
                         localStorage.setItem('crm_rol', rolFinal);
-                        
                         setTimeout(() => showApp(email, rolFinal), 800);
                     } else {
                         authMessage.textContent = "Acceso denegado: Credenciales incorrectas o usuario no autorizado.";
@@ -503,6 +552,7 @@
                 };
             }
 
+            // GESTIÓN DE OPERADORES DESDE EL PANEL ADMIN (AGREGAR / ELIMINAR)
             if (btnCrearOperador) {
                 btnCrearOperador.onclick = async function() {
                     const correoOp = nuevoOperadorEmail.value.trim().toLowerCase();
@@ -522,13 +572,54 @@
                         adminMessage.textContent = "Error al registrar: " + error.message;
                         adminMessage.className = "mt-3 text-sm font-medium text-red-400";
                     } else {
-                        adminMessage.textContent = `¡Operador ${correoOp} registrado como ${rolOp} con éxito!`;
+                        adminMessage.textContent = `¡Operador ${correoOp} registrado con éxito!`;
                         adminMessage.className = "mt-3 text-sm font-medium text-green-400";
                         nuevoOperadorEmail.value = '';
+                        cargarOperadoresDB();
                     }
                 };
             }
 
+            async function cargarOperadoresDB() {
+                listaOperadoresDb.innerHTML = '<p class="text-xs text-slate-400">Cargando operadores...</p>';
+                const { data, error } = await _supabase.from('usuarios_crm').select('*').order('email');
+                
+                if (error || !data) {
+                    listaOperadoresDb.innerHTML = '<p class="text-xs text-red-400">Error al cargar operadores.</p>';
+                    return;
+                }
+
+                let html = '';
+                data.forEach(op => {
+                    html += `
+                        <div class="flex justify-between items-center bg-slate-900 px-4 py-2 rounded-lg border border-slate-700 text-xs">
+                            <div>
+                                <span class="font-semibold text-white">${op.email}</span>
+                                <span class="ml-2 px-2 py-0.5 bg-blue-900 text-blue-300 rounded">${op.rol}</span>
+                            </div>
+                            <button onclick="eliminarOperador('${op.email}')" class="px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white rounded font-medium cursor-pointer transition">
+                                Eliminar
+                            </button>
+                        </div>
+                    `;
+                });
+                listaOperadoresDb.innerHTML = html;
+            }
+
+            // Función global para eliminar operador
+            window.eliminarOperador = async function(emailOp) {
+                if (!confirm(`¿Estás seguro de eliminar el acceso para ${emailOp}?`)) return;
+
+                const { error } = await _supabase.from('usuarios_crm').delete().eq('email', emailOp);
+                if (error) {
+                    alert("Error al eliminar: " + error.message);
+                } else {
+                    alert("Operador eliminado correctamente.");
+                    cargarOperadoresDB();
+                }
+            };
+
+            // GUARDAR REGISTRO DE CLIENTE
             if (guardarBtn) {
                 guardarBtn.onclick = async function() {
                     const nombre = document.getElementById('nombre').value.trim();
@@ -557,7 +648,6 @@
                     saveMessage.textContent = "Guardando en Supabase...";
                     saveMessage.className = "mt-3 text-sm font-medium text-blue-400";
 
-                    // Construir texto del producto incluyendo subdetalle y observaciones si existen
                     let productoFinal = subdetalle ? `${producto} - ${subdetalle}` : producto;
                     if (observacion) {
                         productoFinal += ` | Obs: ${observacion}`;
@@ -605,12 +695,7 @@
                         .or(`nombre.ilike.%${query}%,cedula.ilike.%${query}%`)
                         .order('created_at', { ascending: false });
 
-                    if (error) {
-                        searchResults.innerHTML = '<p class="text-xs text-red-400">Error en la búsqueda.</p>';
-                        return;
-                    }
-
-                    if (!data || data.length === 0) {
+                    if (error || !data || data.length === 0) {
                         searchResults.innerHTML = '<p class="text-xs text-slate-400">No se encontraron registros coincidentes.</p>';
                         return;
                     }
@@ -638,19 +723,14 @@
                 };
             }
 
+            // DASHBOARD Y GRÁFICAS PROFESIONALES CON CHART.JS
             async function cargarDatosDashboard() {
-                dashPorUsuario.innerHTML = '<p class="text-slate-400">Cargando métricas...</p>';
-                dashPorMotivo.innerHTML = '<p class="text-slate-400">Cargando motivos...</p>';
-
                 const { data, error } = await _supabase
                     .from('clientes_crm')
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                if (error) {
-                    dashPorUsuario.innerHTML = '<p class="text-red-400">Error al cargar datos.</p>';
-                    return;
-                }
+                if (error) return;
 
                 cacheRegistrosGlobal = data || [];
                 poblarSelectMeses();
@@ -680,14 +760,11 @@
 
                 mesesOrdenados.forEach(ym => {
                     const [anio, mesNum] = ym.split('-');
-                    const nombreMes = nombresMeses[mesNum] || mesNum;
-                    htmlOpciones += `<option value="${ym}">${nombreMes} ${anio}</option>`;
+                    htmlOpciones += `<option value="${ym}">${nombresMeses[mesNum] || mesNum} ${anio}</option>`;
                 });
 
                 filtroMes.innerHTML = htmlOpciones;
-                if (mesSeleccionadoActual) {
-                    filtroMes.value = mesSeleccionadoActual;
-                }
+                if (mesSeleccionadoActual) filtroMes.value = mesSeleccionadoActual;
             }
 
             function actualizarMetricasDashboard() {
@@ -727,51 +804,65 @@
                     conteoMotivos[motivo] = (conteoMotivos[motivo] || 0) + 1;
                 });
 
-                let htmlUsuarios = '';
-                if (Object.keys(conteoUsuarios).length === 0) {
-                    htmlUsuarios = '<p class="text-slate-400">Sin registros para estos filtros.</p>';
-                } else {
-                    for (const [usr, total] of Object.entries(conteoUsuarios)) {
-                        htmlUsuarios += `
-                            <div class="flex justify-between items-center bg-slate-800 px-3 py-1.5 rounded border border-slate-700">
-                                <span class="text-yellow-300 font-medium truncate max-w-[200px]" title="${usr}">${usr}</span>
-                                <span class="bg-blue-600 px-2 py-0.5 rounded text-white font-bold">${total}</span>
-                            </div>
-                        `;
-                    }
-                }
-                dashPorUsuario.innerHTML = htmlUsuarios;
-
-                let htmlMotivos = '';
-                if (Object.keys(conteoMotivos).length === 0) {
-                    htmlMotivos = '<p class="text-slate-400">Sin motivos para estos filtros.</p>';
-                } else {
-                    const motivosOrdenados = Object.entries(conteoMotivos).sort((a, b) => b[1] - a[1]);
-                    motivosOrdenados.forEach(([mot, total]) => {
-                        htmlMotivos += `
-                            <div class="flex justify-between items-center bg-slate-800 px-3 py-1.5 rounded border border-slate-700">
-                                <span class="text-emerald-300 font-medium">${mot}</span>
-                                <span class="bg-emerald-600 px-2 py-0.5 rounded text-white font-bold">${total}</span>
-                            </div>
-                        `;
-                    });
-                }
-                dashPorMotivo.innerHTML = htmlMotivos;
+                renderizarGraficaUsuarios(conteoUsuarios);
+                renderizarGraficaMotivos(conteoMotivos);
             }
 
-            if (btnToggleDashboard) {
-                btnToggleDashboard.onclick = function() {
-                    dashboardPanel.classList.toggle('hidden');
-                    if (!dashboardPanel.classList.contains('hidden')) {
-                        cargarDatosDashboard();
+            function renderizarGraficaUsuarios(conteo) {
+                const ctx = document.getElementById('chartUsuarios').getContext('2d');
+                const labels = Object.keys(conteo);
+                const values = Object.values(conteo);
+
+                if (chartUsuariosInstance) chartUsuariosInstance.destroy();
+
+                chartUsuariosInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Atenciones',
+                            data: values,
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
+                            y: { ticks: { color: '#94a3b8', precision: 0 }, grid: { color: '#334155' } }
+                        }
                     }
-                };
+                });
             }
 
-            if (btnCerrarDashboard) {
-                btnCerrarDashboard.onclick = function() {
-                    dashboardPanel.classList.add('hidden');
-                };
+            function renderizarGraficaMotivos(conteo) {
+                const ctx = document.getElementById('chartMotivos').getContext('2d');
+                const labels = Object.keys(conteo);
+                const values = Object.values(conteo);
+
+                if (chartMotivosInstance) chartMotivosInstance.destroy();
+
+                chartMotivosInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 } } }
+                        }
+                    }
+                });
             }
 
             if (filtroMes) filtroMes.onchange = actualizarMetricasDashboard;
@@ -779,10 +870,11 @@
             if (filtroMotivo) filtroMotivo.onchange = actualizarMetricasDashboard;
             if (filtroProducto) filtroProducto.onchange = actualizarMetricasDashboard;
 
+            // EXPORTAR A EXCEL (.XLSX)
             if (btnExportarExcel) {
                 btnExportarExcel.onclick = async function() {
                     exportMessage.textContent = "Preparando exportación...";
-                    exportMessage.className = "mt-2 text-xs font-medium text-blue-400";
+                    exportMessage.className = "mt-3 text-sm font-medium text-blue-400";
 
                     const { data, error } = await _supabase
                         .from('clientes_crm')
@@ -791,7 +883,7 @@
 
                     if (error || !data || data.length === 0) {
                         exportMessage.textContent = "No hay datos para exportar o ocurrió un error.";
-                        exportMessage.className = "mt-2 text-xs font-medium text-red-400";
+                        exportMessage.className = "mt-3 text-sm font-medium text-red-400";
                         return;
                     }
 
@@ -813,7 +905,7 @@
 
                     XLSX.writeFile(workbook, `CRM_BCR_Reporte_${new Date().toISOString().slice(0,10)}.xlsx`);
                     exportMessage.textContent = "¡Exportación completada con éxito!";
-                    exportMessage.className = "mt-2 text-xs font-medium text-green-400";
+                    exportMessage.className = "mt-3 text-sm font-medium text-green-400";
                 };
             }
         });
