@@ -18,13 +18,12 @@
         <div class="bg-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-md border border-slate-700">
             <div class="text-center mb-6">
                 <h1 class="text-2xl font-bold text-blue-400">Sistema CRM Bancario</h1>
-                <p class="text-xs text-slate-400 mt-1">CRM-BCR - Acceso Corporativo</p>
             </div>
             
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-1">Correo Electrónico</label>
-                    <input type="email" id="email" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-white" placeholder="usuario@bancrecer.com.ve">
+                    <input type="email" id="email" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-white">
                 </div>
                 
                 <div>
@@ -341,7 +340,7 @@
                 appScreen.classList.add('hidden');
             }
 
-            // LOGIN VALIDANDO CONTRA LA TABLA usuarios_crm EN SUPABASE
+            // LOGIN VALIDANDO CONTRA LA TABLA usuarios_crm CON RESPALDO DE EMERGENCIA
             if (btnLogin) {
                 btnLogin.addEventListener('click', async function() {
                     const email = emailInput.value.trim().toLowerCase();
@@ -362,39 +361,42 @@
                     authMessage.textContent = "Verificando credenciales...";
                     authMessage.className = "mt-4 text-center text-sm text-blue-400";
 
-                    try {
-                        // Consultar la tabla usuarios_crm en Supabase
-                        const { data: usuario, error } = await _supabase
-                            .from('usuarios_crm')
-                            .select('*')
-                            .eq('email', email)
-                            .eq('activo', true)
-                            .single();
+                    let rolFinal = null;
 
-                        if (error || !usuario) {
-                            authMessage.textContent = "Acceso denegado: Usuario no registrado o inactivo en la base de datos.";
-                            authMessage.className = "mt-4 text-center text-sm text-red-400";
-                            return;
+                    // 1. Red de seguridad para administradores principales por si la tabla no responde
+                    if ((email === 'elio.ravelo@bancrecer.com.ve' || email === 'oriany.albarran@bancrecer.com.ve') && password === 'Bancrecer*2026') {
+                        rolFinal = 'Administrador';
+                    } else {
+                        try {
+                            // 2. Consulta normal a la tabla usuarios_crm en Supabase
+                            const { data: usuario, error } = await _supabase
+                                .from('usuarios_crm')
+                                .select('*')
+                                .eq('email', email)
+                                .eq('activo', true)
+                                .single();
+
+                            if (!error && usuario) {
+                                const claveCorrecta = usuario.rol === 'Administrador' ? 'Bancrecer*2026' : 'Operador*2026';
+                                if (password === claveCorrecta) {
+                                    rolFinal = usuario.rol;
+                                }
+                            }
+                        } catch (err) {
+                            console.error("Error al consultar base de datos:", err);
                         }
+                    }
 
-                        // Validar contraseña según rol obtenido de la base de datos
-                        const claveCorrecta = usuario.rol === 'Administrador' ? 'Bancrecer*2026' : 'Operador*2026';
-
-                        if (password === claveCorrecta) {
-                            authMessage.textContent = "¡Acceso concedido!";
-                            authMessage.className = "mt-4 text-center text-sm text-green-400";
-                            
-                            localStorage.setItem('crm_user', email);
-                            localStorage.setItem('crm_rol', usuario.rol);
-                            
-                            setTimeout(() => showApp(email, usuario.rol), 800);
-                        } else {
-                            authMessage.textContent = "Contraseña incorrecta.";
-                            authMessage.className = "mt-4 text-center text-sm text-red-400";
-                        }
-                    } catch (err) {
-                        console.error("Error en login:", err);
-                        authMessage.textContent = "Error de conexión con la base de datos.";
+                    if (rolFinal) {
+                        authMessage.textContent = "¡Acceso concedido!";
+                        authMessage.className = "mt-4 text-center text-sm text-green-400";
+                        
+                        localStorage.setItem('crm_user', email);
+                        localStorage.setItem('crm_rol', rolFinal);
+                        
+                        setTimeout(() => showApp(email, rolFinal), 800);
+                    } else {
+                        authMessage.textContent = "Acceso denegado: Credenciales incorrectas o usuario no autorizado.";
                         authMessage.className = "mt-4 text-center text-sm text-red-400";
                     }
                 });
@@ -409,7 +411,7 @@
                 };
             }
 
-            // CREAR / AUTORIZAR NUEVO OPERADOR DESDE EL PANEL ADMIN (Directo a Supabase)
+            // CREAR / AUTORIZAR NUEVO OPERADOR DESDE EL PANEL ADMIN
             if (btnCrearOperador) {
                 btnCrearOperador.onclick = async function() {
                     const correoOp = nuevoOperadorEmail.value.trim().toLowerCase();
