@@ -242,11 +242,17 @@
                 </div>
 
                 <!-- CAMPO DINÁMICO ADICIONAL SEGÚN PRODUCTO O SERVICIO -->
-                <div id="contenedor-subdetalle" class="mt-4">
-                    <label class="block text-sm text-slate-400 mb-1">Detalle / Sub-motivo del Servicio</label>
-                    <select id="subdetalle" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
-                        <!-- Se llena dinámicamente con JavaScript -->
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1">Detalle / Sub-motivo del Servicio</label>
+                        <select id="subdetalle" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
+                            <!-- Se llena dinámicamente con JavaScript -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1">Observaciones (Opcional)</label>
+                        <input type="text" id="observacion" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white" placeholder="Escribe alguna nota adicional...">
+                    </div>
                 </div>
 
                 <button id="guardar-btn" class="mt-5 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition cursor-pointer">
@@ -313,10 +319,11 @@
 
             const selectProducto = document.getElementById('producto');
             const selectSubdetalle = document.getElementById('subdetalle');
+            const inputObservacion = document.getElementById('observacion');
 
             let cacheRegistrosGlobal = [];
 
-            // MAPA DE OPCIONES DINÁMICAS CON CRECERMOVIL ACTUALIZADO
+            // MAPA DE OPCIONES DINÁMICAS
             const opcionesPorProducto = {
                 "Bdigital": [
                     "Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", 
@@ -531,6 +538,7 @@
                     const motivo = document.getElementById('motivo').value;
                     const producto = document.getElementById('producto').value;
                     const subdetalle = document.getElementById('subdetalle').value;
+                    const observacion = inputObservacion.value.trim();
                     
                     const usuarioActual = localStorage.getItem('crm_user');
 
@@ -549,6 +557,12 @@
                     saveMessage.textContent = "Guardando en Supabase...";
                     saveMessage.className = "mt-3 text-sm font-medium text-blue-400";
 
+                    // Construir texto del producto incluyendo subdetalle y observaciones si existen
+                    let productoFinal = subdetalle ? `${producto} - ${subdetalle}` : producto;
+                    if (observacion) {
+                        productoFinal += ` | Obs: ${observacion}`;
+                    }
+
                     const { error } = await _supabase
                         .from('clientes_crm')
                         .insert([{
@@ -557,7 +571,7 @@
                             telefono,
                             canal,
                             motivo,
-                            producto: subdetalle ? `${producto} - ${subdetalle}` : producto,
+                            producto: productoFinal,
                             operador: usuarioActual
                         }]);
 
@@ -570,6 +584,7 @@
                         document.getElementById('nombre').value = '';
                         document.getElementById('cedula').value = '';
                         document.getElementById('telefono').value = '';
+                        inputObservacion.value = '';
                     }
                 };
             }
