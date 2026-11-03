@@ -131,7 +131,6 @@
                                 <option value="Pago Movil">Pago Movil</option>
                                 <option value="Credito digital">Credito digital</option>
                                 <option value="Credito inmediato">Credito inmediato</option>
-                                <option value="Credito">Credito</option>
                                 <option value="Pos">Pos</option>
                                 <option value="TDD">TDD</option>
                                 <option value="Agencia">Agencia</option>
@@ -233,7 +232,6 @@
                             <option value="Pago Movil">Pago Movil</option>
                             <option value="Credito digital">Credito digital</option>
                             <option value="Credito inmediato">Credito inmediato</option>
-                            <option value="Credito">Credito</option>
                             <option value="Pos">Pos</option>
                             <option value="TDD">TDD</option>
                             <option value="Agencia">Agencia</option>
@@ -318,19 +316,19 @@
 
             let cacheRegistrosGlobal = [];
 
-            // MAPA DE OPCIONES DINÁMICAS SEGÚN EL PRODUCTO SELECCIONADO
+            // MAPA DE OPCIONES DINÁMICAS CORREGIDAS Y SEPARADAS POR PRODUCTO
             const opcionesPorProducto = {
                 "Bdigital": [
-                    "Afiliación", "olvido de usuario", "recuperar contraseña", "desbloqueo de usuario", 
-                    "desafiliación", "recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", 
-                    "disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", 
+                    "Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", 
+                    "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", 
+                    "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", 
                     "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", 
                     "Notificación de Viajes", "OTP no recibido"
                 ],
                 "Crecermovil": [
-                    "Afiliación", "olvido de usuario", "recuperar contraseña", "desbloqueo de usuario", 
-                    "desafiliación", "recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", 
-                    "disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", 
+                    "Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", 
+                    "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", 
+                    "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", 
                     "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", 
                     "Notificación de Viajes", "OTP no recibido"
                 ],
@@ -343,10 +341,6 @@
                     "Consultar Pagos Emitidos / Recibidos"
                 ],
                 "Credito digital": [
-                    "Línea de Crédito Digital Información y Características", "Línea de Crédito Digital Cuotas", 
-                    "Blog Financiero", "Información de cobros"
-                ],
-                "Credito": [
                     "Línea de Crédito Digital Información y Características", "Línea de Crédito Digital Cuotas", 
                     "Blog Financiero", "Información de cobros"
                 ],
