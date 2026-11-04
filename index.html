@@ -334,7 +334,7 @@
         </main>
     </div>
 
-    <!-- MODALES Y RESTO DE VISTAS -->
+    <!-- MODALES -->
     <div id="modal-cliente" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <h2 class="text-lg font-bold text-white">Registrar Gestión de Cliente</h2>
@@ -395,7 +395,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold uppercase text-blue-400 mb-1" id="label-subservicio">Detalle Específico</label>
+                    <label class="block text-[10px] font-bold uppercase text-blue-400 mb-1">Detalle Específico</label>
                     <select id="cli-subservicio" required class="w-full p-2.5 bg-slate-950 border border-blue-500/30 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
                     </select>
                 </div>
@@ -500,23 +500,31 @@
         let chartMotivos = null;
         let chartCanales = null;
 
-        // FUNCION DE REGISTRO UNIFICADA (Maneja 'correo' y 'usuario' por compatibilidad)
+        // FUNCIÓN ROBUSTA DE REGISTRO DE AUDITORÍA
         async function registrarAuditoria(correoUser, resultado, detalle) {
-            const payload = { 
-                correo: correoUser, 
-                usuario: correoUser, 
-                resultado: resultado, 
-                detalle: detalle, 
-                fecha: new Date().toISOString() 
-            };
-            const { error } = await _supabase.from('auditoria_crm').insert([payload]);
-            if (error) console.error("Error registrando auditoría:", error.message);
+            try {
+                const payload = { 
+                    correo: correoUser, 
+                    usuario: correoUser, 
+                    resultado: resultado, 
+                    detalle: detalle, 
+                    fecha: new Date().toISOString() 
+                };
+                const { error } = await _supabase.from('auditoria_crm').insert([payload]);
+                if (error) console.error("Error al insertar auditoría:", error.message);
+            } catch (err) {
+                console.error("Excepción en auditoría:", err);
+            }
         }
 
         async function registrarBloqueo(correo, motivo) {
-            const payload = { correo: correo, motivo: motivo, fecha: new Date().toISOString() };
-            const { error } = await _supabase.from('usuarios_bloqueados').insert([payload]);
-            if (error) console.error("Error registrando bloqueo:", error.message);
+            try {
+                const payload = { correo: correo, motivo: motivo, fecha: new Date().toISOString() };
+                const { error } = await _supabase.from('usuarios_bloqueados').insert([payload]);
+                if (error) console.error("Error al insertar bloqueo:", error.message);
+            } catch (err) {
+                console.error("Excepción en bloqueo:", err);
+            }
         }
 
         // INICIO DE SESIÓN
@@ -537,13 +545,17 @@
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
                 await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso con dominio no autorizado');
                 await registrarBloqueo(email, 'Intento de acceso con dominio externo no permitido');
+                errorBox.textContent = "Acceso denegado: Dominio no autorizado.";
+                errorBox.classList.remove('hidden');
                 return;
             }
 
             // 2. Usuario en Lista Negra
             if (bloqueadosGlobal.some(b => (b.correo || '').toLowerCase() === email.toLowerCase())) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
-                await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso con usuario bloqueado en lista negra');
+                await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso con usuario bloqueado');
+                errorBox.textContent = "Este usuario se encuentra bloqueado.";
+                errorBox.classList.remove('hidden');
                 return;
             }
 
@@ -562,6 +574,8 @@
                         emailInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
                         emailInput.classList.add('border-purple-500', 'ring-2', 'ring-purple-500');
                     }
+                    errorBox.textContent = "Credenciales incorrectas.";
+                    errorBox.classList.remove('hidden');
                     return;
                 }
 
@@ -611,7 +625,9 @@
 
         async function refrescarAuditoria(mostrarAlerta = false) {
             try {
-                const { data: auditoria } = await _supabase.from('auditoria_crm').select('*');
+                const { data: auditoria, error } = await _supabase.from('auditoria_crm').select('*');
+                if (error) console.error("Error al consultar auditoría:", error.message);
+
                 auditoriaGlobal = auditoria || [];
                 auditoriaGlobal.sort((a, b) => new Date(b.fecha || b.created_at || 0) - new Date(a.fecha || a.created_at || 0));
 
@@ -840,9 +856,7 @@
 
             const { error } = await _supabase.from('clientes_crm').insert([nuevoCliente]);
             if (!error) {
-                // REGISTRO DE AUDITORÍA: CREACIÓN DE CLIENTE
-                await registrarAuditoria(opEmail, 'ACCION', `Agregó registro de cliente: ${nuevoCliente.nombre} (Cédula: ${nuevoCliente.cedula})`);
-                
+                await registrarAuditoria(opEmail, 'ACCION', `Agregó registro de cliente: ${nuevoCliente.nombre}`);
                 cerrarModalCliente();
                 document.getElementById('form-cliente').reset();
                 actualizarSubmenuServicio();
@@ -856,10 +870,7 @@
             if (confirm('¿Seguro deseas eliminar este registro?')) {
                 const opEmail = currentUser ? currentUser.email : 'Sistema';
                 await _supabase.from('clientes_crm').delete().eq('id', id);
-                
-                // REGISTRO DE AUDITORÍA: ELIMINACIÓN DE CLIENTE
                 await registrarAuditoria(opEmail, 'ACCION', `Eliminó el registro de cliente: ${nombreCliente || id}`);
-                
                 cargarDatosGenerales();
             }
         }
@@ -901,8 +912,6 @@
             }
 
             await _supabase.from('usuarios_crm').insert([{ correo: correo, rol: rol }]);
-            
-            // REGISTRO DE AUDITORÍA: CREACIÓN DE USUARIO
             await registrarAuditoria(opEmail, 'ACCION', `Agregó un nuevo usuario al CRM: ${correo} (Rol: ${rol})`);
 
             cerrarModalUsuario();
@@ -914,15 +923,12 @@
             if (confirm('¿Deseas eliminar este usuario de la administración?')) {
                 const opEmail = currentUser ? currentUser.email : 'Administrador';
                 await _supabase.from('usuarios_crm').delete().eq('id', id);
-                
-                // REGISTRO DE AUDITORÍA: ELIMINACIÓN DE USUARIO
                 await registrarAuditoria(opEmail, 'ACCION', `Eliminó al usuario del CRM: ${correoUsuario || id}`);
-                
                 cargarUsuarios();
             }
         }
 
-        // RENDERIZADO DE TABLA DE AUDITORÍA CON SOPORTE COMPLETO DE CAMPOS
+        // RENDERIZADO DE LA TABLA DE AUDITORÍA
         function renderAuditoriaTab() {
             const tbody = document.getElementById('tbody-auditoria');
             if (!auditoriaGlobal || auditoriaGlobal.length === 0) {
@@ -931,10 +937,7 @@
             }
             tbody.innerHTML = auditoriaGlobal.map(log => {
                 const fechaLog = new Date(log.fecha || log.created_at || Date.now()).toLocaleString();
-                
-                // Mapeo seguro del correo / usuario
                 const usuarioLog = log.correo || log.usuario || log.email || 'Desconocido';
-                
                 const resultadoLog = (log.resultado || log.status || 'ACCION').toUpperCase();
                 const detalleLog = log.detalle || log.description || log.reason || '-';
                 
@@ -979,12 +982,10 @@
         async function desbloquearUsuario(id, correo) {
             if (confirm(`¿Estás seguro de desbloquear al usuario ${correo}?`)) {
                 await _supabase.from('usuarios_bloqueados').delete().eq('id', id);
-                await _supabase.from('auditoria_crm').delete().eq('usuario', correo);
-                await _supabase.from('auditoria_crm').delete().eq('correo', correo);
                 
                 const adminEmail = currentUser ? currentUser.email : 'Administrador';
                 
-                // REGISTRO DE AUDITORÍA: DESBLOQUEO DE USUARIO
+                // REGISTRO DE AUDITORÍA: DESBLOQUEO (SIN BORRAR EL HISTORIAL)
                 await registrarAuditoria(adminEmail, 'EXITOSO', `Desbloqueó al usuario: ${correo}`);
 
                 cargarDatosGenerales();
