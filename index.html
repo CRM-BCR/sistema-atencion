@@ -41,7 +41,7 @@
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
-                        <input type="email" id="login-email" required placeholder="" 
+                        <input type="email" id="login-email" required placeholder="usuario@bancrecer.com.ve" 
                             class="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-white text-sm transition">
                     </div>
                 </div>
@@ -95,7 +95,7 @@
                         <i class="fa-solid fa-user-gear w-5"></i><span>Usuarios CRM</span>
                     </button>
                     <button onclick="switchTab('auditoria')" id="nav-auditoria" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-900 hover:text-white transition">
-                        <i class="fa-solid fa-shield-halved w-5"></i><span>Auditoría</span>
+                        <i class="fa-solid fa-shield-halved w-5"></i><span>Auditoría y Seguridad</span>
                     </button>
                 </nav>
             </div>
@@ -151,7 +151,6 @@
                             </div>
                             <p id="stat-total-usuarios" class="text-3xl font-extrabold text-white">0</p>
                         </div>
-                        <!-- Mini lista con indicador de estado En Línea / Inactivo -->
                         <div id="contenedor-usuarios-activos" class="mt-3 pt-3 border-t border-slate-800/80 space-y-2 max-h-36 overflow-y-auto custom-scrollbar">
                             <p class="text-slate-500 text-xs text-center">Cargando usuarios...</p>
                         </div>
@@ -160,8 +159,6 @@
 
                 <!-- RANKING Y GRÁFICOS -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-                    
-                    <!-- TABLA RANKING OPERADORES -->
                     <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between mb-4">
@@ -171,12 +168,11 @@
                                 <span class="text-[10px] font-semibold text-slate-500 uppercase">Gestiones</span>
                             </div>
                             <div id="contenedor-ranking-operadores" class="space-y-3">
-                                <p class="text-slate-500 text-xs text-center py-4">Cargando datos de operadores...</p>
+                                <p class="text-slate-500 text-xs text-center py-4">Cargando datos...</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- GRÁFICO MOTIVOS -->
                     <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col items-center">
                         <h3 class="text-sm font-bold uppercase text-slate-300 mb-4 self-start"><i class="fa-solid fa-chart-bar text-blue-500 mr-2"></i> Motivos de Contacto</h3>
                         <div class="w-full h-64 relative flex justify-center items-center">
@@ -184,14 +180,12 @@
                         </div>
                     </div>
 
-                    <!-- GRÁFICO CANALES -->
                     <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col items-center">
                         <h3 class="text-sm font-bold uppercase text-slate-300 mb-4 self-start"><i class="fa-solid fa-chart-pie text-purple-500 mr-2"></i> Canales de Atención</h3>
                         <div class="w-full h-64 relative flex justify-center items-center">
                             <canvas id="graficoCanales"></canvas>
                         </div>
                     </div>
-
                 </div>
             </section>
 
@@ -202,10 +196,16 @@
                         <h1 class="text-2xl font-bold text-white">Gestión de Clientes</h1>
                         <p class="text-xs text-slate-400">Registro y consulta de interacciones por canal y servicio.</p>
                     </div>
-                    <button onclick="abrirModalCliente()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
-                        <i class="fa-solid fa-user-plus"></i>
-                        <span>Registrar Nueva Gestión</span>
-                    </button>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="exportToExcel('tabla-clientes', 'Clientes_CRM_Bancrecer')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Exportar Excel</span>
+                        </button>
+                        <button onclick="abrirModalCliente()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>Registrar Nueva Gestión</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center space-x-4">
@@ -217,7 +217,7 @@
 
                 <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
+                        <table id="tabla-clientes" class="w-full text-left text-xs">
                             <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-semibold">
                                 <tr>
                                     <th class="p-4">Fecha</th>
@@ -234,7 +234,7 @@
                                 </tr>
                             </thead>
                             <tbody id="tbody-clientes" class="divide-y divide-slate-800 text-slate-300">
-                                <tr><td colspan="11" class="p-4 text-center text-slate-500">Cargando registros de clientes...</td></tr>
+                                <tr><td colspan="11" class="p-4 text-center text-slate-500">Cargando registros...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -273,20 +273,44 @@
                 </div>
             </section>
 
-            <!-- 4. AUDITORÍA -->
+            <!-- 4. AUDITORÍA Y SEGURIDAD -->
             <section id="tab-auditoria" class="hidden space-y-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-2xl font-bold text-white">Registro de Auditoría y Accesos</h1>
-                        <p class="text-xs text-slate-400">Trazabilidad completa de intenciones e ingresos al CRM.</p>
+                        <h1 class="text-2xl font-bold text-white">Auditoría y Seguridad (Control de Accesos y Bloqueos)</h1>
+                        <p class="text-xs text-slate-400">Monitoreo de ingresos, intentos fallidos y gestión de lista negra.</p>
                     </div>
-                    <button onclick="exportToExcel('tabla-auditoria', 'Auditoria_CRM_Bancrecer')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                    <button onclick="exportToExcel('tabla-auditoria', 'Auditoria_Seguridad_Bancrecer')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
                         <i class="fa-solid fa-file-excel"></i>
                         <span>Exportar Excel</span>
                     </button>
                 </div>
 
+                <!-- SECCIÓN DE BLOQUEADOS / LISTA NEGRA -->
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <h2 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-user-lock mr-2"></i> Usuarios Bloqueados (Lista Negra)</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3">Correo Electrónico</th>
+                                    <th class="p-3">Motivo de Bloqueo</th>
+                                    <th class="p-3">Fecha de Bloqueo</th>
+                                    <th class="p-3 text-center">Acción Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-bloqueados" class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td colspan="4" class="p-3 text-center text-slate-500">Sin usuarios bloqueados.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- HISTORIAL DE AUDITORÍA -->
                 <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+                    <div class="p-4 border-b border-slate-800">
+                        <h2 class="text-sm font-bold uppercase text-slate-300"><i class="fa-solid fa-shield-halved text-blue-400 mr-2"></i> Registro de Actividad y Accesos</h2>
+                    </div>
                     <div class="overflow-x-auto">
                         <table id="tabla-auditoria" class="w-full text-left text-xs">
                             <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-semibold">
@@ -298,7 +322,7 @@
                                 </tr>
                             </thead>
                             <tbody id="tbody-auditoria" class="divide-y divide-slate-800 text-slate-300">
-                                <tr><td colspan="4" class="p-4 text-center text-slate-500">Cargando registros...</td></tr>
+                                <tr><td colspan="4" class="p-4 text-center text-slate-500">Cargando registros de auditoría...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -392,8 +416,8 @@
             <h2 class="text-lg font-bold text-white">Registrar Nuevo Usuario CRM</h2>
             <form id="form-usuario" class="space-y-3">
                 <div>
-                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Correo Electrónico</label>
-                    <input type="email" id="usr-correo" required class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Correo Electrónico (@bancrecer.com.ve)</label>
+                    <input type="email" id="usr-correo" required placeholder="usuario@bancrecer.com.ve" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Contraseña Temporal</label>
@@ -501,38 +525,93 @@
         let clientesGlobal = [];
         let auditoriaGlobal = [];
         let usuariosGlobal = [];
+        let bloqueadosGlobal = [];
         let chartMotivos = null;
         let chartCanales = null;
 
-        // INICIO DE SESIÓN
+        // INICIO DE SESIÓN CON LÓGICA DE COLORES Y BLOQUEOS
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
+            const emailInput = document.getElementById('login-email');
+            const email = emailInput.value.trim();
             const password = document.getElementById('login-password').value.trim();
             const errorBox = document.getElementById('login-error');
             errorBox.classList.add('hidden');
+            
+            // Limpiar clases de color previas en el campo de correo
+            emailInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500', 'border-purple-500', 'ring-purple-500', 'border-emerald-500', 'ring-emerald-500');
+
+            // 1. REGLA: Dominio Incorrecto -> Al hacer click se coloca en ROJO y bloquea intento sin mensaje explícito
+            if (!email.toLowerCase().endsWith('@bancrecer.com.ve')) {
+                emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+                await _supabase.from('auditoria_crm').insert([{ 
+                    usuario: email, 
+                    resultado: 'BLOQUEADO', 
+                    detalle: 'Intento de acceso rechazado: Dominio no autorizado', 
+                    fecha: new Date().toISOString() 
+                }]);
+                return;
+            }
+
+            // 2. REGLA: Usuario en lista negra (bloqueado previamente) -> Campo en ROJO
+            await cargarBloqueados();
+            if (bloqueadosGlobal.some(b => b.correo.toLowerCase() === email.toLowerCase())) {
+                emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+                return;
+            }
 
             try {
                 const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
                 if (error || !data.user) {
-                    await _supabase.from('auditoria_crm').insert([{ usuario: email, resultado: 'FALLIDO', detalle: 'Credenciales inválidas', fecha: new Date().toISOString() }]);
-                    errorBox.textContent = 'Credenciales inválidas. Verifique sus datos.';
-                    errorBox.classList.remove('hidden');
+                    // Registrar intento fallido
+                    await _supabase.from('auditoria_crm').insert([{ 
+                        usuario: email, 
+                        resultado: 'FALLIDO', 
+                        detalle: 'Contraseña o credenciales inválidas', 
+                        fecha: new Date().toISOString() 
+                    }]);
+
+                    // Consultar cuántos fallos lleva
+                    const { data: logsFallidos } = await _supabase.from('auditoria_crm')
+                        .select('*')
+                        .eq('usuario', email)
+                        .eq('resultado', 'FALLIDO');
+
+                    if (logsFallidos && logsFallidos.length >= 2) {
+                        // Bloquear por 2 errores de contraseña -> CAMPO EN MORADO sin mensaje
+                        await _supabase.from('usuarios_bloqueados').insert([{ 
+                            correo: email, 
+                            motivo: 'Bloqueado por 2 intentos fallidos de contraseña', 
+                            fecha: new Date().toISOString() 
+                        }]);
+                        emailInput.classList.add('border-purple-500', 'ring-2', 'ring-purple-500');
+                    }
                     return;
                 }
 
-                await _supabase.from('auditoria_crm').insert([{ usuario: data.user.email, resultado: 'EXITOSO', detalle: 'Ingreso al sistema', fecha: new Date().toISOString() }]);
+                // ACCESO EXITOSO -> CAMPO EN VERDE al iniciar sesión
+                emailInput.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500');
+
+                await _supabase.from('auditoria_crm').insert([{ 
+                    usuario: data.user.email, 
+                    resultado: 'EXITOSO', 
+                    detalle: 'Ingreso al sistema autorizado', 
+                    fecha: new Date().toISOString() 
+                }]);
 
                 currentUser = data.user;
                 document.getElementById('user-display-email').textContent = data.user.email;
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-dashboard').classList.remove('hidden');
                 
-                cargarDatosGenerales();
+                // Pequeña pausa visual antes de entrar al dashboard
+                setTimeout(() => {
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('app-dashboard').classList.remove('hidden');
+                    cargarDatosGenerales();
+                }, 400);
+
             } catch (err) {
-                errorBox.textContent = 'Error de conexión con el servidor.';
-                errorBox.classList.remove('hidden');
+                // Error de conexión u otro imprevisto
             }
         });
 
@@ -540,6 +619,7 @@
             const { data: clientes } = await _supabase.from('clientes_crm').select('*').order('created_at', { ascending: false });
             const { data: auditoria } = await _supabase.from('auditoria_crm').select('*').order('fecha', { ascending: false });
             const { data: usuarios } = await _supabase.from('usuarios_crm').select('*');
+            await cargarBloqueados();
 
             clientesGlobal = clientes || [];
             auditoriaGlobal = auditoria || [];
@@ -549,6 +629,12 @@
             renderClientes(clientesGlobal);
             cargarUsuarios();
             cargarAuditoria();
+            renderBloqueados();
+        }
+
+        async function cargarBloqueados() {
+            const { data } = await _supabase.from('usuarios_bloqueados').select('*');
+            bloqueadosGlobal = data || [];
         }
 
         // FILTRO POR FECHAS
@@ -579,12 +665,11 @@
             renderClientes(clientesGlobal);
         }
 
-        // ACTUALIZAR DASHBOARD Y ESTADOS DE USUARIOS
+        // ACTUALIZAR DASHBOARD
         function actualizarDashboardConFiltro(clientes, auditoria, usuarios) {
             document.getElementById('stat-total-registros').textContent = clientes.length;
             document.getElementById('stat-total-usuarios').textContent = usuarios.length;
 
-            // 1. Mini lista de usuarios con indicador de En Línea / Inactivo
             const contenedorUsuarios = document.getElementById('contenedor-usuarios-activos');
             if (usuarios.length === 0) {
                 contenedorUsuarios.innerHTML = `<p class="text-slate-500 text-xs text-center py-2">Sin usuarios registrados.</p>`;
@@ -613,7 +698,6 @@
                 }).join('');
             }
 
-            // 2. Procesar Ranking de Operadores
             const conteoOperadores = {};
             clientes.forEach(c => {
                 const op = c.operador || 'Sistema / Sin asignar';
@@ -649,7 +733,6 @@
                 }).join('');
             }
 
-            // 3. Procesar Datos para Gráficos
             const conteoMotivos = {};
             clientes.forEach(c => {
                 const m = c.motivo || 'Sin Motivo';
@@ -811,6 +894,11 @@
             const password = document.getElementById('usr-password').value.trim();
             const rol = document.getElementById('usr-rol').value;
 
+            if (!correo.toLowerCase().endsWith('@bancrecer.com.ve')) {
+                alert('El correo debe pertenecer al dominio @bancrecer.com.ve');
+                return;
+            }
+
             const { data, error } = await _supabase.auth.signUp({ email: correo, password: password });
             if (error) {
                 alert('Error creando usuario en Auth: ' + error.message);
@@ -827,13 +915,17 @@
         async function eliminarUsuario(id) {
             if (confirm('¿Deseas eliminar este usuario de la administración?')) {
                 await _supabase.from('usuarios_crm').delete().eq('id', id);
-                cargarDatosGenerales();
+                cargarUsuarios();
             }
         }
 
-        // AUDITORÍA
+        // AUDITORÍA Y SEGURIDAD CON TRAZA DE DESBLOQUEOS
         async function cargarAuditoria() {
             const tbody = document.getElementById('tbody-auditoria');
+            if (auditoriaGlobal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Sin registros de auditoría recientes.</td></tr>`;
+                return;
+            }
             tbody.innerHTML = auditoriaGlobal.map(log => `
                 <tr class="hover:bg-slate-900/50 transition">
                     <td class="p-4 font-mono text-slate-400">${new Date(log.fecha).toLocaleString()}</td>
@@ -841,6 +933,40 @@
                     <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${log.resultado === 'EXITOSO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}">${log.resultado}</span></td>
                     <td class="p-4 text-slate-400">${log.detalle}</td>
                 </tr>`).join('');
+        }
+
+        function renderBloqueados() {
+            const tbody = document.getElementById('tbody-bloqueados');
+            if (bloqueadosGlobal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-slate-500">No hay usuarios bloqueados en lista negra.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = bloqueadosGlobal.map(b => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-3 font-semibold text-white">${b.correo}</td>
+                    <td class="p-3 text-red-400">${b.motivo}</td>
+                    <td class="p-3 font-mono text-slate-400">${new Date(b.fecha).toLocaleString()}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="desbloquearUsuario('${b.id}', '${b.correo}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition">Desbloquear</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        async function desbloquearUsuario(id, correo) {
+            if (confirm(`¿Estás seguro de desbloquear al usuario ${correo}?`)) {
+                await _supabase.from('usuarios_bloqueados').delete().eq('id', id);
+                await _supabase.from('auditoria_crm').delete().eq('usuario', correo).eq('resultado', 'FALLIDO');
+                
+                const adminEmail = currentUser ? currentUser.email : 'Administrador';
+                await _supabase.from('auditoria_crm').insert([{ 
+                    usuario: correo, 
+                    resultado: 'EXITOSO', 
+                    detalle: `Usuario desbloqueado de la lista negra por el administrador: ${adminEmail}`, 
+                    fecha: new Date().toISOString() 
+                }]);
+
+                cargarDatosGenerales();
+            }
         }
 
         // NAVEGACIÓN Y MODALES
@@ -860,7 +986,7 @@
             if (t === 'dashboard') cargarDatosGenerales();
             if (t === 'clientes') cargarClientes();
             if (t === 'usuarios') cargarUsuarios();
-            if (t === 'auditoria') cargarAuditoria();
+            if (t === 'auditoria') { cargarAuditoria(); cargarBloqueados(); }
         }
 
         function abrirModalCliente() { document.getElementById('modal-cliente').classList.remove('hidden'); }
