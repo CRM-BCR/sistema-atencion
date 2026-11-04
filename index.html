@@ -500,39 +500,22 @@
         let chartMotivos = null;
         let chartCanales = null;
 
-        // FUNCIONES DE REGISTRO BLINDADAS CON AMBAS ESTRUCTURAS DE COLUMNAS
+        // FUNCIONES DE REGISTRO DIRECTAS A SUPABASE
         async function registrarAuditoria(usuario, resultado, detalle) {
-            const payload = { 
+            await _supabase.from('auditoria_crm').insert([{ 
                 usuario: usuario, 
                 resultado: resultado, 
                 detalle: detalle, 
                 fecha: new Date().toISOString() 
-            };
-            const { error } = await _supabase.from('auditoria_crm').insert([payload]);
-            if (error) {
-                await _supabase.from('auditoria_crm').insert([{ 
-                    email: usuario, 
-                    status: resultado, 
-                    description: detalle, 
-                    created_at: new Date().toISOString() 
-                }]);
-            }
+            }]);
         }
 
         async function registrarBloqueo(correo, motivo) {
-            const payload = { 
+            await _supabase.from('usuarios_bloqueados').insert([{ 
                 correo: correo, 
                 motivo: motivo, 
                 fecha: new Date().toISOString() 
-            };
-            const { error } = await _supabase.from('usuarios_bloqueados').insert([payload]);
-            if (error) {
-                await _supabase.from('usuarios_bloqueados').insert([{ 
-                    email: correo, 
-                    reason: motivo, 
-                    created_at: new Date().toISOString() 
-                }]);
-            }
+            }]);
         }
 
         // INICIO DE SESIÓN
@@ -548,16 +531,16 @@
 
             await cargarBloqueados();
 
-            // 1. Dominio Incorrecto -> ROJO, Bloqueo y Registro de Auditoría con el correo exacto
+            // 1. REGLA: Dominio Incorrecto (ej: gmail.com) -> Bloqueo inmediato y registro en auditoría con su correo
             if (!email.toLowerCase().endsWith('@bancrecer.com.ve')) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
-                await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso rechazado: Dominio no autorizado');
-                await registrarBloqueo(email, 'Bloqueado por intentar acceder con dominio no autorizado');
+                await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso con dominio no autorizado');
+                await registrarBloqueo(email, 'Intento de acceso con dominio externo no permitido');
                 return;
             }
 
-            // 2. Usuario en Lista Negra -> ROJO
-            if (bloqueadosGlobal.some(b => (b.correo || b.email || '').toLowerCase() === email.toLowerCase())) {
+            // 2. REGLA: Usuario en Lista Negra -> ROJO
+            if (bloqueadosGlobal.some(b => (b.correo || '').toLowerCase() === email.toLowerCase())) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
                 return;
             }
@@ -566,10 +549,11 @@
                 const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
                 if (error || !data.user) {
+                    // Contraseña errada -> Registrar como FALLIDO con el correo introducido
                     await registrarAuditoria(email, 'FALLIDO', 'Contraseña o credenciales inválidas');
 
                     const { data: logsData } = await _supabase.from('auditoria_crm').select('*');
-                    const logsFallidos = (logsData || []).filter(l => (l.usuario || l.email || l.correo) === email && (l.resultado || l.status) === 'FALLIDO');
+                    const logsFallidos = (logsData || []).filter(l => l.usuario === email && l.resultado === 'FALLIDO');
 
                     if (logsFallidos.length >= 2) {
                         await registrarBloqueo(email, 'Bloqueado por 2 intentos fallidos de contraseña');
@@ -626,7 +610,7 @@
             try {
                 const { data: auditoria } = await _supabase.from('auditoria_crm').select('*');
                 auditoriaGlobal = auditoria || [];
-                auditoriaGlobal.sort((a, b) => new Date(b.fecha || b.created_at || 0) - new Date(a.fecha || a.created_at || 0));
+                auditoriaGlobal.sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0));
 
                 await cargarBloqueados();
 
@@ -916,7 +900,7 @@
             }
         }
 
-        // RENDERIZADO INTELIGENTE DE AUDITORÍA Y BLOQUEADOS
+        // RENDERIZADO DE TABLA DE AUDITORÍA
         function renderAuditoriaTab() {
             const tbody = document.getElementById('tbody-auditoria');
             if (!auditoriaGlobal || auditoriaGlobal.length === 0) {
@@ -925,15 +909,9 @@
             }
             tbody.innerHTML = auditoriaGlobal.map(log => {
                 const fechaLog = new Date(log.fecha || log.created_at || Date.now()).toLocaleString();
-                
-                // Buscar cualquier propiedad posible donde venga el correo o usuario intentado
-                const usuarioLog = log.usuario || log.email || log.correo || log.user || log.username || log.intent || 'Desconocido';
-                
-                // Buscar resultado o estatus
-                const resultadoLog = log.resultado || log.status || log.action_result || 'REGISTRO';
-                
-                // Buscar detalle o acción
-                const detalleLog = log.detalle || log.description || log.reason || log.details || '-';
+                const usuarioLog = log.usuario || log.email || log.correo || 'Desconocido';
+                const resultadoLog = log.resultado || log.status || 'FALLIDO';
+                const detalleLog = log.detalle || log.description || log.reason || '-';
                 
                 let colorRes = 'bg-blue-500/10 text-blue-400';
                 if (resultadoLog === 'EXITOSO') colorRes = 'bg-emerald-500/10 text-emerald-400';
@@ -956,8 +934,8 @@
                 return;
             }
             tbody.innerHTML = bloqueadosGlobal.map(b => {
-                const correoB = b.correo || b.email || b.user || 'Desconocido';
-                const motivoB = b.motivo || b.reason || b.details || 'Bloqueado por seguridad';
+                const correoB = b.correo || b.email || 'Desconocido';
+                const motivoB = b.motivo || b.reason || 'Bloqueado por seguridad';
                 const fechaB = new Date(b.fecha || b.created_at || Date.now()).toLocaleString();
 
                 return `
@@ -976,10 +954,9 @@
             if (confirm(`¿Estás seguro de desbloquear al usuario ${correo}?`)) {
                 await _supabase.from('usuarios_bloqueados').delete().eq('id', id);
                 await _supabase.from('auditoria_crm').delete().eq('usuario', correo);
-                await _supabase.from('auditoria_crm').delete().eq('email', correo);
                 
                 const adminEmail = currentUser ? currentUser.email : 'Administrador';
-                await registrarAuditoria(correo, 'EXITOSO', `Usuario desbloqueado de la lista negra por: ${adminEmail}`);
+                await registrarAuditoria(correo, 'EXITOSO', `Usuario desbloqueado por: ${adminEmail}`);
 
                 cargarDatosGenerales();
             }
