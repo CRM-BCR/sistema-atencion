@@ -134,7 +134,7 @@
                     </div>
                 </div>
 
-                <!-- TARJETAS DE MÉTRICAS SIMPLIFICADAS -->
+                <!-- TARJETAS DE MÉTRICAS -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg">
                         <div class="flex items-center justify-between text-blue-400 mb-2">
@@ -146,19 +146,19 @@
                     <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between text-emerald-400 mb-2">
-                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Usuarios Activos en CRM</span>
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Usuarios en el Sistema</span>
                                 <i class="fa-solid fa-shield-halved text-lg"></i>
                             </div>
                             <p id="stat-total-usuarios" class="text-3xl font-extrabold text-white">0</p>
                         </div>
-                        <!-- Mini lista de usuarios activos estilo ranking -->
-                        <div id="contenedor-usuarios-activos" class="mt-3 pt-3 border-t border-slate-800/80 space-y-2 max-h-32 overflow-y-auto custom-scrollbar">
+                        <!-- Mini lista con indicador de estado En Línea / Inactivo -->
+                        <div id="contenedor-usuarios-activos" class="mt-3 pt-3 border-t border-slate-800/80 space-y-2 max-h-36 overflow-y-auto custom-scrollbar">
                             <p class="text-slate-500 text-xs text-center">Cargando usuarios...</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- RANKING DE OPERADORES Y GRÁFICOS -->
+                <!-- RANKING Y GRÁFICOS -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
                     
                     <!-- TABLA RANKING OPERADORES -->
@@ -579,22 +579,38 @@
             renderClientes(clientesGlobal);
         }
 
-        // ACTUALIZAR DASHBOARD, USUARIOS ACTIVOS, RANKING Y GRÁFICOS
+        // ACTUALIZAR DASHBOARD Y ESTADOS DE USUARIOS
         function actualizarDashboardConFiltro(clientes, auditoria, usuarios) {
             document.getElementById('stat-total-registros').textContent = clientes.length;
             document.getElementById('stat-total-usuarios').textContent = usuarios.length;
 
-            // 1. Mini lista de usuarios activos
+            // 1. Mini lista de usuarios con indicador de En Línea / Inactivo
             const contenedorUsuarios = document.getElementById('contenedor-usuarios-activos');
             if (usuarios.length === 0) {
                 contenedorUsuarios.innerHTML = `<p class="text-slate-500 text-xs text-center py-2">Sin usuarios registrados.</p>`;
             } else {
-                contenedorUsuarios.innerHTML = usuarios.map((u, idx) => `
-                    <div class="flex items-center justify-between bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800 text-xs">
-                        <span class="font-semibold text-slate-200 truncate" title="${u.correo}"><i class="fa-solid fa-user-check text-emerald-400 mr-2 text-[10px]"></i>${u.correo}</span>
-                        <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">${u.rol || 'OPERADOR'}</span>
-                    </div>
-                `).join('');
+                contenedorUsuarios.innerHTML = usuarios.map(u => {
+                    const emailUser = u.correo || u.email || 'Usuario';
+                    const esActivo = currentUser && currentUser.email.toLowerCase() === emailUser.toLowerCase();
+                    
+                    const estiloFondo = esActivo ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-slate-900/60 border-slate-800';
+                    const puntoEstado = esActivo ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-slate-600';
+                    const textoEstado = esActivo ? 'En línea' : 'Inactivo';
+                    const colorTextoEstado = esActivo ? 'text-emerald-400 font-bold' : 'text-slate-500';
+
+                    return `
+                        <div class="flex items-center justify-between px-3 py-2 rounded-xl border ${estiloFondo} text-xs">
+                            <div class="flex items-center space-x-2 truncate pr-2">
+                                <span class="w-2.5 h-2.5 rounded-full ${puntoEstado} flex-shrink-0"></span>
+                                <span class="font-semibold text-slate-200 truncate" title="${emailUser}">${emailUser}</span>
+                            </div>
+                            <div class="flex items-center space-x-2 flex-shrink-0">
+                                <span class="${colorTextoEstado} text-[10px]">${textoEstado}</span>
+                                <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">${u.rol || 'OPERADOR'}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             }
 
             // 2. Procesar Ranking de Operadores
@@ -780,7 +796,7 @@
             }
             tbody.innerHTML = data.map(u => `
                 <tr class="hover:bg-slate-900/50 transition">
-                    <td class="p-4 font-semibold text-white">${u.correo}</td>
+                    <td class="p-4 font-semibold text-white">${u.correo || u.email}</td>
                     <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">${u.rol || 'OPERADOR'}</span></td>
                     <td class="p-4 font-mono text-slate-400">${new Date(u.created_at || Date.now()).toLocaleDateString()}</td>
                     <td class="p-4 text-center">
