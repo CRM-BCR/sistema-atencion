@@ -41,7 +41,6 @@
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
-                        <!-- SIN EJEMPLO / PLACEHOLDER PARA MAYOR SEGURIDAD -->
                         <input type="email" id="login-email" required 
                             class="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-white text-sm transition">
                     </div>
@@ -121,7 +120,6 @@
                         <p class="text-xs text-slate-400">Métricas y estadísticas de gestión telefónica en tiempo real.</p>
                     </div>
                     
-                    <!-- FILTRO POR FECHAS -->
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex flex-wrap items-center gap-3">
                         <div class="flex items-center space-x-2">
                             <span class="text-[10px] font-bold uppercase text-slate-400">Desde:</span>
@@ -135,7 +133,6 @@
                     </div>
                 </div>
 
-                <!-- TARJETAS DE MÉTRICAS -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg">
                         <div class="flex items-center justify-between text-blue-400 mb-2">
@@ -158,7 +155,6 @@
                     </div>
                 </div>
 
-                <!-- RANKING Y GRÁFICOS -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
                     <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between">
                         <div>
@@ -282,8 +278,7 @@
                         <p class="text-xs text-slate-400">Monitoreo de ingresos, intentos fallidos y gestión de lista negra.</p>
                     </div>
                     <div class="flex items-center space-x-3">
-                        <!-- BOTÓN DE ACTUALIZAR ROBUSTO -->
-                        <button onclick="refrescarAuditoria()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                        <button onclick="refrescarAuditoria(true)" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
                             <i class="fa-solid fa-rotate-right"></i>
                             <span>Actualizar</span>
                         </button>
@@ -339,7 +334,7 @@
         </main>
     </div>
 
-    <!-- MODAL REGISTRO CLIENTE -->
+    <!-- MODALES Y RESTO DE VISTAS -->
     <div id="modal-cliente" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <h2 class="text-lg font-bold text-white">Registrar Gestión de Cliente</h2>
@@ -418,7 +413,6 @@
         </div>
     </div>
 
-    <!-- MODAL NUEVO USUARIO -->
     <div id="modal-usuario" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md space-y-4">
             <h2 class="text-lg font-bold text-white">Registrar Nuevo Usuario CRM</h2>
@@ -446,50 +440,18 @@
         </div>
     </div>
 
-    <!-- SCRIPTS Y LÓGICA -->
     <script>
         const opcionesServicios = {
-            "Bdigital": [
-                "Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", 
-                "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", 
-                "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", 
-                "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", 
-                "Pago de servicios", "Notificación de Viajes", "OTP no recibido"
-            ],
-            "Credito inmediato": [
-                "Afiliación", "Pago / Consultas", "Mis contactos", "Estatus Operación Fallida Crédito Inmediato", 
-                "Consultar Pagos Emitidos / Recibidos"
-            ],
-            "Pago Movil": [
-                "Afiliación", "Consultar Pagos Emitidos / Recibidos", "Regularización", "Solicitar Clave C2P", 
-                "Mis contactos", "Estatus Operación Fallida Pago Móvil", "Confirmación SMS receptor"
-            ],
-            "Pos": [
-                "Desafiliación POS", "Adquisición de equipo", "Cobro de Comisión Aliado", "Cobro de Comisión Banco", 
-                "Cierre de lote", "Soporte", "Contracargo"
-            ],
-            "TDD": [
-                "Bloqueo", "Desbloqueo", "Reposición/Solicitud", "Cambio Clave", 
-                "Estatus Operación Fallida TDD", "Cobro de Comisión Biopago"
-            ],
-            "Agencia": [
-                "En Servicio / Ubicación"
-            ],
-            "Cuenta": [
-                "Actualización de Datos", "Desbloqueo de Cuenta OTP", "Cobro de Comisión de Servicios", 
-                "Requisitos Apertura de Cuenta", "Bloqueo de Cuenta Reclamo ATC", "Estatus Reclamo ATC", 
-                "Solicitud de Cancelacion de Cuenta", "Estatus Bloqueo de Cuenta Masiva", "Estatus Bloqueo de Cuenta Seguridad"
-            ],
-            "Credito Digital": [
-                "Línea de Crédito Digital Información y Características", "Línea de Crédito Digital Cuotas", 
-                "Blog Financiero", "Información de cobros"
-            ],
-            "Solicitud de empleo": [
-                "Envio de curriculum"
-            ],
-            "Crecermovil": [
-                "Afiliación", "Consulta de Saldo", "Transferencias", "Pago de Servicios"
-            ]
+            "Bdigital": ["Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", "Notificación de Viajes", "OTP no recibido"],
+            "Credito inmediato": ["Afiliación", "Pago / Consultas", "Mis contactos", "Estatus Operación Fallida Crédito Inmediato", "Consultar Pagos Emitidos / Recibidos"],
+            "Pago Movil": ["Afiliación", "Consultar Pagos Emitidos / Recibidos", "Regularización", "Solicitar Clave C2P", "Mis contactos", "Estatus Operación Fallida Pago Móvil", "Confirmación SMS receptor"],
+            "Pos": ["Desafiliación POS", "Adquisición de equipo", "Cobro de Comisión Aliado", "Cobro de Comisión Banco", "Cierre de lote", "Soporte", "Contracargo"],
+            "TDD": ["Bloqueo", "Desbloqueo", "Reposición/Solicitud", "Cambio Clave", "Estatus Operación Fallida TDD", "Cobro de Comisión Biopago"],
+            "Agencia": ["En Servicio / Ubicación"],
+            "Cuenta": ["Actualización de Datos", "Desbloqueo de Cuenta OTP", "Cobro de Comisión de Servicios", "Requisitos Apertura de Cuenta", "Bloqueo de Cuenta Reclamo ATC", "Estatus Reclamo ATC", "Solicitud de Cancelacion de Cuenta", "Estatus Bloqueo de Cuenta Masiva", "Estatus Bloqueo de Cuenta Seguridad"],
+            "Credito Digital": ["Línea de Crédito Digital Información y Características", "Línea de Crédito Digital Cuotas", "Blog Financiero", "Información de cobros"],
+            "Solicitud de empleo": ["Envio de curriculum"],
+            "Crecermovil": ["Afiliación", "Consulta de Saldo", "Transferencias", "Pago de Servicios"]
         };
 
         function actualizarSubmenuServicio() {
@@ -537,7 +499,17 @@
         let chartMotivos = null;
         let chartCanales = null;
 
-        // INICIO DE SESIÓN CON LAS REGLAS EXACTAS SOLICITADAS
+        // FUNCIÓN DE REGISTRO EN AUDITORÍA GARANTIZADA
+        async function registrarAuditoria(usuario, resultado, detalle) {
+            const nuevoRegistro = { usuario, resultado, detalle, fecha: new Date().toISOString() };
+            const { error } = await _supabase.from('auditoria_crm').insert([nuevoRegistro]);
+            if (error) {
+                // Intento alternativo con campo created_at
+                await _supabase.from('auditoria_crm').insert([{ usuario, resultado, detalle, created_at: new Date().toISOString() }]);
+            }
+        }
+
+        // INICIO DE SESIÓN CON LÓGICA DE AUDITORÍA ROBUSTA
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const emailInput = document.getElementById('login-email');
@@ -546,24 +518,18 @@
             const errorBox = document.getElementById('login-error');
             errorBox.classList.add('hidden');
             
-            // Limpiar clases de color previas
             emailInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500', 'border-purple-500', 'ring-purple-500', 'border-emerald-500', 'ring-emerald-500');
 
-            // 1. REGLA: Dominio Incorrecto -> Al hacer click se coloca en ROJO y bloquea intento sin mensaje
+            // 1. Dominio Incorrecto -> ROJO
             if (!email.toLowerCase().endsWith('@bancrecer.com.ve')) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
-                await _supabase.from('auditoria_crm').insert([{ 
-                    usuario: email, 
-                    resultado: 'BLOQUEADO', 
-                    detalle: 'Intento de acceso rechazado: Dominio no autorizado', 
-                    fecha: new Date().toISOString() 
-                }]);
+                await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso rechazado: Dominio no autorizado');
                 return;
             }
 
-            // 2. REGLA: Usuario en lista negra (bloqueado previamente) -> Campo en ROJO sin mensaje
+            // 2. Usuario en lista negra -> ROJO
             await cargarBloqueados();
-            if (bloqueadosGlobal.some(b => b.correo.toLowerCase() === email.toLowerCase())) {
+            if (bloqueadosGlobal.some(b => b.correo && b.correo.toLowerCase() === email.toLowerCase())) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
                 return;
             }
@@ -572,22 +538,14 @@
                 const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
                 if (error || !data.user) {
-                    // Registrar intento fallido
-                    await _supabase.from('auditoria_crm').insert([{ 
-                        usuario: email, 
-                        resultado: 'FALLIDO', 
-                        detalle: 'Contraseña o credenciales inválidas', 
-                        fecha: new Date().toISOString() 
-                    }]);
+                    await registrarAuditoria(email, 'FALLIDO', 'Contraseña o credenciales inválidas');
 
-                    // Consultar cuántos fallos lleva
                     const { data: logsFallidos } = await _supabase.from('auditoria_crm')
                         .select('*')
                         .eq('usuario', email)
                         .eq('resultado', 'FALLIDO');
 
                     if (logsFallidos && logsFallidos.length >= 2) {
-                        // Bloquear por 2 errores de contraseña -> CAMPO EN MORADO sin mensaje
                         await _supabase.from('usuarios_bloqueados').insert([{ 
                             correo: email, 
                             motivo: 'Bloqueado por 2 intentos fallidos de contraseña', 
@@ -598,20 +556,14 @@
                     return;
                 }
 
-                // ACCESO EXITOSO -> CAMPO EN VERDE al iniciar sesión correctamente
+                // ACCESO EXITOSO -> VERDE
                 emailInput.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500');
 
-                await _supabase.from('auditoria_crm').insert([{ 
-                    usuario: data.user.email, 
-                    resultado: 'EXITOSO', 
-                    detalle: 'Ingreso al sistema autorizado', 
-                    fecha: new Date().toISOString() 
-                }]);
+                await registrarAuditoria(data.user.email, 'EXITOSO', 'Ingreso al sistema autorizado');
 
                 currentUser = data.user;
                 document.getElementById('user-display-email').textContent = data.user.email;
                 
-                // Pausa breve para visualizar el verde de éxito antes de pasar al dashboard
                 setTimeout(() => {
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('app-dashboard').classList.remove('hidden');
@@ -625,20 +577,16 @@
 
         async function cargarDatosGenerales() {
             try {
-                const { data: clientes } = await _supabase.from('clientes_crm').select('*').order('created_at', { ascending: false });
-                const { data: auditoria } = await _supabase.from('auditoria_crm').select('*').order('fecha', { ascending: false });
+                const { data: clientes } = await _supabase.from('clientes_crm').select('*');
                 const { data: usuarios } = await _supabase.from('usuarios_crm').select('*');
-                await cargarBloqueados();
+                await refrescarAuditoria(false);
 
                 clientesGlobal = clientes || [];
-                auditoriaGlobal = auditoria || [];
                 usuariosGlobal = usuarios || [];
 
                 actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal, usuariosGlobal);
                 renderClientes(clientesGlobal);
                 cargarUsuarios();
-                renderAuditoriaTab();
-                renderBloqueados();
             } catch (err) {
                 console.error("Error cargando datos generales:", err);
             }
@@ -646,35 +594,34 @@
 
         async function cargarBloqueados() {
             try {
-                const { data, error } = await _supabase.from('usuarios_bloqueados').select('*');
-                if (error) console.error("Error cargando bloqueados:", error);
+                const { data } = await _supabase.from('usuarios_bloqueados').select('*');
                 bloqueadosGlobal = data || [];
             } catch (err) {
-                console.error("Excepción en cargarBloqueados:", err);
                 bloqueadosGlobal = [];
             }
         }
 
-        // FUNCIÓN DE ACTUALIZACIÓN MANUAL ROBUSTA PARA EL BOTÓN
-        async function refrescarAuditoria() {
-            console.log("Refrescandos datos de auditoría y bloqueos...");
+        async function refrescarAuditoria(mostrarAlerta = false) {
             try {
-                const { data: auditoria, error: errAud } = await _supabase.from('auditoria_crm').select('*').order('fecha', { ascending: false });
-                if (errAud) console.error("Error auditoría:", errAud);
+                const { data: auditoria } = await _supabase.from('auditoria_crm').select('*');
                 auditoriaGlobal = auditoria || [];
+                
+                // Ordenar manualmente por fecha desc para prevenir inconsistencias en campos
+                auditoriaGlobal.sort((a, b) => new Date(b.fecha || b.created_at) - new Date(a.fecha || a.created_at));
 
                 await cargarBloqueados();
 
                 renderAuditoriaTab();
                 renderBloqueados();
-                alert("¡Datos de auditoría actualizados correctamente!");
+
+                if (mostrarAlerta) {
+                    alert("¡Datos de auditoría actualizados correctamente!");
+                }
             } catch (err) {
-                console.error("Error al refrescar:", err);
-                alert("Error al actualizar la auditoría. Revisa la consola.");
+                console.error("Error al refrescar auditoría:", err);
             }
         }
 
-        // FILTRO POR FECHAS
         function aplicarFiltroFechas() {
             const desde = document.getElementById('filtro-fecha-desde').value;
             const hasta = document.getElementById('filtro-fecha-hasta').value;
@@ -702,7 +649,6 @@
             renderClientes(clientesGlobal);
         }
 
-        // ACTUALIZAR DASHBOARD
         function actualizarDashboardConFiltro(clientes, auditoria, usuarios) {
             document.getElementById('stat-total-registros').textContent = clientes.length;
             document.getElementById('stat-total-usuarios').textContent = usuarios.length;
@@ -835,10 +781,7 @@
             });
         }
 
-        // CLIENTES
-        async function cargarClientes() {
-            await cargarDatosGenerales();
-        }
+        async function cargarClientes() { await cargarDatosGenerales(); }
 
         function renderClientes(lista) {
             const tbody = document.getElementById('tbody-clientes');
@@ -848,7 +791,7 @@
             }
             tbody.innerHTML = lista.map(c => `
                 <tr class="hover:bg-slate-900/50 transition">
-                    <td class="p-4 font-mono text-slate-400">${new Date(c.created_at || Date.now()).toLocaleDateString()}</td>
+                    <td class="p-4 font-mono text-slate-400">${new Date(c.created_at || c.fecha || Date.now()).toLocaleDateString()}</td>
                     <td class="p-4 font-mono text-white">${c.cedula}</td>
                     <td class="p-4 font-semibold text-white">${c.nombre}</td>
                     <td class="p-4 text-slate-400">${c.telefono}</td>
@@ -906,7 +849,6 @@
             }
         }
 
-        // USUARIOS CRM
         async function cargarUsuarios() {
             const tbody = document.getElementById('tbody-usuarios');
             const { data, error } = await _supabase.from('usuarios_crm').select('*');
@@ -943,7 +885,6 @@
             }
 
             await _supabase.from('usuarios_crm').insert([{ correo: correo, rol: rol }]);
-            
             cerrarModalUsuario();
             document.getElementById('form-usuario').reset();
             cargarDatosGenerales();
@@ -956,7 +897,6 @@
             }
         }
 
-        // RENDERIZAR TABLA DE AUDITORÍA
         function renderAuditoriaTab() {
             const tbody = document.getElementById('tbody-auditoria');
             if (!auditoriaGlobal || auditoriaGlobal.length === 0) {
@@ -965,7 +905,7 @@
             }
             tbody.innerHTML = auditoriaGlobal.map(log => `
                 <tr class="hover:bg-slate-900/50 transition">
-                    <td class="p-4 font-mono text-slate-400">${new Date(log.fecha).toLocaleString()}</td>
+                    <td class="p-4 font-mono text-slate-400">${new Date(log.fecha || log.created_at).toLocaleString()}</td>
                     <td class="p-4 font-semibold text-white">${log.usuario}</td>
                     <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${log.resultado === 'EXITOSO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}">${log.resultado}</span></td>
                     <td class="p-4 text-slate-400">${log.detalle}</td>
@@ -982,7 +922,7 @@
                 <tr class="hover:bg-slate-900/50 transition">
                     <td class="p-3 font-semibold text-white">${b.correo}</td>
                     <td class="p-3 text-red-400">${b.motivo}</td>
-                    <td class="p-3 font-mono text-slate-400">${new Date(b.fecha).toLocaleString()}</td>
+                    <td class="p-3 font-mono text-slate-400">${new Date(b.fecha || b.created_at).toLocaleString()}</td>
                     <td class="p-3 text-center">
                         <button onclick="desbloquearUsuario('${b.id}', '${b.correo}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition">Desbloquear</button>
                     </td>
@@ -995,18 +935,12 @@
                 await _supabase.from('auditoria_crm').delete().eq('usuario', correo).eq('resultado', 'FALLIDO');
                 
                 const adminEmail = currentUser ? currentUser.email : 'Administrador';
-                await _supabase.from('auditoria_crm').insert([{ 
-                    usuario: correo, 
-                    resultado: 'EXITOSO', 
-                    detalle: `Usuario desbloqueado de la lista negra por el administrador: ${adminEmail}`, 
-                    fecha: new Date().toISOString() 
-                }]);
+                await registrarAuditoria(correo, 'EXITOSO', `Usuario desbloqueado de la lista negra por el administrador: ${adminEmail}`);
 
                 cargarDatosGenerales();
             }
         }
 
-        // NAVEGACIÓN Y MODALES
         function switchTab(t) {
             ['dashboard', 'clientes', 'usuarios', 'auditoria'].forEach(tab => {
                 const sec = document.getElementById(`tab-${tab}`);
@@ -1023,13 +957,13 @@
             if (t === 'dashboard') cargarDatosGenerales();
             if (t === 'clientes') cargarClientes();
             if (t === 'usuarios') cargarUsuarios();
-            if (t === 'auditoria') { refrescarAuditoria(); }
+            if (t === 'auditoria') refrescarAuditoria(false);
         }
 
         function abrirModalCliente() { document.getElementById('modal-cliente').classList.remove('hidden'); }
         function cerrarModalCliente() { document.getElementById('modal-cliente').classList.add('hidden'); }
         function abrirModalUsuario() { document.getElementById('modal-usuario').classList.remove('hidden'); }
-        function cerrarModalUsuario() { document.getElementById('modal-usuario').classList.add('hidden'); }
+        function cerrarModalUsuario() { document.getElementById('modal-usuario').classList.hidden = true; }
 
         function exportToExcel(id, name) {
             XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `${name}.xlsx`);
