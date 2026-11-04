@@ -282,7 +282,7 @@
                         <p class="text-xs text-slate-400">Monitoreo de ingresos, intentos fallidos y gestión de lista negra.</p>
                     </div>
                     <div class="flex items-center space-x-3">
-                        <!-- BOTÓN DE ACTUALIZAR NUEVO -->
+                        <!-- BOTÓN DE ACTUALIZAR ROBUSTO -->
                         <button onclick="refrescarAuditoria()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
                             <i class="fa-solid fa-rotate-right"></i>
                             <span>Actualizar</span>
@@ -619,37 +619,59 @@
                 }, 400);
 
             } catch (err) {
-                // Error de conexión u otro imprevisto
+                console.error("Error en login:", err);
             }
         });
 
         async function cargarDatosGenerales() {
-            const { data: clientes } = await _supabase.from('clientes_crm').select('*').order('created_at', { ascending: false });
-            const { data: auditoria } = await _supabase.from('auditoria_crm').select('*').order('fecha', { ascending: false });
-            const { data: usuarios } = await _supabase.from('usuarios_crm').select('*');
-            await cargarBloqueados();
+            try {
+                const { data: clientes } = await _supabase.from('clientes_crm').select('*').order('created_at', { ascending: false });
+                const { data: auditoria } = await _supabase.from('auditoria_crm').select('*').order('fecha', { ascending: false });
+                const { data: usuarios } = await _supabase.from('usuarios_crm').select('*');
+                await cargarBloqueados();
 
-            clientesGlobal = clientes || [];
-            auditoriaGlobal = auditoria || [];
-            usuariosGlobal = usuarios || [];
+                clientesGlobal = clientes || [];
+                auditoriaGlobal = auditoria || [];
+                usuariosGlobal = usuarios || [];
 
-            actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal, usuariosGlobal);
-            renderClientes(clientesGlobal);
-            cargarUsuarios();
-            cargarAuditoria();
-            renderBloqueados();
+                actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal, usuariosGlobal);
+                renderClientes(clientesGlobal);
+                cargarUsuarios();
+                renderAuditoriaTab();
+                renderBloqueados();
+            } catch (err) {
+                console.error("Error cargando datos generales:", err);
+            }
         }
 
         async function cargarBloqueados() {
-            const { data } = await _supabase.from('usuarios_bloqueados').select('*');
-            bloqueadosGlobal = data || [];
+            try {
+                const { data, error } = await _supabase.from('usuarios_bloqueados').select('*');
+                if (error) console.error("Error cargando bloqueados:", error);
+                bloqueadosGlobal = data || [];
+            } catch (err) {
+                console.error("Excepción en cargarBloqueados:", err);
+                bloqueadosGlobal = [];
+            }
         }
 
-        // FUNCIÓN PARA ACTUALIZAR MANUALMENTE LA AUDITORÍA
+        // FUNCIÓN DE ACTUALIZACIÓN MANUAL ROBUSTA PARA EL BOTÓN
         async function refrescarAuditoria() {
-            await cargarAuditoria();
-            await cargarBloqueados();
-            renderBloqueados();
+            console.log("Refrescandos datos de auditoría y bloqueos...");
+            try {
+                const { data: auditoria, error: errAud } = await _supabase.from('auditoria_crm').select('*').order('fecha', { ascending: false });
+                if (errAud) console.error("Error auditoría:", errAud);
+                auditoriaGlobal = auditoria || [];
+
+                await cargarBloqueados();
+
+                renderAuditoriaTab();
+                renderBloqueados();
+                alert("¡Datos de auditoría actualizados correctamente!");
+            } catch (err) {
+                console.error("Error al refrescar:", err);
+                alert("Error al actualizar la auditoría. Revisa la consola.");
+            }
         }
 
         // FILTRO POR FECHAS
@@ -934,13 +956,10 @@
             }
         }
 
-        // AUDITORÍA Y SEGURIDAD CON TRAZA DE DESBLOQUEOS
-        async function cargarAuditoria() {
-            const { data: auditoria } = await _supabase.from('auditoria_crm').select('*').order('fecha', { ascending: false });
-            auditoriaGlobal = auditoria || [];
-
+        // RENDERIZAR TABLA DE AUDITORÍA
+        function renderAuditoriaTab() {
             const tbody = document.getElementById('tbody-auditoria');
-            if (auditoriaGlobal.length === 0) {
+            if (!auditoriaGlobal || auditoriaGlobal.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Sin registros de auditoría recientes.</td></tr>`;
                 return;
             }
@@ -955,7 +974,7 @@
 
         function renderBloqueados() {
             const tbody = document.getElementById('tbody-bloqueados');
-            if (bloqueadosGlobal.length === 0) {
+            if (!bloqueadosGlobal || bloqueadosGlobal.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-slate-500">No hay usuarios bloqueados en lista negra.</td></tr>`;
                 return;
             }
@@ -1004,7 +1023,7 @@
             if (t === 'dashboard') cargarDatosGenerales();
             if (t === 'clientes') cargarClientes();
             if (t === 'usuarios') cargarUsuarios();
-            if (t === 'auditoria') { cargarAuditoria(); cargarBloqueados(); }
+            if (t === 'auditoria') { refrescarAuditoria(); }
         }
 
         function abrirModalCliente() { document.getElementById('modal-cliente').classList.remove('hidden'); }
