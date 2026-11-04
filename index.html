@@ -500,7 +500,7 @@
         let chartMotivos = null;
         let chartCanales = null;
 
-        // FUNCIÓN DE REGISTRO UNIFICADA EXACTA A LAS COLUMNAS DE TU SUPABASE (correo, resultado, detalle, fecha)
+        // FUNCIÓN DE REGISTRO LIMPIA (SIN MOSTRAR DATOS EN CONSOLA POR SEGURIDAD)
         async function registrarAuditoria(correoUser, resultado, detalle) {
             try {
                 const payload = { 
@@ -512,8 +512,6 @@
                 const { error } = await _supabase.from('auditoria_crm').insert([payload]);
                 if (error) {
                     console.error("Error al insertar auditoría:", error.message);
-                } else {
-                    console.log("Auditoría insertada correctamente:", payload);
                 }
             } catch (err) {
                 console.error("Excepción en auditoría:", err);
