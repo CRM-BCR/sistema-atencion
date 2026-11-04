@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema CRM Bancario - Bancrecer</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Tools -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SheetJS (Excel Export) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- Archivo de configuración local opcional -->
+    <script src="config.js" onerror="console.log('Cargando credenciales de respaldo integradas...')"></script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 p-4">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-600/20 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-blue-600/10 text-blue-500 mb-4 border border-blue-500/20">
+                    <i class="fa-solid fa-building-columns text-3xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-white tracking-wide">Sistema CRM Bancario</h1>
+                <p class="text-slate-400 text-sm mt-1">Acceso para Operadores y Administradores</p>
+            </div>
+
+            <form id="login-form" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Correo Electrónico</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                            <i class="fa-solid fa-envelope"></i>
+                        </span>
+                        <input type="email" id="login-email" required placeholder="correo@bancrecer.com.ve" 
+                            class="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-white text-sm placeholder-slate-600 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Contraseña</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" id="login-password" required placeholder="••••••••" 
+                            class="w-full pl-10 pr-12 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-white text-sm placeholder-slate-600 transition">
+                        
+                        <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white transition focus:outline-none">
+                            <i class="fa-solid fa-eye" id="toggle-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="login-error" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs text-center font-medium"></div>
+
+                <button type="submit" id="btn-login" class="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 font-semibold text-white rounded-xl shadow-lg shadow-blue-600/30 transition duration-150 flex items-center justify-center space-x-2">
+                    <span>Iniciar Sesión</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SISTEMA PRINCIPAL CRM (PROTEGIDO) -->
+    <div id="app-dashboard" class="hidden flex-1 flex flex-col md:flex-row min-h-screen">
+        
+        <!-- BARRA LATERAL (NAVBAR) -->
+        <aside class="w-full md:w-64 bg-slate-950 border-r border-slate-800 flex flex-col justify-between p-4">
+            <div>
+                <div class="flex items-center space-x-3 px-3 py-4 mb-6 border-b border-slate-800/80">
+                    <div class="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-600/30">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-white leading-none">Bancrecer</h2>
+                        <span class="text-[10px] uppercase tracking-wider text-blue-400 font-semibold">CRM Call Center</span>
+                    </div>
+                </div>
+
+                <nav class="space-y-1">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-blue-400 bg-blue-600/10 border border-blue-500/20">
+                        <i class="fa-solid fa-chart-pie w-5"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button onclick="switchTab('clientes')" id="nav-clientes" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-900 hover:text-white transition">
+                        <i class="fa-solid fa-users w-5"></i>
+                        <span>Gestión Clientes</span>
+                    </button>
+                    <button onclick="switchTab('usuarios')" id="nav-usuarios" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-900 hover:text-white transition">
+                        <i class="fa-solid fa-user-gear w-5"></i>
+                        <span>Usuarios CRM</span>
+                    </button>
+                    <button onclick="switchTab('auditoria')" id="nav-auditoria" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-900 hover:text-white transition">
+                        <i class="fa-solid fa-shield-halved w-5"></i>
+                        <span>Auditoría</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- INFO USUARIOS Y SALIDA -->
+            <div class="pt-4 border-t border-slate-800/80">
+                <div class="px-3 py-2 mb-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                    <p id="user-display-email" class="text-xs font-semibold text-slate-200 truncate">usuario@bancrecer.com.ve</p>
+                    <span id="user-display-role" class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">OPERADOR</span>
+                </div>
+                <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-semibold transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="flex-1 p-6 md:p-8 custom-scrollbar overflow-y-auto bg-slate-900">
+
+            <!-- SECCIÓN 1: DASHBOARD -->
+            <section id="tab-dashboard" class="space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Resumen General de Operaciones</h1>
+                        <p class="text-xs text-slate-400">Métricas y estadísticas de gestión telefónica en tiempo real.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+                        <div class="flex items-center justify-between text-blue-400 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Clientes</span>
+                            <i class="fa-solid fa-users text-lg"></i>
+                        </div>
+                        <p id="stat-total-clientes" class="text-3xl font-extrabold text-white">0</p>
+                    </div>
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+                        <div class="flex items-center justify-between text-emerald-400 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Reclamos Atendidos</span>
+                            <i class="fa-solid fa-headset text-lg"></i>
+                        </div>
+                        <p id="stat-total-reclamos" class="text-3xl font-extrabold text-white">0</p>
+                    </div>
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+                        <div class="flex items-center justify-between text-purple-400 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Solicitudes Activas</span>
+                            <i class="fa-solid fa-folder-open text-lg"></i>
+                        </div>
+                        <p id="stat-total-solicitudes" class="text-3xl font-extrabold text-white">0</p>
+                    </div>
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+                        <div class="flex items-center justify-between text-amber-400 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Logins de Seguridad</span>
+                            <i class="fa-solid fa-shield text-lg"></i>
+                        </div>
+                        <p id="stat-total-logins" class="text-3xl font-extrabold text-white">0</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: AUDITORÍA -->
+            <section id="tab-auditoria" class="hidden space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Registro de Auditoría y Accesos</h1>
+                        <p class="text-xs text-slate-400">Trazabilidad completa de intenciones de acceso al CRM.</p>
+                    </div>
+                    <button onclick="exportToExcel('tabla-auditoria', 'Auditoria_CRM_Bancrecer')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Exportar Excel</span>
+                    </button>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table id="tabla-auditoria" class="w-full text-left text-xs">
+                            <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-4">Fecha / Hora</th>
+                                    <th class="p-4">Usuario Intentado</th>
+                                    <th class="p-4">Resultado</th>
+                                    <th class="p-4">Detalle / Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-auditoria" class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td colspan="4" class="p-4 text-center text-slate-500">Cargando registros...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 3: CLIENTES -->
+            <section id="tab-clientes" class="hidden space-y-6">
+                <h1 class="text-2xl font-bold text-white">Gestión de Clientes</h1>
+                <p class="text-slate-400 text-xs">Módulo de consultas operativas de clientes.</p>
+            </section>
+
+            <!-- SECCIÓN 4: USUARIOS -->
+            <section id="tab-usuarios" class="hidden space-y-6">
+                <h1 class="text-2xl font-bold text-white">Administración de Usuarios</h1>
+                <p class="text-slate-400 text-xs">Gestión de accesos y roles del sistema.</p>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT DE CONTROL PRINCIPAL -->
+    <script>
+        // CONFIGURACIÓN INTELIGENTE DE SUPABASE (FALLBACK)
+        const SUPABASE_URL = (typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.URL) 
+            ? SUPABASE_CONFIG.URL 
+            : 'https://mchlteunhcjzuetzyajz.supabase.co';
+
+        const SUPABASE_KEY = (typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.KEY) 
+            ? SUPABASE_CONFIG.KEY 
+            : 'sb_publishable_S5LJcX40QJ8HPVIRU7l75w_LYNzVWQk';
+
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // CONTROL DE VISIBILIDAD DE CONTRASEÑA (EL OJITO)
+            const passwordInput = document.getElementById('login-password');
+            const togglePasswordBtn = document.getElementById('toggle-password');
+            const toggleIcon = document.getElementById('toggle-icon');
+
+            if (togglePasswordBtn && passwordInput) {
+                togglePasswordBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        toggleIcon.classList.remove('fa-eye');
+                        toggleIcon.classList.add('fa-eye-slash');
+                    } else {
+                        passwordInput.type = 'password';
+                        toggleIcon.classList.remove('fa-eye-slash');
+                        toggleIcon.classList.add('fa-eye');
+                    }
+                });
+            }
+
+            // PROCESO DE INICIO DE SESIÓN
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('login-email').value.trim();
+                    const password = document.getElementById('login-password').value.trim();
+                    const errorBox = document.getElementById('login-error');
+
+                    errorBox.classList.add('hidden');
+
+                    try {
+                        const { data, error } = await _supabase
+                            .from('usuarios_crm')
+                            .select('*')
+                            .eq('correo', email)
+                            .eq('password', password)
+                            .single();
+
+                        if (error || !data) {
+                            // REGISTRAR INTENTO FALLIDO EN AUDITORÍA
+                            await registrarAuditoria(email, 'FALLIDO', 'Intento de acceso con credenciales inválidas');
+                            
+                            errorBox.textContent = 'Credenciales inválidas. Por favor verifique sus datos.';
+                            errorBox.classList.remove('hidden');
+                            return;
+                        }
+
+                        // REGISTRAR INICIO DE SESIÓN EXITOSO
+                        await registrarAuditoria(email, 'EXITOSO', 'Inicio de sesión correcto en la plataforma');
+
+                        currentUser = data;
+                        document.getElementById('user-display-email').textContent = data.correo;
+                        document.getElementById('user-display-role').textContent = data.rol || 'OPERADOR';
+
+                        document.getElementById('login-screen').classList.add('hidden');
+                        document.getElementById('app-dashboard').classList.remove('hidden');
+
+                        cargarAuditoria();
+                    } catch (err) {
+                        console.error('Error al iniciar sesión:', err);
+                    }
+                });
+            }
+        });
+
+        // REGISTRO DE EVENTOS DE AUDITORÍA
+        async function registrarAuditoria(email, resultado, detalle) {
+            try {
+                await _supabase.from('auditoria_crm').insert([{
+                    usuario: email,
+                    resultado: resultado,
+                    detalle: detalle,
+                    fecha: new Date().toISOString()
+                }]);
+            } catch (e) {
+                console.error('Error guardando log de auditoría:', e);
+            }
+        }
+
+        // CARGA DE DATOS DE AUDITORÍA EN LA TABLA
+        async function cargarAuditoria() {
+            const tbody = document.getElementById('tbody-auditoria');
+            if (!tbody) return;
+
+            const { data, error } = await _supabase
+                .from('auditoria_crm')
+                .select('*')
+                .order('fecha', { ascending: false });
+
+            if (error || !data) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-400">Error cargando auditoría.</td></tr>`;
+                return;
+            }
+
+            document.getElementById('stat-total-logins').textContent = data.length;
+
+            tbody.innerHTML = data.map(log => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-4 font-mono text-slate-400">${new Date(log.fecha).toLocaleString()}</td>
+                    <td class="p-4 font-semibold text-white">${log.usuario}</td>
+                    <td class="p-4">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${log.resultado === 'EXITOSO' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}">
+                            ${log.resultado}
+                        </span>
+                    </td>
+                    <td class="p-4 text-slate-400">${log.detalle}</td>
+                </tr>
+            `).join('');
+        }
+
+        // CAMBIO DE PESTAÑAS (NAVEGACIÓN)
+        function switchTab(tabName) {
+            ['dashboard', 'clientes', 'usuarios', 'auditoria'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-900 hover:text-white transition";
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabName}`).className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-blue-400 bg-blue-600/10 border border-blue-500/20";
+
+            if (tabName === 'auditoria') cargarAuditoria();
+        }
+
+        // EXPORTAR A EXCEL
+        function exportToExcel(tableId, filename) {
+            const table = document.getElementById(tableId);
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Reporte" });
+            XLSX.writeFile(wb, `${filename}.xlsx`);
+        }
+
+        // SALIR
+        function logout() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
