@@ -440,6 +440,7 @@
         </div>
     </div>
 
+    <!-- SCRIPTS -->
     <script>
         const opcionesServicios = {
             "Bdigital": ["Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", "Notificación de Viajes", "OTP no recibido"],
@@ -499,17 +500,24 @@
         let chartMotivos = null;
         let chartCanales = null;
 
-        // FUNCIÓN DE REGISTRO EN AUDITORÍA GARANTIZADA
+        // FUNCIÓN DE REGISTRO EN AUDITORÍA Y LISTA NEGRA BLINDADA
         async function registrarAuditoria(usuario, resultado, detalle) {
-            const nuevoRegistro = { usuario, resultado, detalle, fecha: new Date().toISOString() };
+            const nuevoRegistro = { usuario: usuario, resultado: resultado, detalle: detalle, fecha: new Date().toISOString() };
             const { error } = await _supabase.from('auditoria_crm').insert([nuevoRegistro]);
             if (error) {
-                // Intento alternativo con campo created_at
-                await _supabase.from('auditoria_crm').insert([{ usuario, resultado, detalle, created_at: new Date().toISOString() }]);
+                await _supabase.from('auditoria_crm').insert([{ email: usuario, status: resultado, description: detalle, created_at: new Date().toISOString() }]);
             }
         }
 
-        // INICIO DE SESIÓN CON LÓGICA DE AUDITORÍA ROBUSTA
+        async function registrarBloqueo(correo, motivo) {
+            const reg = { correo: correo, motivo: motivo, fecha: new Date().toISOString() };
+            const { error } = await _supabase.from('usuarios_bloqueados').insert([reg]);
+            if (error) {
+                await _supabase.from('usuarios_bloqueados').insert([{ email: correo, reason: motivo, created_at: new Date().toISOString() }]);
+            }
+        }
+
+        // INICIO DE SESIÓN
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const emailInput = document.getElementById('login-email');
@@ -520,16 +528,18 @@
             
             emailInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500', 'border-purple-500', 'ring-purple-500', 'border-emerald-500', 'ring-emerald-500');
 
-            // 1. Dominio Incorrecto -> ROJO
+            await cargarBloqueados();
+
+            // 1. REGLA: Dominio Incorrecto (ej: @gmail.com) -> Bloquear, marcar ROJO y registrar en lista negra + auditoría
             if (!email.toLowerCase().endsWith('@bancrecer.com.ve')) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
                 await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso rechazado: Dominio no autorizado');
+                await registrarBloqueo(email, 'Bloqueado por intentar acceder con dominio no autorizado');
                 return;
             }
 
-            // 2. Usuario en lista negra -> ROJO
-            await cargarBloqueados();
-            if (bloqueadosGlobal.some(b => b.correo && b.correo.toLowerCase() === email.toLowerCase())) {
+            // 2. REGLA: Usuario en lista negra (bloqueado previamente) -> ROJO
+            if (bloqueadosGlobal.some(b => (b.correo || b.email || '').toLowerCase() === email.toLowerCase())) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
                 return;
             }
@@ -540,17 +550,12 @@
                 if (error || !data.user) {
                     await registrarAuditoria(email, 'FALLIDO', 'Contraseña o credenciales inválidas');
 
-                    const { data: logsFallidos } = await _supabase.from('auditoria_crm')
-                        .select('*')
-                        .eq('usuario', email)
-                        .eq('resultado', 'FALLIDO');
+                    // Consultar fallos
+                    const { data: logsData } = await _supabase.from('auditoria_crm').select('*');
+                    const logsFallidos = (logsData || []).filter(l => (l.usuario || l.email) === email && (l.resultado || l.status) === 'FALLIDO');
 
-                    if (logsFallidos && logsFallidos.length >= 2) {
-                        await _supabase.from('usuarios_bloqueados').insert([{ 
-                            correo: email, 
-                            motivo: 'Bloqueado por 2 intentos fallidos de contraseña', 
-                            fecha: new Date().toISOString() 
-                        }]);
+                    if (logsFallidos.length >= 2) {
+                        await registrarBloqueo(email, 'Bloqueado por 2 intentos fallidos de contraseña');
                         emailInput.classList.add('border-purple-500', 'ring-2', 'ring-purple-500');
                     }
                     return;
@@ -558,7 +563,6 @@
 
                 // ACCESO EXITOSO -> VERDE
                 emailInput.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500');
-
                 await registrarAuditoria(data.user.email, 'EXITOSO', 'Ingreso al sistema autorizado');
 
                 currentUser = data.user;
@@ -588,7 +592,7 @@
                 renderClientes(clientesGlobal);
                 cargarUsuarios();
             } catch (err) {
-                console.error("Error cargando datos generales:", err);
+                console.error("Error general:", err);
             }
         }
 
@@ -605,9 +609,7 @@
             try {
                 const { data: auditoria } = await _supabase.from('auditoria_crm').select('*');
                 auditoriaGlobal = auditoria || [];
-                
-                // Ordenar manualmente por fecha desc para prevenir inconsistencias en campos
-                auditoriaGlobal.sort((a, b) => new Date(b.fecha || b.created_at) - new Date(a.fecha || a.created_at));
+                auditoriaGlobal.sort((a, b) => new Date(b.fecha || b.created_at || 0) - new Date(a.fecha || a.created_at || 0));
 
                 await cargarBloqueados();
 
@@ -897,19 +899,28 @@
             }
         }
 
+        // RENDERIZADO BLINDADO DE AUDITORÍA Y BLOQUEADOS
         function renderAuditoriaTab() {
             const tbody = document.getElementById('tbody-auditoria');
             if (!auditoriaGlobal || auditoriaGlobal.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Sin registros de auditoría recientes.</td></tr>`;
                 return;
             }
-            tbody.innerHTML = auditoriaGlobal.map(log => `
-                <tr class="hover:bg-slate-900/50 transition">
-                    <td class="p-4 font-mono text-slate-400">${new Date(log.fecha || log.created_at).toLocaleString()}</td>
-                    <td class="p-4 font-semibold text-white">${log.usuario}</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${log.resultado === 'EXITOSO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}">${log.resultado}</span></td>
-                    <td class="p-4 text-slate-400">${log.detalle}</td>
-                </tr>`).join('');
+            tbody.innerHTML = auditoriaGlobal.map(log => {
+                const fechaLog = new Date(log.fecha || log.created_at || Date.now()).toLocaleString();
+                const usuarioLog = log.usuario || log.email || log.correo || 'Desconocido';
+                const resultadoLog = log.resultado || log.status || 'REGISTRO';
+                const detalleLog = log.detalle || log.description || log.reason || '-';
+                const colorRes = resultadoLog === 'EXITOSO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400';
+
+                return `
+                    <tr class="hover:bg-slate-900/50 transition">
+                        <td class="p-4 font-mono text-slate-400">${fechaLog}</td>
+                        <td class="p-4 font-semibold text-white">${usuarioLog}</td>
+                        <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${colorRes}">${resultadoLog}</span></td>
+                        <td class="p-4 text-slate-400">${detalleLog}</td>
+                    </tr>`;
+            }).join('');
         }
 
         function renderBloqueados() {
@@ -918,24 +929,31 @@
                 tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-slate-500">No hay usuarios bloqueados en lista negra.</td></tr>`;
                 return;
             }
-            tbody.innerHTML = bloqueadosGlobal.map(b => `
-                <tr class="hover:bg-slate-900/50 transition">
-                    <td class="p-3 font-semibold text-white">${b.correo}</td>
-                    <td class="p-3 text-red-400">${b.motivo}</td>
-                    <td class="p-3 font-mono text-slate-400">${new Date(b.fecha || b.created_at).toLocaleString()}</td>
-                    <td class="p-3 text-center">
-                        <button onclick="desbloquearUsuario('${b.id}', '${b.correo}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition">Desbloquear</button>
-                    </td>
-                </tr>`).join('');
+            tbody.innerHTML = bloqueadosGlobal.map(b => {
+                const correoB = b.correo || b.email || 'Desconocido';
+                const motivoB = b.motivo || b.reason || 'Bloqueado por seguridad';
+                const fechaB = new Date(b.fecha || b.created_at || Date.now()).toLocaleString();
+
+                return `
+                    <tr class="hover:bg-slate-900/50 transition">
+                        <td class="p-3 font-semibold text-white">${correoB}</td>
+                        <td class="p-3 text-red-400">${motivoB}</td>
+                        <td class="p-3 font-mono text-slate-400">${fechaB}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="desbloquearUsuario('${b.id}', '${correoB}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition">Desbloquear</button>
+                        </td>
+                    </tr>`;
+            }).join('');
         }
 
         async function desbloquearUsuario(id, correo) {
             if (confirm(`¿Estás seguro de desbloquear al usuario ${correo}?`)) {
                 await _supabase.from('usuarios_bloqueados').delete().eq('id', id);
-                await _supabase.from('auditoria_crm').delete().eq('usuario', correo).eq('resultado', 'FALLIDO');
+                await _supabase.from('auditoria_crm').delete().eq('usuario', correo);
+                await _supabase.from('auditoria_crm').delete().eq('email', correo);
                 
                 const adminEmail = currentUser ? currentUser.email : 'Administrador';
-                await registrarAuditoria(correo, 'EXITOSO', `Usuario desbloqueado de la lista negra por el administrador: ${adminEmail}`);
+                await registrarAuditoria(correo, 'EXITOSO', `Usuario desbloqueado de la lista negra por: ${adminEmail}`);
 
                 cargarDatosGenerales();
             }
@@ -963,7 +981,7 @@
         function abrirModalCliente() { document.getElementById('modal-cliente').classList.remove('hidden'); }
         function cerrarModalCliente() { document.getElementById('modal-cliente').classList.add('hidden'); }
         function abrirModalUsuario() { document.getElementById('modal-usuario').classList.remove('hidden'); }
-        function cerrarModalUsuario() { document.getElementById('modal-usuario').classList.hidden = true; }
+        function cerrarModalUsuario() { document.getElementById('modal-usuario').classList.add('hidden'); }
 
         function exportToExcel(id, name) {
             XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `${name}.xlsx`);
