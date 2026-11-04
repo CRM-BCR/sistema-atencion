@@ -500,24 +500,25 @@
         let chartMotivos = null;
         let chartCanales = null;
 
-        // FUNCIÓN DE REGISTRO DIRECTA CON RETORNO DE ERROR
+        // FUNCIONES DE REGISTRO CON CONSOLA DE DEPURACIÓN
         async function registrarAuditoria(usuario, resultado, detalle) {
-            const { error } = await _supabase.from('auditoria_crm').insert([{ 
-                usuario: usuario, 
-                resultado: resultado, 
-                detalle: detalle, 
-                fecha: new Date().toISOString() 
-            }]);
-            if (error) console.error("Error registrando auditoría:", error.message);
+            const payload = { usuario: usuario, resultado: resultado, detalle: detalle, fecha: new Date().toISOString() };
+            const { data, error } = await _supabase.from('auditoria_crm').insert([payload]);
+            if (error) {
+                console.error("SUPABASE ERROR AUDITORÍA:", error.message);
+            } else {
+                console.log("Auditoría guardada exitosamente:", payload);
+            }
         }
 
         async function registrarBloqueo(correo, motivo) {
-            const { error } = await _supabase.from('usuarios_bloqueados').insert([{ 
-                correo: correo, 
-                motivo: motivo, 
-                fecha: new Date().toISOString() 
-            }]);
-            if (error) console.error("Error registrando bloqueo:", error.message);
+            const payload = { correo: correo, motivo: motivo, fecha: new Date().toISOString() };
+            const { data, error } = await _supabase.from('usuarios_bloqueados').insert([payload]);
+            if (error) {
+                console.error("SUPABASE ERROR BLOQUEO:", error.message);
+            } else {
+                console.log("Bloqueo guardado exitosamente:", payload);
+            }
         }
 
         // INICIO DE SESIÓN
@@ -533,18 +534,20 @@
 
             await cargarBloqueados();
 
-            // 1. REGLA: Dominio Incorrecto -> BLOQUEADO en auditoría y lista negra
+            // 1. Dominio Incorrecto
             if (!email.toLowerCase().endsWith('@bancrecer.com.ve')) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
                 await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso con dominio no autorizado');
                 await registrarBloqueo(email, 'Intento de acceso con dominio externo no permitido');
+                alert("Acceso denegado: El correo debe pertenecer al dominio @bancrecer.com.ve");
                 return;
             }
 
-            // 2. REGLA: Usuario en Lista Negra -> BLOQUEADO
+            // 2. Usuario Bloqueado
             if (bloqueadosGlobal.some(b => (b.correo || '').toLowerCase() === email.toLowerCase())) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
-                await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso con usuario bloqueado en lista negra');
+                await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso con usuario en lista negra');
+                alert("Este usuario se encuentra bloqueado en la lista negra.");
                 return;
             }
 
@@ -552,7 +555,6 @@
                 const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
                 if (error || !data.user) {
-                    // Contraseña errada -> Registrar como FALLIDO con el correo introducido
                     emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
                     await registrarAuditoria(email, 'FALLIDO', 'Contraseña o credenciales inválidas');
 
@@ -564,10 +566,12 @@
                         emailInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
                         emailInput.classList.add('border-purple-500', 'ring-2', 'ring-purple-500');
                     }
+                    errorBox.textContent = "Credenciales incorrectas o usuario no registrado.";
+                    errorBox.classList.remove('hidden');
                     return;
                 }
 
-                // ACCESO EXITOSO -> VERDE
+                // ÉXITO
                 emailInput.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500');
                 await registrarAuditoria(data.user.email, 'EXITOSO', 'Ingreso al sistema autorizado');
 
@@ -613,7 +617,9 @@
 
         async function refrescarAuditoria(mostrarAlerta = false) {
             try {
-                const { data: auditoria } = await _supabase.from('auditoria_crm').select('*');
+                const { data: auditoria, error } = await _supabase.from('auditoria_crm').select('*');
+                if (error) console.error("Error cargando auditoría:", error.message);
+                
                 auditoriaGlobal = auditoria || [];
                 auditoriaGlobal.sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0));
 
@@ -905,7 +911,7 @@
             }
         }
 
-        // RENDERIZADO DE TABLA DE AUDITORÍA CON MAPEOMULTIPLE SEGURO
+        // RENDERIZADO DE AUDITORÍA ROBUSTO
         function renderAuditoriaTab() {
             const tbody = document.getElementById('tbody-auditoria');
             if (!auditoriaGlobal || auditoriaGlobal.length === 0) {
@@ -914,14 +920,8 @@
             }
             tbody.innerHTML = auditoriaGlobal.map(log => {
                 const fechaLog = new Date(log.fecha || log.created_at || Date.now()).toLocaleString();
-                
-                // Mapeo seguro para extraer el usuario intentado de cualquier columna
-                const usuarioLog = log.usuario || log.email || log.correo || log.user || 'Desconocido';
-                
-                // Mapeo seguro para el resultado
+                const usuarioLog = log.usuario || log.email || log.correo || 'Desconocido';
                 const resultadoLog = (log.resultado || log.status || 'FALLIDO').toUpperCase();
-                
-                // Mapeo seguro para el detalle
                 const detalleLog = log.detalle || log.description || log.reason || '-';
                 
                 let colorRes = 'bg-blue-500/10 text-blue-400';
