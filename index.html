@@ -500,18 +500,21 @@
         let chartMotivos = null;
         let chartCanales = null;
 
-        // FUNCIÓN ROBUSTA DE REGISTRO DE AUDITORÍA
+        // FUNCIÓN DE REGISTRO UNIFICADA EXACTA A LAS COLUMNAS DE TU SUPABASE (correo, resultado, detalle, fecha)
         async function registrarAuditoria(correoUser, resultado, detalle) {
             try {
                 const payload = { 
                     correo: correoUser, 
-                    usuario: correoUser, 
                     resultado: resultado, 
                     detalle: detalle, 
                     fecha: new Date().toISOString() 
                 };
                 const { error } = await _supabase.from('auditoria_crm').insert([payload]);
-                if (error) console.error("Error al insertar auditoría:", error.message);
+                if (error) {
+                    console.error("Error al insertar auditoría:", error.message);
+                } else {
+                    console.log("Auditoría insertada correctamente:", payload);
+                }
             } catch (err) {
                 console.error("Excepción en auditoría:", err);
             }
@@ -567,7 +570,7 @@
                     await registrarAuditoria(email, 'FALLIDO', 'Contraseña o credenciales inválidas');
 
                     const { data: logsData } = await _supabase.from('auditoria_crm').select('*');
-                    const logsFallidos = (logsData || []).filter(l => (l.correo === email || l.usuario === email) && l.resultado === 'FALLIDO');
+                    const logsFallidos = (logsData || []).filter(l => (l.correo === email) && l.resultado === 'FALLIDO');
 
                     if (logsFallidos.length >= 2) {
                         await registrarBloqueo(email, 'Bloqueado por 2 intentos fallidos de contraseña');
@@ -937,7 +940,7 @@
             }
             tbody.innerHTML = auditoriaGlobal.map(log => {
                 const fechaLog = new Date(log.fecha || log.created_at || Date.now()).toLocaleString();
-                const usuarioLog = log.correo || log.usuario || log.email || 'Desconocido';
+                const usuarioLog = log.correo || log.email || 'Desconocido';
                 const resultadoLog = (log.resultado || log.status || 'ACCION').toUpperCase();
                 const detalleLog = log.detalle || log.description || log.reason || '-';
                 
@@ -984,8 +987,6 @@
                 await _supabase.from('usuarios_bloqueados').delete().eq('id', id);
                 
                 const adminEmail = currentUser ? currentUser.email : 'Administrador';
-                
-                // REGISTRO DE AUDITORÍA: DESBLOQUEO (SIN BORRAR EL HISTORIAL)
                 await registrarAuditoria(adminEmail, 'EXITOSO', `Desbloqueó al usuario: ${correo}`);
 
                 cargarDatosGenerales();
