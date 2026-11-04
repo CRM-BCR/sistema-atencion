@@ -134,35 +134,27 @@
                     </div>
                 </div>
 
-                <!-- TARJETAS DE MÉTRICAS -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- TARJETAS DE MÉTRICAS SIMPLIFICADAS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg">
                         <div class="flex items-center justify-between text-blue-400 mb-2">
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Clientes</span>
-                            <i class="fa-solid fa-users text-lg"></i>
-                        </div>
-                        <p id="stat-total-clientes" class="text-3xl font-extrabold text-white">0</p>
-                    </div>
-                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg">
-                        <div class="flex items-center justify-between text-emerald-400 mb-2">
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Reclamos Atendidos</span>
-                            <i class="fa-solid fa-headset text-lg"></i>
-                        </div>
-                        <p id="stat-total-reclamos" class="text-3xl font-extrabold text-white">0</p>
-                    </div>
-                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg">
-                        <div class="flex items-center justify-between text-purple-400 mb-2">
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Solicitudes Activas</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Registros</span>
                             <i class="fa-solid fa-folder-open text-lg"></i>
                         </div>
-                        <p id="stat-total-solicitudes" class="text-3xl font-extrabold text-white">0</p>
+                        <p id="stat-total-registros" class="text-3xl font-extrabold text-white">0</p>
                     </div>
-                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg">
-                        <div class="flex items-center justify-between text-amber-400 mb-2">
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Logins Registrados</span>
-                            <i class="fa-solid fa-shield text-lg"></i>
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between text-emerald-400 mb-2">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Usuarios Activos en CRM</span>
+                                <i class="fa-solid fa-shield-halved text-lg"></i>
+                            </div>
+                            <p id="stat-total-usuarios" class="text-3xl font-extrabold text-white">0</p>
                         </div>
-                        <p id="stat-total-logins" class="text-3xl font-extrabold text-white">0</p>
+                        <!-- Mini lista de usuarios activos estilo ranking -->
+                        <div id="contenedor-usuarios-activos" class="mt-3 pt-3 border-t border-slate-800/80 space-y-2 max-h-32 overflow-y-auto custom-scrollbar">
+                            <p class="text-slate-500 text-xs text-center">Cargando usuarios...</p>
+                        </div>
                     </div>
                 </div>
 
@@ -508,6 +500,7 @@
         let currentUser = null;
         let clientesGlobal = [];
         let auditoriaGlobal = [];
+        let usuariosGlobal = [];
         let chartMotivos = null;
         let chartCanales = null;
 
@@ -546,11 +539,13 @@
         async function cargarDatosGenerales() {
             const { data: clientes } = await _supabase.from('clientes_crm').select('*').order('created_at', { ascending: false });
             const { data: auditoria } = await _supabase.from('auditoria_crm').select('*').order('fecha', { ascending: false });
+            const { data: usuarios } = await _supabase.from('usuarios_crm').select('*');
 
             clientesGlobal = clientes || [];
             auditoriaGlobal = auditoria || [];
+            usuariosGlobal = usuarios || [];
 
-            actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal);
+            actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal, usuariosGlobal);
             renderClientes(clientesGlobal);
             cargarUsuarios();
             cargarAuditoria();
@@ -562,39 +557,47 @@
             const hasta = document.getElementById('filtro-fecha-hasta').value;
 
             let clientesFiltrados = clientesGlobal;
-            let auditoriaFiltrada = auditoriaGlobal;
 
             if (desde) {
                 const d = new Date(desde);
                 clientesFiltrados = clientesFiltrados.filter(c => new Date(c.created_at || c.fecha) >= d);
-                auditoriaFiltrada = auditoriaFiltrada.filter(a => new Date(a.fecha) >= d);
             }
             if (hasta) {
                 const h = new Date(hasta);
                 h.setHours(23, 59, 59);
                 clientesFiltrados = clientesFiltrados.filter(c => new Date(c.created_at || c.fecha) <= h);
-                auditoriaFiltrada = auditoriaFiltrada.filter(a => new Date(a.fecha) <= h);
             }
 
-            actualizarDashboardConFiltro(clientesFiltrados, auditoriaFiltrada);
+            actualizarDashboardConFiltro(clientesFiltrados, auditoriaGlobal, usuariosGlobal);
             renderClientes(clientesFiltrados);
         }
 
         function limpiarFiltroFechas() {
             document.getElementById('filtro-fecha-desde').value = '';
             document.getElementById('filtro-fecha-hasta').value = '';
-            actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal);
+            actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal, usuariosGlobal);
             renderClientes(clientesGlobal);
         }
 
-        // ACTUALIZAR DASHBOARD, RANKING Y GRÁFICOS
-        function actualizarDashboardConFiltro(clientes, auditoria) {
-            document.getElementById('stat-total-clientes').textContent = clientes.length;
-            document.getElementById('stat-total-reclamos').textContent = clientes.filter(c => c.motivo === 'Reclamo').length;
-            document.getElementById('stat-total-solicitudes').textContent = clientes.filter(c => c.motivo === 'Solicitud').length;
-            document.getElementById('stat-total-logins').textContent = auditoria.length;
+        // ACTUALIZAR DASHBOARD, USUARIOS ACTIVOS, RANKING Y GRÁFICOS
+        function actualizarDashboardConFiltro(clientes, auditoria, usuarios) {
+            document.getElementById('stat-total-registros').textContent = clientes.length;
+            document.getElementById('stat-total-usuarios').textContent = usuarios.length;
 
-            // 1. Procesar Ranking de Operadores
+            // 1. Mini lista de usuarios activos
+            const contenedorUsuarios = document.getElementById('contenedor-usuarios-activos');
+            if (usuarios.length === 0) {
+                contenedorUsuarios.innerHTML = `<p class="text-slate-500 text-xs text-center py-2">Sin usuarios registrados.</p>`;
+            } else {
+                contenedorUsuarios.innerHTML = usuarios.map((u, idx) => `
+                    <div class="flex items-center justify-between bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800 text-xs">
+                        <span class="font-semibold text-slate-200 truncate" title="${u.correo}"><i class="fa-solid fa-user-check text-emerald-400 mr-2 text-[10px]"></i>${u.correo}</span>
+                        <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">${u.rol || 'OPERADOR'}</span>
+                    </div>
+                `).join('');
+            }
+
+            // 2. Procesar Ranking de Operadores
             const conteoOperadores = {};
             clientes.forEach(c => {
                 const op = c.operador || 'Sistema / Sin asignar';
@@ -630,7 +633,7 @@
                 }).join('');
             }
 
-            // 2. Procesar Datos para Gráficos
+            // 3. Procesar Datos para Gráficos
             const conteoMotivos = {};
             clientes.forEach(c => {
                 const m = c.motivo || 'Sin Motivo';
@@ -802,13 +805,13 @@
             
             cerrarModalUsuario();
             document.getElementById('form-usuario').reset();
-            cargarUsuarios();
+            cargarDatosGenerales();
         });
 
         async function eliminarUsuario(id) {
             if (confirm('¿Deseas eliminar este usuario de la administración?')) {
                 await _supabase.from('usuarios_crm').delete().eq('id', id);
-                cargarUsuarios();
+                cargarDatosGenerales();
             }
         }
 
