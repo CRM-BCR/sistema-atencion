@@ -180,12 +180,13 @@
                                     <th class="p-4">Motivo</th>
                                     <th class="p-4">Producto / Servicio</th>
                                     <th class="p-4">Detalle Específico</th>
+                                    <th class="p-4">Observaciones</th>
                                     <th class="p-4">Operador</th>
                                     <th class="p-4 text-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody-clientes" class="divide-y divide-slate-800 text-slate-300">
-                                <tr><td colspan="9" class="p-4 text-center text-slate-500">Cargando registros de clientes...</td></tr>
+                                <tr><td colspan="10" class="p-4 text-center text-slate-500">Cargando registros de clientes...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -258,7 +259,7 @@
         </main>
     </div>
 
-    <!-- MODAL REGISTRO CLIENTE (CON CAMPOS DINÁMICOS) -->
+    <!-- MODAL REGISTRO CLIENTE -->
     <div id="modal-cliente" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <h2 class="text-lg font-bold text-white">Registrar Gestión de Cliente</h2>
@@ -322,13 +323,13 @@
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-blue-400 mb-1" id="label-subservicio">Detalle Específico</label>
                     <select id="cli-subservicio" required class="w-full p-2.5 bg-slate-950 border border-blue-500/30 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
-                        <!-- Las opciones se cargan dinámicamente con JavaScript -->
+                        <!-- Opciones cargadas por JS -->
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Detalle de la Atención</label>
-                    <textarea id="cli-detalle" rows="3" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Observaciones</label>
+                    <textarea id="cli-observaciones" rows="3" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-2">
@@ -369,7 +370,7 @@
 
     <!-- SCRIPT DE CONTROL GENERAL Y DINÁMICO -->
     <script>
-        // MAPA DE OPCIONES DINÁMICAS SEGÚN EL PRODUCTO O SERVICIO
+        // MAPA DE OPCIONES DINÁMICAS ACTUALIZADO
         const opcionesServicios = {
             "Bdigital": [
                 "Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", 
@@ -378,9 +379,9 @@
                 "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", 
                 "Pago de servicios", "Notificación de Viajes", "OTP no recibido"
             ],
-            "Crédito inmediato": [
+            "Credito inmediato": [
                 "Afiliación", "Pago / Consultas", "Mis contactos", "Estatus Operación Fallida Crédito Inmediato", 
-                "Consultar Pagos Emitidos / Recibidos"
+                "Afiliación", "Consultar Pagos Emitidos / Recibidos"
             ],
             "Pago Movil": [
                 "Afiliación", "Consultar Pagos Emitidos / Recibidos", "Regularización", "Solicitar Clave C2P", 
@@ -407,7 +408,7 @@
                 "Blog Financiero", "Información de cobros"
             ],
             "Solicitud de empleo": [
-                "Postulación Activa", "Envío de Currículum", "Consulta de Estatus"
+                "Envio de curriculum"
             ],
             "Crecermovil": [
                 "Afiliación", "Consulta de Saldo", "Transferencias", "Pago de Servicios"
@@ -425,7 +426,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            actualizarSubmenuServicio(); // Inicializar submenú al cargar
+            actualizarSubmenuServicio();
 
             const passwordInput = document.getElementById('login-password');
             const togglePasswordBtn = document.getElementById('toggle-password');
@@ -512,7 +513,7 @@
             const tbody = document.getElementById('tbody-clientes');
             const { data, error } = await _supabase.from('clientes_crm').select('*').order('created_at', { ascending: false });
             if (error || !data) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-500">No hay clientes registrados aún.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-500">No hay clientes registrados aún.</td></tr>`;
                 return;
             }
             window.clientesCache = data;
@@ -522,7 +523,7 @@
         function renderClientes(lista) {
             const tbody = document.getElementById('tbody-clientes');
             if (lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-500">Sin resultados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-500">Sin resultados.</td></tr>`;
                 return;
             }
             tbody.innerHTML = lista.map(c => `
@@ -534,6 +535,7 @@
                     <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">${c.motivo || 'Consulta'}</span></td>
                     <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${c.producto || 'Cuenta'}</span></td>
                     <td class="p-4 text-slate-300">${c.subservicio || 'N/A'}</td>
+                    <td class="p-4 text-slate-400">${c.observaciones || c.detalle || '-'}</td>
                     <td class="p-4 text-slate-400">${c.operador || 'Sistema'}</td>
                     <td class="p-4 text-center">
                         <button onclick="eliminarCliente('${c.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
@@ -560,7 +562,7 @@
                 motivo: document.getElementById('cli-motivo').value,
                 producto: document.getElementById('cli-producto').value,
                 subservicio: document.getElementById('cli-subservicio').value,
-                detalle: document.getElementById('cli-detalle').value.trim(),
+                observaciones: document.getElementById('cli-observaciones').value.trim(),
                 operador: currentUser.email
             };
 
