@@ -109,62 +109,232 @@
         </aside>
 
         <main class="flex-1 p-6 md:p-8 custom-scrollbar overflow-y-auto bg-slate-900">
-            <!-- DASHBOARD -->
+            
+            <!-- 1. DASHBOARD -->
             <section id="tab-dashboard" class="space-y-6">
-                <h1 class="text-2xl font-bold text-white">Resumen General de Operaciones</h1>
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Resumen General de Operaciones</h1>
+                    <p class="text-xs text-slate-400">Métricas y estadísticas de gestión telefónica en tiempo real.</p>
+                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
-                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Logins Registrados</span>
-                        <p id="stat-total-logins" class="text-3xl font-extrabold text-white mt-1">0</p>
+                        <div class="flex items-center justify-between text-blue-400 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Clientes</span>
+                            <i class="fa-solid fa-users text-lg"></i>
+                        </div>
+                        <p id="stat-total-clientes" class="text-3xl font-extrabold text-white">0</p>
+                    </div>
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+                        <div class="flex items-center justify-between text-emerald-400 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Reclamos Atendidos</span>
+                            <i class="fa-solid fa-headset text-lg"></i>
+                        </div>
+                        <p id="stat-total-reclamos" class="text-3xl font-extrabold text-white">0</p>
+                    </div>
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+                        <div class="flex items-center justify-between text-purple-400 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Solicitudes Activas</span>
+                            <i class="fa-solid fa-folder-open text-lg"></i>
+                        </div>
+                        <p id="stat-total-solicitudes" class="text-3xl font-extrabold text-white">0</p>
+                    </div>
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+                        <div class="flex items-center justify-between text-amber-400 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Logins Registrados</span>
+                            <i class="fa-solid fa-shield text-lg"></i>
+                        </div>
+                        <p id="stat-total-logins" class="text-3xl font-extrabold text-white">0</p>
                     </div>
                 </div>
             </section>
 
-            <!-- GESTIÓN CLIENTES -->
+            <!-- 2. GESTIÓN CLIENTES -->
             <section id="tab-clientes" class="hidden space-y-6">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div>
-                        <h1 class="text-2xl font-bold text-white">Gestión de Clientes</h1>
-                        <p class="text-xs text-slate-400">Búsqueda y seguimiento de solicitudes y reclamos.</p>
+                        <h1 class="text-2xl font-bold text-white">Gestión de Clientes y Reclamos</h1>
+                        <p class="text-xs text-slate-400">Registro de llamadas, motivos y estatus de solicitudes.</p>
+                    </div>
+                    <button onclick="abrirModalCliente()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>Registrar Nueva Gestión</span>
+                    </button>
+                </div>
+
+                <!-- Buscador rápido -->
+                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center space-x-4">
+                    <div class="relative flex-1">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fa-solid fa-search"></i></span>
+                        <input type="text" id="input-buscar-cliente" onkeyup="filtrarClientes()" placeholder="Buscar por Cédula, Nombre o Correo..." class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
-                <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800">
-                    <p class="text-slate-400 text-sm">Módulo operativo de atención al cliente y gestión de reclamos.</p>
+
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-4">Cédula / ID</th>
+                                    <th class="p-4">Nombre del Cliente</th>
+                                    <th class="p-4">Teléfono</th>
+                                    <th class="p-4">Motivo / Tipo</th>
+                                    <th class="p-4">Estatus</th>
+                                    <th class="p-4">Operador</th>
+                                    <th class="p-4 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-clientes" class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td colspan="7" class="p-4 text-center text-slate-500">Cargando registros de clientes...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
-            <!-- USUARIOS CRM -->
+            <!-- 3. USUARIOS CRM -->
             <section id="tab-usuarios" class="hidden space-y-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-2xl font-bold text-white">Administración de Usuarios</h1>
-                        <p class="text-xs text-slate-400">Control de accesos, operadores y permisos del sistema.</p>
+                        <h1 class="text-2xl font-bold text-white">Administración de Usuarios CRM</h1>
+                        <p class="text-xs text-slate-400">Control de operadores, accesos y roles del sistema.</p>
                     </div>
+                    <button onclick="abrirModalUsuario()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span>Nuevo Usuario CRM</span>
+                    </button>
                 </div>
-                <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800">
-                    <p class="text-slate-400 text-sm">Panel de administración de roles y usuarios del Call Center.</p>
+
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-4">Correo Electrónico</th>
+                                    <th class="p-4">Rol Asignado</th>
+                                    <th class="p-4">Fecha de Creación</th>
+                                    <th class="p-4 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-usuarios" class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td colspan="4" class="p-4 text-center text-slate-500">Cargando usuarios...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
-            <!-- AUDITORÍA -->
+            <!-- 4. AUDITORÍA -->
             <section id="tab-auditoria" class="hidden space-y-6">
                 <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-white">Registro de Auditoría</h1>
-                    <button onclick="exportToExcel('tabla-auditoria', 'Auditoria_CRM')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition">Exportar Excel</button>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Registro de Auditoría y Accesos</h1>
+                        <p class="text-xs text-slate-400">Trazabilidad completa de intenciones e ingresos al CRM.</p>
+                    </div>
+                    <button onclick="exportToExcel('tabla-auditoria', 'Auditoria_CRM_Bancrecer')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Exportar Excel</span>
+                    </button>
                 </div>
+
                 <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
-                    <table id="tabla-auditoria" class="w-full text-left text-xs">
-                        <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase">
-                            <tr><th class="p-4">Fecha</th><th class="p-4">Usuario</th><th class="p-4">Resultado</th><th class="p-4">Detalle</th></tr>
-                        </thead>
-                        <tbody id="tbody-auditoria" class="divide-y divide-slate-800 text-slate-300"></tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <table id="tabla-auditoria" class="w-full text-left text-xs">
+                            <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-4">Fecha / Hora</th>
+                                    <th class="p-4">Usuario Intentado</th>
+                                    <th class="p-4">Resultado</th>
+                                    <th class="p-4">Detalle / Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-auditoria" class="divide-y divide-slate-800 text-slate-300">
+                                <tr><td colspan="4" class="p-4 text-center text-slate-500">Cargando registros...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- SCRIPT DE CONTROL DE INTERFAZ -->
+    <!-- MODAL REGISTRO CLIENTE -->
+    <div id="modal-cliente" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-lg space-y-4">
+            <h2 class="text-lg font-bold text-white">Registrar Gestión de Cliente</h2>
+            <form id="form-cliente" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Cédula / ID</label>
+                        <input type="text" id="cli-cedula" required class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Teléfono</label>
+                        <input type="text" id="cli-telefono" required class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nombre Completo</label>
+                    <input type="text" id="cli-nombre" required class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Motivo</label>
+                        <select id="cli-motivo" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="Reclamo">Reclamo</option>
+                            <option value="Solicitud">Solicitud</option>
+                            <option value="Consulta">Consulta</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Estatus</label>
+                        <select id="cli-estatus" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="Abierto">Abierto</option>
+                            <option value="En Proceso">En Proceso</option>
+                            <option value="Resuelto">Resuelto</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Detalle de la Atención</label>
+                    <textarea id="cli-detalle" rows="3" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="cerrarModalCliente()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold">Guardar Gestión</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL NUEVO USUARIO -->
+    <div id="modal-usuario" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md space-y-4">
+            <h2 class="text-lg font-bold text-white">Registrar Nuevo Usuario CRM</h2>
+            <form id="form-usuario" class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Correo Electrónico</label>
+                    <input type="email" id="usr-correo" required class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Contraseña Temporal</label>
+                    <input type="password" id="usr-password" required class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Rol</label>
+                    <select id="usr-rol" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="OPERADOR">OPERADOR</option>
+                        <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="cerrarModalUsuario()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold">Crear Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE CONTROL GENERAL -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const passwordInput = document.getElementById('login-password');
@@ -190,7 +360,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js" onerror="console.log('Usando respaldo interno de configuración')"></script>
 
-    <!-- LÓGICA DE CONEXIÓN Y AUTENTICACIÓN -->
     <script>
         const SUPABASE_URL = (typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.URL) ? SUPABASE_CONFIG.URL : 'https://mchlteunhcjzuetzyajz.supabase.co';
         const SUPABASE_KEY = (typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.KEY) ? SUPABASE_CONFIG.KEY : 'sb_publishable_S5LJcX40QJ8HPVIRU7l75w_LYNzVWQk';
@@ -198,6 +367,7 @@
 
         let currentUser = null;
 
+        // INICIO DE SESIÓN
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
@@ -206,54 +376,172 @@
             errorBox.classList.add('hidden');
 
             try {
-                const { data, error } = await _supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
+                const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
                 if (error || !data.user) {
-                    await _supabase.from('auditoria_crm').insert([{ 
-                        usuario: email, 
-                        resultado: 'FALLIDO', 
-                        detalle: 'Credenciales inválidas o error de autenticación', 
-                        fecha: new Date().toISOString() 
-                    }]);
-
-                    errorBox.textContent = 'Credenciales inválidas. Verifique su correo y contraseña.';
+                    await _supabase.from('auditoria_crm').insert([{ usuario: email, resultado: 'FALLIDO', detalle: 'Credenciales inválidas', fecha: new Date().toISOString() }]);
+                    errorBox.textContent = 'Credenciales inválidas. Verifique sus datos.';
                     errorBox.classList.remove('hidden');
                     return;
                 }
 
-                await _supabase.from('auditoria_crm').insert([{ 
-                    usuario: data.user.email, 
-                    resultado: 'EXITOSO', 
-                    detalle: 'Inicio de sesión exitoso en el sistema', 
-                    fecha: new Date().toISOString() 
-                }]);
+                await _supabase.from('auditoria_crm').insert([{ usuario: data.user.email, resultado: 'EXITOSO', detalle: 'Ingreso al sistema', fecha: new Date().toISOString() }]);
 
                 currentUser = data.user;
                 document.getElementById('user-display-email').textContent = data.user.email;
-                document.getElementById('user-display-role').textContent = 'ADMINISTRADOR';
-
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-dashboard').classList.remove('hidden');
                 
+                cargarDashboard();
+                cargarClientes();
+                cargarUsuarios();
                 cargarAuditoria();
             } catch (err) {
-                console.error('Error general:', err);
                 errorBox.textContent = 'Error de conexión con el servidor.';
                 errorBox.classList.remove('hidden');
             }
         });
 
+        // DASHBOARD & MÉTRICAS
+        async function cargarDashboard() {
+            const { data: clientes } = await _supabase.from('clientes_crm').select('*');
+            const { data: auditoria } = await _supabase.from('auditoria_crm').select('*');
+
+            if (clientes) {
+                document.getElementById('stat-total-clientes').textContent = clientes.length;
+                document.getElementById('stat-total-reclamos').textContent = clientes.filter(c => c.motivo === 'Reclamo').length;
+                document.getElementById('stat-total-solicitudes').textContent = clientes.filter(c => c.motivo === 'Solicitud').length;
+            }
+            if (auditoria) {
+                document.getElementById('stat-total-logins').textContent = auditoria.length;
+            }
+        }
+
+        // CLIENTES
+        async function cargarClientes() {
+            const tbody = document.getElementById('tbody-clientes');
+            const { data, error } = await _supabase.from('clientes_crm').select('*').order('created_at', { ascending: false });
+            if (error || !data) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">No hay clientes registrados aún.</td></tr>`;
+                return;
+            }
+            window.clientesCache = data;
+            renderClientes(data);
+        }
+
+        function renderClientes(lista) {
+            const tbody = document.getElementById('tbody-clientes');
+            if (lista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Sin resultados.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = lista.map(c => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-4 font-mono text-white">${c.cedula}</td>
+                    <td class="p-4 font-semibold text-white">${c.nombre}</td>
+                    <td class="p-4 text-slate-400">${c.telefono}</td>
+                    <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">${c.motivo}</span></td>
+                    <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.estatus === 'Resuelto' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${c.estatus}</span></td>
+                    <td class="p-4 text-slate-400">${c.operador || 'Sistema'}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="eliminarCliente('${c.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function filtrarClientes() {
+            const filtro = document.getElementById('input-buscar-cliente').value.toLowerCase();
+            const filtrados = (window.clientesCache || []).filter(c => 
+                c.cedula.toLowerCase().includes(filtro) || 
+                c.nombre.toLowerCase().includes(filtro)
+            );
+            renderClientes(filtrados);
+        }
+
+        document.getElementById('form-cliente').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nuevoCliente = {
+                cedula: document.getElementById('cli-cedula').value.trim(),
+                nombre: document.getElementById('cli-nombre').value.trim(),
+                telefono: document.getElementById('cli-telefono').value.trim(),
+                motivo: document.getElementById('cli-motivo').value,
+                estatus: document.getElementById('cli-estatus').value,
+                detalle: document.getElementById('cli-detalle').value.trim(),
+                operador: currentUser.email
+            };
+
+            const { error } = await _supabase.from('clientes_crm').insert([nuevoCliente]);
+            if (!error) {
+                cerrarModalCliente();
+                document.getElementById('form-cliente').reset();
+                cargarClientes();
+                cargarDashboard();
+            } else {
+                alert('Error al registrar cliente.');
+            }
+        });
+
+        async function eliminarCliente(id) {
+            if (confirm('¿Seguro deseas eliminar este registro?')) {
+                await _supabase.from('clientes_crm').delete().eq('id', id);
+                cargarClientes();
+                cargarDashboard();
+            }
+        }
+
+        // USUARIOS CRM
+        async function cargarUsuarios() {
+            const tbody = document.getElementById('tbody-usuarios');
+            const { data, error } = await _supabase.from('usuarios_crm').select('*');
+            if (error || !data) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">No se pudieron cargar los usuarios.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = data.map(u => `
+                <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-4 font-semibold text-white">${u.correo}</td>
+                    <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">${u.rol || 'OPERADOR'}</span></td>
+                    <td class="p-4 font-mono text-slate-400">${new Date(u.created_at || Date.now()).toLocaleDateString()}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="eliminarUsuario('${u.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        document.getElementById('form-usuario').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const correo = document.getElementById('usr-correo').value.trim();
+            const password = document.getElementById('usr-password').value.trim();
+            const rol = document.getElementById('usr-rol').value;
+
+            // Crear en Supabase Auth
+            const { data, error } = await _supabase.auth.signUp({ email: correo, password: password });
+            if (error) {
+                alert('Error creando usuario en Auth: ' + error.message);
+                return;
+            }
+
+            // Registrar rol en la tabla local usuarios_crm
+            await _supabase.from('usuarios_crm').insert([{ correo: correo, rol: rol }]);
+            
+            cerrarModalUsuario();
+            document.getElementById('form-usuario').reset();
+            cargarUsuarios();
+        });
+
+        async function eliminarUsuario(id) {
+            if (confirm('¿Deseas eliminar este usuario de la administración?')) {
+                await _supabase.from('usuarios_crm').delete().eq('id', id);
+                cargarUsuarios();
+            }
+        }
+
+        // AUDITORÍA
         async function cargarAuditoria() {
             const tbody = document.getElementById('tbody-auditoria');
-            if (!tbody) return;
-
             const { data, error } = await _supabase.from('auditoria_crm').select('*').order('fecha', { ascending: false });
             if (error || !data) return;
 
-            document.getElementById('stat-total-logins').textContent = data.length;
             tbody.innerHTML = data.map(log => `
                 <tr class="hover:bg-slate-900/50 transition">
                     <td class="p-4 font-mono text-slate-400">${new Date(log.fecha).toLocaleString()}</td>
@@ -263,6 +551,7 @@
                 </tr>`).join('');
         }
 
+        // NAVEGACIÓN Y MODALES
         function switchTab(t) {
             ['dashboard', 'clientes', 'usuarios', 'auditoria'].forEach(tab => {
                 const sec = document.getElementById(`tab-${tab}`);
@@ -276,8 +565,16 @@
             if (activeSec) activeSec.classList.remove('hidden');
             if (activeNav) activeNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-blue-400 bg-blue-600/10 border border-blue-500/20";
 
+            if (t === 'dashboard') cargarDashboard();
+            if (t === 'clientes') cargarClientes();
+            if (t === 'usuarios') cargarUsuarios();
             if (t === 'auditoria') cargarAuditoria();
         }
+
+        function abrirModalCliente() { document.getElementById('modal-cliente').classList.remove('hidden'); }
+        function cerrarModalCliente() { document.getElementById('modal-cliente').classList.add('hidden'); }
+        function abrirModalUsuario() { document.getElementById('modal-usuario').classList.remove('hidden'); }
+        function cerrarModalUsuario() { document.getElementById('modal-usuario').classList.add('hidden'); }
 
         function exportToExcel(id, name) {
             XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `${name}.xlsx`);
