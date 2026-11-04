@@ -97,6 +97,9 @@
                     <button onclick="switchTab('auditoria')" id="nav-auditoria" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
                         <i class="fa-solid fa-shield-halved w-5"></i><span>Auditoría y Seguridad</span>
                     </button>
+                    <button onclick="switchTab('campañas')" id="nav-campañas" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
+                        <i class="fa-solid fa-bullhorn w-5"></i><span>Campañas</span>
+                    </button>
                 </nav>
             </div>
             <div class="pt-4 border-t border-zinc-800/80">
@@ -329,6 +332,24 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </section>
+
+            <!-- 5. CAMPAÑAS -->
+            <section id="tab-campañas" class="hidden space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Gestión de Campañas</h1>
+                        <p class="text-xs text-zinc-400">Control y seguimiento de campañas activas e informativas del call center.</p>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 text-center space-y-4">
+                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-red-600/10 text-red-500 border border-red-500/20">
+                        <i class="fa-solid fa-bullhorn text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Módulo de Campañas en Configuración</h3>
+                    <p class="text-xs text-zinc-400 max-w-md mx-auto">Pronto podrás registrar, programar y monitorear las campañas de atención telefónica y masiva desde este apartado.</p>
                 </div>
             </section>
         </main>
@@ -992,7 +1013,7 @@
         }
 
         function switchTab(t) {
-            ['dashboard', 'clientes', 'usuarios', 'auditoria'].forEach(tab => {
+            ['dashboard', 'clientes', 'usuarios', 'auditoria', 'campañas'].forEach(tab => {
                 const sec = document.getElementById(`tab-${tab}`);
                 const nav = document.getElementById(`nav-${tab}`);
                 if (sec) sec.classList.add('hidden');
