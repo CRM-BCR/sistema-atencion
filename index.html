@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- SheetJS (Excel Export) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Chart.js para Gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -112,39 +114,92 @@
             
             <!-- 1. DASHBOARD -->
             <section id="tab-dashboard" class="space-y-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-white">Resumen General de Operaciones</h1>
-                    <p class="text-xs text-slate-400">Métricas y estadísticas de gestión telefónica en tiempo real.</p>
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Resumen General de Operaciones</h1>
+                        <p class="text-xs text-slate-400">Métricas y estadísticas de gestión telefónica en tiempo real.</p>
+                    </div>
+                    
+                    <!-- FILTRO POR FECHAS -->
+                    <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex flex-wrap items-center gap-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-[10px] font-bold uppercase text-slate-400">Desde:</span>
+                            <input type="date" id="filtro-fecha-desde" onchange="aplicarFiltroFechas()" class="bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-[10px] font-bold uppercase text-slate-400">Hasta:</span>
+                            <input type="date" id="filtro-fecha-hasta" onchange="aplicarFiltroFechas()" class="bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button onclick="limpiarFiltroFechas()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition">Limpiar</button>
+                    </div>
                 </div>
+
+                <!-- TARJETAS DE MÉTRICAS -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg">
                         <div class="flex items-center justify-between text-blue-400 mb-2">
                             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Clientes</span>
                             <i class="fa-solid fa-users text-lg"></i>
                         </div>
                         <p id="stat-total-clientes" class="text-3xl font-extrabold text-white">0</p>
                     </div>
-                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg">
                         <div class="flex items-center justify-between text-emerald-400 mb-2">
                             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Reclamos Atendidos</span>
                             <i class="fa-solid fa-headset text-lg"></i>
                         </div>
                         <p id="stat-total-reclamos" class="text-3xl font-extrabold text-white">0</p>
                     </div>
-                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg">
                         <div class="flex items-center justify-between text-purple-400 mb-2">
                             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Solicitudes Activas</span>
                             <i class="fa-solid fa-folder-open text-lg"></i>
                         </div>
                         <p id="stat-total-solicitudes" class="text-3xl font-extrabold text-white">0</p>
                     </div>
-                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg">
                         <div class="flex items-center justify-between text-amber-400 mb-2">
                             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Logins Registrados</span>
                             <i class="fa-solid fa-shield text-lg"></i>
                         </div>
                         <p id="stat-total-logins" class="text-3xl font-extrabold text-white">0</p>
                     </div>
+                </div>
+
+                <!-- RANKING DE OPERADORES Y GRÁFICOS -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
+                    
+                    <!-- TABLA RANKING OPERADORES -->
+                    <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-bold uppercase text-slate-300">
+                                    <i class="fa-solid fa-trophy text-amber-400 mr-2"></i> Ranking Operadores
+                                </h3>
+                                <span class="text-[10px] font-semibold text-slate-500 uppercase">Gestiones</span>
+                            </div>
+                            <div id="contenedor-ranking-operadores" class="space-y-3">
+                                <p class="text-slate-500 text-xs text-center py-4">Cargando datos de operadores...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GRÁFICO MOTIVOS -->
+                    <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col items-center">
+                        <h3 class="text-sm font-bold uppercase text-slate-300 mb-4 self-start"><i class="fa-solid fa-chart-bar text-blue-500 mr-2"></i> Motivos de Contacto</h3>
+                        <div class="w-full h-64 relative flex justify-center items-center">
+                            <canvas id="graficoMotivos"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- GRÁFICO CANALES -->
+                    <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col items-center">
+                        <h3 class="text-sm font-bold uppercase text-slate-300 mb-4 self-start"><i class="fa-solid fa-chart-pie text-purple-500 mr-2"></i> Canales de Atención</h3>
+                        <div class="w-full h-64 relative flex justify-center items-center">
+                            <canvas id="graficoCanales"></canvas>
+                        </div>
+                    </div>
+
                 </div>
             </section>
 
@@ -173,6 +228,7 @@
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-semibold">
                                 <tr>
+                                    <th class="p-4">Fecha</th>
                                     <th class="p-4">Cédula / ID</th>
                                     <th class="p-4">Nombre del Cliente</th>
                                     <th class="p-4">Teléfono</th>
@@ -186,7 +242,7 @@
                                 </tr>
                             </thead>
                             <tbody id="tbody-clientes" class="divide-y divide-slate-800 text-slate-300">
-                                <tr><td colspan="10" class="p-4 text-center text-slate-500">Cargando registros de clientes...</td></tr>
+                                <tr><td colspan="11" class="p-4 text-center text-slate-500">Cargando registros de clientes...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -319,11 +375,9 @@
                     </select>
                 </div>
 
-                <!-- CAMPO DINÁMICO CONDICIONAL -->
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-blue-400 mb-1" id="label-subservicio">Detalle Específico</label>
                     <select id="cli-subservicio" required class="w-full p-2.5 bg-slate-950 border border-blue-500/30 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500">
-                        <!-- Opciones cargadas por JS -->
                     </select>
                 </div>
 
@@ -368,9 +422,8 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE CONTROL GENERAL Y DINÁMICO -->
+    <!-- SCRIPTS Y LÓGICA -->
     <script>
-        // MAPA DE OPCIONES DINÁMICAS ACTUALIZADO
         const opcionesServicios = {
             "Bdigital": [
                 "Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", 
@@ -381,7 +434,7 @@
             ],
             "Credito inmediato": [
                 "Afiliación", "Pago / Consultas", "Mis contactos", "Estatus Operación Fallida Crédito Inmediato", 
-                "Afiliación", "Consultar Pagos Emitidos / Recibidos"
+                "Consultar Pagos Emitidos / Recibidos"
             ],
             "Pago Movil": [
                 "Afiliación", "Consultar Pagos Emitidos / Recibidos", "Regularización", "Solicitar Clave C2P", 
@@ -418,16 +471,12 @@
         function actualizarSubmenuServicio() {
             const selectProducto = document.getElementById('cli-producto');
             const selectSub = document.getElementById('cli-subservicio');
-            const productoSeleccionado = selectProducto.value;
-            
-            const opciones = opcionesServicios[productoSeleccionado] || ["General"];
-            
+            const opciones = opcionesServicios[selectProducto.value] || ["General"];
             selectSub.innerHTML = opciones.map(op => `<option value="${op}">${op}</option>`).join('');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             actualizarSubmenuServicio();
-
             const passwordInput = document.getElementById('login-password');
             const togglePasswordBtn = document.getElementById('toggle-password');
             const toggleIcon = document.getElementById('toggle-icon');
@@ -457,6 +506,10 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUser = null;
+        let clientesGlobal = [];
+        let auditoriaGlobal = [];
+        let chartMotivos = null;
+        let chartCanales = null;
 
         // INICIO DE SESIÓN
         document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -483,51 +536,180 @@
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-dashboard').classList.remove('hidden');
                 
-                cargarDashboard();
-                cargarClientes();
-                cargarUsuarios();
-                cargarAuditoria();
+                cargarDatosGenerales();
             } catch (err) {
                 errorBox.textContent = 'Error de conexión con el servidor.';
                 errorBox.classList.remove('hidden');
             }
         });
 
-        // DASHBOARD & MÉTRICAS
-        async function cargarDashboard() {
-            const { data: clientes } = await _supabase.from('clientes_crm').select('*');
-            const { data: auditoria } = await _supabase.from('auditoria_crm').select('*');
+        async function cargarDatosGenerales() {
+            const { data: clientes } = await _supabase.from('clientes_crm').select('*').order('created_at', { ascending: false });
+            const { data: auditoria } = await _supabase.from('auditoria_crm').select('*').order('fecha', { ascending: false });
 
-            if (clientes) {
-                document.getElementById('stat-total-clientes').textContent = clientes.length;
-                document.getElementById('stat-total-reclamos').textContent = clientes.filter(c => c.motivo === 'Reclamo').length;
-                document.getElementById('stat-total-solicitudes').textContent = clientes.filter(c => c.motivo === 'Solicitud').length;
+            clientesGlobal = clientes || [];
+            auditoriaGlobal = auditoria || [];
+
+            actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal);
+            renderClientes(clientesGlobal);
+            cargarUsuarios();
+            cargarAuditoria();
+        }
+
+        // FILTRO POR FECHAS
+        function aplicarFiltroFechas() {
+            const desde = document.getElementById('filtro-fecha-desde').value;
+            const hasta = document.getElementById('filtro-fecha-hasta').value;
+
+            let clientesFiltrados = clientesGlobal;
+            let auditoriaFiltrada = auditoriaGlobal;
+
+            if (desde) {
+                const d = new Date(desde);
+                clientesFiltrados = clientesFiltrados.filter(c => new Date(c.created_at || c.fecha) >= d);
+                auditoriaFiltrada = auditoriaFiltrada.filter(a => new Date(a.fecha) >= d);
             }
-            if (auditoria) {
-                document.getElementById('stat-total-logins').textContent = auditoria.length;
+            if (hasta) {
+                const h = new Date(hasta);
+                h.setHours(23, 59, 59);
+                clientesFiltrados = clientesFiltrados.filter(c => new Date(c.created_at || c.fecha) <= h);
+                auditoriaFiltrada = auditoriaFiltrada.filter(a => new Date(a.fecha) <= h);
             }
+
+            actualizarDashboardConFiltro(clientesFiltrados, auditoriaFiltrada);
+            renderClientes(clientesFiltrados);
+        }
+
+        function limpiarFiltroFechas() {
+            document.getElementById('filtro-fecha-desde').value = '';
+            document.getElementById('filtro-fecha-hasta').value = '';
+            actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal);
+            renderClientes(clientesGlobal);
+        }
+
+        // ACTUALIZAR DASHBOARD, RANKING Y GRÁFICOS
+        function actualizarDashboardConFiltro(clientes, auditoria) {
+            document.getElementById('stat-total-clientes').textContent = clientes.length;
+            document.getElementById('stat-total-reclamos').textContent = clientes.filter(c => c.motivo === 'Reclamo').length;
+            document.getElementById('stat-total-solicitudes').textContent = clientes.filter(c => c.motivo === 'Solicitud').length;
+            document.getElementById('stat-total-logins').textContent = auditoria.length;
+
+            // 1. Procesar Ranking de Operadores
+            const conteoOperadores = {};
+            clientes.forEach(c => {
+                const op = c.operador || 'Sistema / Sin asignar';
+                conteoOperadores[op] = (conteoOperadores[op] || 0) + 1;
+            });
+
+            const rankingOrdenado = Object.entries(conteoOperadores).sort((a, b) => b[1] - a[1]);
+            const contenedorRanking = document.getElementById('contenedor-ranking-operadores');
+
+            if (rankingOrdenado.length === 0) {
+                contenedorRanking.innerHTML = `<p class="text-slate-500 text-xs text-center py-4">Sin registros en este periodo.</p>`;
+            } else {
+                const maxRegistros = rankingOrdenado[0][1];
+                contenedorRanking.innerHTML = rankingOrdenado.map(([op, total], idx) => {
+                    const porcentaje = Math.round((total / maxRegistros) * 100);
+                    const esPrimero = idx === 0 ? 'border-amber-500/30 bg-amber-500/5' : 'border-slate-800 bg-slate-900/40';
+                    const medalla = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
+                    
+                    return `
+                        <div class="p-2.5 rounded-xl border ${esPrimero} space-y-1.5">
+                            <div class="flex items-center justify-between text-xs">
+                                <div class="flex items-center space-x-2 truncate">
+                                    <span class="font-bold text-slate-400 w-5 text-center">${medalla}</span>
+                                    <span class="font-semibold text-slate-200 truncate" title="${op}">${op.split('@')[0]}</span>
+                                </div>
+                                <span class="font-bold text-blue-400 ml-2">${total}</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-blue-500 rounded-full transition-all duration-500" style="width: ${porcentaje}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // 2. Procesar Datos para Gráficos
+            const conteoMotivos = {};
+            clientes.forEach(c => {
+                const m = c.motivo || 'Sin Motivo';
+                conteoMotivos[m] = (conteoMotivos[m] || 0) + 1;
+            });
+
+            const conteoCanales = {};
+            clientes.forEach(c => {
+                const ch = c.canal || 'Llamada';
+                conteoCanales[ch] = (conteoCanales[ch] || 0) + 1;
+            });
+
+            renderizarGraficos(
+                Object.keys(conteoMotivos), Object.values(conteoMotivos),
+                Object.keys(conteoCanales), Object.values(conteoCanales)
+            );
+        }
+
+        function renderizarGraficos(motivosLabels, motivosData, canalesLabels, canalesData) {
+            const ctxMotivos = document.getElementById('graficoMotivos').getContext('2d');
+            if (chartMotivos) chartMotivos.destroy();
+            chartMotivos = new Chart(ctxMotivos, {
+                type: 'bar',
+                data: {
+                    labels: motivosLabels.length ? motivosLabels : ['Sin Datos'],
+                    datasets: [{
+                        label: 'Registros por Motivo',
+                        data: motivosData.length ? motivosData : [0],
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
+                        y: { ticks: { color: '#94a3b8', precision: 0 }, grid: { color: '#1e293b' } }
+                    }
+                }
+            });
+
+            const ctxCanales = document.getElementById('graficoCanales').getContext('2d');
+            if (chartCanales) chartCanales.destroy();
+            chartCanales = new Chart(ctxCanales, {
+                type: 'doughnut',
+                data: {
+                    labels: canalesLabels.length ? canalesLabels : ['Sin Datos'],
+                    datasets: [{
+                        data: canalesData.length ? canalesData : [1],
+                        backgroundColor: ['#3b82f6', '#10b981', '#a855f7', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#cbd5e1', font: { size: 11 } } }
+                    }
+                }
+            });
         }
 
         // CLIENTES
         async function cargarClientes() {
-            const tbody = document.getElementById('tbody-clientes');
-            const { data, error } = await _supabase.from('clientes_crm').select('*').order('created_at', { ascending: false });
-            if (error || !data) {
-                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-500">No hay clientes registrados aún.</td></tr>`;
-                return;
-            }
-            window.clientesCache = data;
-            renderClientes(data);
+            await cargarDatosGenerales();
         }
 
         function renderClientes(lista) {
             const tbody = document.getElementById('tbody-clientes');
             if (lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-500">Sin resultados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="p-4 text-center text-slate-500">Sin resultados disponibles.</td></tr>`;
                 return;
             }
             tbody.innerHTML = lista.map(c => `
                 <tr class="hover:bg-slate-900/50 transition">
+                    <td class="p-4 font-mono text-slate-400">${new Date(c.created_at || Date.now()).toLocaleDateString()}</td>
                     <td class="p-4 font-mono text-white">${c.cedula}</td>
                     <td class="p-4 font-semibold text-white">${c.nombre}</td>
                     <td class="p-4 text-slate-400">${c.telefono}</td>
@@ -545,7 +727,7 @@
 
         function filtrarClientes() {
             const filtro = document.getElementById('input-buscar-cliente').value.toLowerCase();
-            const filtrados = (window.clientesCache || []).filter(c => 
+            const filtrados = clientesGlobal.filter(c => 
                 c.cedula.toLowerCase().includes(filtro) || 
                 c.nombre.toLowerCase().includes(filtro)
             );
@@ -563,7 +745,8 @@
                 producto: document.getElementById('cli-producto').value,
                 subservicio: document.getElementById('cli-subservicio').value,
                 observaciones: document.getElementById('cli-observaciones').value.trim(),
-                operador: currentUser.email
+                operador: currentUser.email,
+                created_at: new Date().toISOString()
             };
 
             const { error } = await _supabase.from('clientes_crm').insert([nuevoCliente]);
@@ -571,18 +754,16 @@
                 cerrarModalCliente();
                 document.getElementById('form-cliente').reset();
                 actualizarSubmenuServicio();
-                cargarClientes();
-                cargarDashboard();
+                cargarDatosGenerales();
             } else {
-                alert('Error al registrar cliente en Supabase: ' + error.message);
+                alert('Error al registrar cliente: ' + error.message);
             }
         });
 
         async function eliminarCliente(id) {
             if (confirm('¿Seguro deseas eliminar este registro?')) {
                 await _supabase.from('clientes_crm').delete().eq('id', id);
-                cargarClientes();
-                cargarDashboard();
+                cargarDatosGenerales();
             }
         }
 
@@ -634,10 +815,7 @@
         // AUDITORÍA
         async function cargarAuditoria() {
             const tbody = document.getElementById('tbody-auditoria');
-            const { data, error } = await _supabase.from('auditoria_crm').select('*').order('fecha', { ascending: false });
-            if (error || !data) return;
-
-            tbody.innerHTML = data.map(log => `
+            tbody.innerHTML = auditoriaGlobal.map(log => `
                 <tr class="hover:bg-slate-900/50 transition">
                     <td class="p-4 font-mono text-slate-400">${new Date(log.fecha).toLocaleString()}</td>
                     <td class="p-4 font-semibold text-white">${log.usuario}</td>
@@ -660,7 +838,7 @@
             if (activeSec) activeSec.classList.remove('hidden');
             if (activeNav) activeNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-blue-400 bg-blue-600/10 border border-blue-500/20";
 
-            if (t === 'dashboard') cargarDashboard();
+            if (t === 'dashboard') cargarDatosGenerales();
             if (t === 'clientes') cargarClientes();
             if (t === 'usuarios') cargarUsuarios();
             if (t === 'auditoria') cargarAuditoria();
