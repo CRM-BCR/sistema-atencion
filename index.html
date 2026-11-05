@@ -1,628 +1,921 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>CRM Call Center</title>
 
+
+
     <!-- Tailwind CSS CDN -->
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <!-- FontAwesome Tools -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <!-- SheetJS (Excel Export & Import) -->
+
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
     <!-- Chart.js para Gráficos -->
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+
+
     <style>
+
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+
         .custom-scrollbar::-webkit-scrollbar-track { background: #18181b; }
+
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+
     </style>
+
 </head>
+
 <body class="bg-zinc-950 text-zinc-100 font-sans antialiased min-h-screen flex flex-col">
 
+
+
     <!-- PANTALLA DE LOGIN -->
+
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950 p-4">
+
         <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden">
+
             <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-600/20 rounded-full blur-2xl pointer-events-none"></div>
+
             
+
             <div class="text-center mb-8">
+
                 <div class="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-red-600/10 text-red-500 mb-4 border border-red-500/20">
+
                     <i class="fa-solid fa-headset text-3xl"></i>
+
                 </div>
+
                 <h1 class="text-2xl font-bold text-white tracking-wide">CRM Call Center</h1>
+
             </div>
 
+
+
             <form id="login-form" class="space-y-5">
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Correo Electrónico</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
-                            <i class="fa-solid fa-envelope"></i>
-                        </span>
-                        <input type="email" id="login-email" required 
-                            class="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm transition">
-                    </div>
-                </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Contraseña</label>
+
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Correo Electrónico</label>
+
                     <div class="relative">
+
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
-                            <i class="fa-solid fa-lock"></i>
+
+                            <i class="fa-solid fa-envelope"></i>
+
                         </span>
-                        <input type="password" id="login-password" required placeholder="••••••••" 
-                            class="w-full pl-10 pr-12 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm placeholder-zinc-600 transition">
-                        
-                        <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-white transition focus:outline-none cursor-pointer">
-                            <i class="fa-solid fa-eye" id="toggle-icon"></i>
-                        </button>
+
+                        <input type="email" id="login-email" required 
+
+                            class="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm transition">
+
                     </div>
+
                 </div>
+
+
+
+                <div>
+
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Contraseña</label>
+
+                    <div class="relative">
+
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                        </span>
+
+                        <input type="password" id="login-password" required placeholder="••••••••" 
+
+                            class="w-full pl-10 pr-12 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm placeholder-zinc-600 transition">
+
+                        
+
+                        <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-white transition focus:outline-none cursor-pointer">
+
+                            <i class="fa-solid fa-eye" id="toggle-icon"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
 
                 <div id="login-error" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs text-center font-medium"></div>
 
+
+
                 <button type="submit" id="btn-login" class="w-full py-3.5 px-4 bg-red-600 hover:bg-red-500 active:bg-red-700 font-semibold text-white rounded-xl shadow-lg shadow-red-600/30 transition duration-150 flex items-center justify-center space-x-2">
+
                     <span>Iniciar Sesión</span>
+
                     <i class="fa-solid fa-arrow-right text-xs"></i>
+
                 </button>
+
             </form>
+
         </div>
+
     </div>
+
+
 
     <!-- SISTEMA PRINCIPAL CRM -->
+
     <div id="app-dashboard" class="hidden flex-1 flex flex-col md:flex-row min-h-screen">
+
         <aside class="w-full md:w-64 bg-zinc-950 border-r border-zinc-800/80 flex flex-col justify-between p-4">
+
             <div>
+
                 <div class="flex items-center space-x-3 px-3 py-4 mb-6 border-b border-zinc-800/80">
+
                     <div class="w-9 h-9 rounded-lg bg-red-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-red-600/30">
+
                         <i class="fa-solid fa-headset"></i>
+
                     </div>
+
                     <div>
+
                         <h2 class="font-bold text-white leading-none">CRM</h2>
+
                         <span class="text-[10px] uppercase tracking-wider text-red-500 font-semibold">Call Center</span>
+
                     </div>
+
                 </div>
+
                 
+
                 <nav class="space-y-1" id="sidebar-nav">
-                    <button onclick="cambiarPestana('tab-dashboard')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-300 hover:bg-zinc-900 transition">
-                        <i class="fa-solid fa-chart-line text-red-500 w-5"></i><span>Dashboard</span>
-                    </button>
-                    <button onclick="cambiarPestana('tab-clientes')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-300 hover:bg-zinc-900 transition">
-                        <i class="fa-solid fa-users text-red-500 w-5"></i><span>Clientes</span>
-                    </button>
-                    <button onclick="cambiarPestana('tab-campañas')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-300 hover:bg-zinc-900 transition">
-                        <i class="fa-solid fa-bullhorn text-red-500 w-5"></i><span>Campañas</span>
-                    </button>
-                    <button onclick="cambiarPestana('tab-operaciones-bandeja')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-300 hover:bg-zinc-900 transition">
-                        <i class="fa-solid fa-inbox text-red-500 w-5"></i><span>Operaciones</span>
-                    </button>
-                    <button onclick="cambiarPestana('tab-usuarios')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-300 hover:bg-zinc-900 transition">
-                        <i class="fa-solid fa-user-gear text-red-500 w-5"></i><span>Usuarios</span>
-                    </button>
-                    <button onclick="cambiarPestana('tab-auditoria')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-300 hover:bg-zinc-900 transition">
-                        <i class="fa-solid fa-shield-halved text-red-500 w-5"></i><span>Auditoría</span>
-                    </button>
+
+                    <!-- Dinámico según rol -->
+
                 </nav>
+
             </div>
+
             <div class="pt-4 border-t border-zinc-800/80">
+
                 <div class="px-3 py-2 mb-3 bg-zinc-900/60 rounded-xl border border-zinc-800">
+
                     <p id="user-display-email" class="text-xs font-semibold text-zinc-200 truncate">usuario@bancrecer.com.ve</p>
+
                     <span id="user-display-role" class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">OPERADOR</span>
+
                 </div>
+
                 <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-semibold transition">
+
                     <i class="fa-solid fa-right-from-bracket"></i><span>Cerrar Sesión</span>
+
                 </button>
+
             </div>
+
         </aside>
 
+
+
         <main class="flex-1 p-6 md:p-8 custom-scrollbar overflow-y-auto bg-zinc-900/50">
+
             
+
             <!-- 1. DASHBOARD -->
+
             <section id="tab-dashboard" class="space-y-6">
+
                 <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+
                     <div>
+
                         <h1 class="text-2xl font-bold text-white">Resumen General de Operaciones</h1>
+
                         <p class="text-xs text-zinc-400">Métricas y estadísticas de gestión telefónica y escalamientos.</p>
+
                     </div>
+
                     
+
                     <div class="bg-zinc-950 p-3 rounded-2xl border border-zinc-800 flex flex-wrap items-center gap-3">
+
                         <div class="flex items-center space-x-2">
+
                             <span class="text-[10px] font-bold uppercase text-zinc-400">Desde:</span>
+
                             <input type="date" id="filtro-fecha-desde" onchange="aplicarFiltroFechas()" class="bg-zinc-900 border border-zinc-800 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none focus:ring-2 focus:ring-red-500">
+
                         </div>
+
                         <div class="flex items-center space-x-2">
+
                             <span class="text-[10px] font-bold uppercase text-zinc-400">Hasta:</span>
+
                             <input type="date" id="filtro-fecha-hasta" onchange="aplicarFiltroFechas()" class="bg-zinc-900 border border-zinc-800 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none focus:ring-2 focus:ring-red-500">
+
                         </div>
+
                         <button onclick="limpiarFiltroFechas()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition">Limpiar</button>
+
                     </div>
+
                 </div>
+
+
 
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+
                     <div class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-lg">
+
                         <div class="flex items-center justify-between text-red-500 mb-2">
+
                             <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Registros</span>
+
                             <i class="fa-solid fa-folder-open text-lg"></i>
+
                         </div>
+
                         <p id="stat-total-registros" class="text-3xl font-extrabold text-white">0</p>
+
                     </div>
+
                     
+
                     <div onclick="abrirDetalleDashboard('escalados')" class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 hover:border-amber-500/50 shadow-lg cursor-pointer transition group">
+
                         <div class="flex items-center justify-between text-amber-500 mb-2">
+
                             <span class="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-amber-400 transition">Escalados Total</span>
+
                             <i class="fa-solid fa-share-nodes text-lg"></i>
+
                         </div>
+
                         <p id="stat-total-escalados" class="text-3xl font-extrabold text-white">0</p>
+
                     </div>
+
+
 
                     <div onclick="abrirDetalleDashboard('en_proceso')" class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 hover:border-blue-500/50 shadow-lg cursor-pointer transition group">
+
                         <div class="flex items-center justify-between text-blue-500 mb-2">
+
                             <span class="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-blue-400 transition">En Proceso (Op)</span>
+
                             <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+
                         </div>
+
                         <p id="stat-en-proceso" class="text-3xl font-extrabold text-white">0</p>
+
                     </div>
+
+
 
                     <div onclick="abrirDetalleDashboard('procesados')" class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 hover:border-emerald-500/50 shadow-lg cursor-pointer transition group">
+
                         <div class="flex items-center justify-between text-emerald-400 mb-2">
+
                             <span class="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-emerald-400 transition">Procesados / Cierre</span>
+
                             <i class="fa-solid fa-circle-check text-lg"></i>
+
                         </div>
+
                         <p id="stat-procesados" class="text-3xl font-extrabold text-white">0</p>
+
                     </div>
+
                 </div>
+
+
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
+
                     <div class="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 shadow-xl flex flex-col justify-between">
+
                         <div>
+
                             <div class="flex items-center justify-between mb-4">
+
                                 <h3 class="text-sm font-bold uppercase text-zinc-300">
+
                                     <i class="fa-solid fa-trophy text-amber-400 mr-2"></i> Ranking Operadores
+
                                 </h3>
+
                                 <span class="text-[10px] font-semibold text-zinc-500 uppercase">Gestiones</span>
+
                             </div>
+
                             <div id="contenedor-ranking-operadores" class="space-y-3">
-                                <p class="text-zinc-500 text-xs text-center py-4">Sin datos registrados</p>
+
+                                <p class="text-zinc-500 text-xs text-center py-4">Cargando datos...</p>
+
                             </div>
+
                         </div>
+
                     </div>
 
+
+
                     <div class="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 shadow-xl flex flex-col items-center">
+
                         <h3 class="text-sm font-bold uppercase text-zinc-300 mb-4 self-start"><i class="fa-solid fa-chart-bar text-red-500 mr-2"></i> Motivos de Contacto</h3>
+
                         <div class="w-full h-64 relative flex justify-center items-center">
+
                             <canvas id="graficoMotivos"></canvas>
+
                         </div>
+
                     </div>
 
+
+
                     <div class="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 shadow-xl flex flex-col items-center">
+
                         <h3 class="text-sm font-bold uppercase text-zinc-300 mb-4 self-start"><i class="fa-solid fa-chart-pie text-zinc-400 mr-2"></i> Canales de Atención</h3>
+
                         <div class="w-full h-64 relative flex justify-center items-center">
+
                             <canvas id="graficoCanales"></canvas>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </section>
+
+
 
             <!-- 2. GESTIÓN CLIENTES -->
+
             <section id="tab-clientes" class="hidden space-y-6">
+
                 <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+
                     <div>
+
                         <h1 class="text-2xl font-bold text-white">Gestión de Clientes</h1>
+
                         <p class="text-xs text-zinc-400">Registro y consulta de interacciones por canal y servicio.</p>
+
                     </div>
+
                     <div class="flex items-center space-x-3">
-                        <button id="btn-exportar-excel-clientes" onclick="exportToExcel('tabla-clientes', 'Clientes_CRM')" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+
+                        <button id="btn-exportar-excel-clientes" onclick="exportToExcel('tabla-clientes', 'Clientes_CRM')" class="hidden px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+
                             <i class="fa-solid fa-file-excel text-emerald-400"></i>
+
                             <span>Exportar Excel</span>
+
                         </button>
+
                         <button onclick="abrirModalCliente()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+
                             <i class="fa-solid fa-user-plus"></i>
+
                             <span>Registrar Nueva Gestión</span>
+
                         </button>
+
                     </div>
+
                 </div>
+
+
 
                 <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 flex items-center space-x-4">
+
                     <div class="relative flex-1">
+
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-500"><i class="fa-solid fa-search"></i></span>
+
                         <input type="text" id="input-buscar-cliente" onkeyup="filtrarClientes()" placeholder="Buscar por Cédula, Nombre o Ticket..." class="w-full pl-10 pr-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
+
                     </div>
+
                 </div>
 
+
+
                 <div class="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+
                     <div class="overflow-x-auto">
+
                         <table id="tabla-clientes" class="w-full text-left text-xs">
+
                             <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+
                                 <tr>
+
                                     <th class="p-4">Fecha</th>
+
                                     <th class="p-4">Ticket / Cédula</th>
+
                                     <th class="p-4">Nombre del Cliente</th>
+
                                     <th class="p-4">Teléfono</th>
+
                                     <th class="p-4">Canal / Motivo</th>
+
                                     <th class="p-4">Servicio</th>
+
                                     <th class="p-4">Observaciones</th>
+
                                     <th class="p-4">Escalado Operaciones</th>
+
                                     <th class="p-4">Estatus Op.</th>
+
                                     <th class="p-4">Operador</th>
+
                                     <th class="p-4 text-center">Acciones</th>
+
                                 </tr>
+
                             </thead>
+
                             <tbody id="tbody-clientes" class="divide-y divide-zinc-800 text-zinc-300">
-                                <tr><td colspan="11" class="p-4 text-center text-zinc-500">No hay registros de clientes.</td></tr>
+
+                                <tr><td colspan="11" class="p-4 text-center text-zinc-500">Cargando registros...</td></tr>
+
                             </tbody>
+
                         </table>
+
                     </div>
+
                 </div>
+
             </section>
+
+
 
             <!-- 3. USUARIOS CRM -->
+
             <section id="tab-usuarios" class="hidden space-y-6">
+
                 <div class="flex items-center justify-between">
+
                     <div>
+
                         <h1 class="text-2xl font-bold text-white">Administración de Usuarios CRM</h1>
+
                         <p class="text-xs text-zinc-400">Control de operadores, administradores y operaciones.</p>
+
                     </div>
+
                     <button onclick="abrirModalUsuario()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+
                         <i class="fa-solid fa-user-shield"></i>
+
                         <span>Nuevo Usuario CRM</span>
+
                     </button>
+
                 </div>
+
+
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
                     <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex flex-col items-center justify-center">
+
                         <h3 class="text-sm font-bold uppercase text-zinc-300 mb-4 self-start"><i class="fa-solid fa-chart-pie text-red-500 mr-2"></i> Estatus de Usuarios</h3>
+
                         <div class="w-full h-56 relative flex justify-center items-center">
+
                             <canvas id="graficoUsuariosEstatus"></canvas>
+
                         </div>
+
                     </div>
+
                     <div class="lg:col-span-2 bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-center space-y-4">
+
                         <h3 class="text-sm font-bold uppercase text-zinc-300"><i class="fa-solid fa-users-gear text-amber-500 mr-2"></i> Resumen de Sesiones</h3>
+
                         <p class="text-xs text-zinc-400">El gráfico circular muestra la proporción actual de usuarios registrados conectados en comparación con los inactivos.</p>
+
                         <div class="grid grid-cols-2 gap-4 pt-2">
+
                             <div class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800">
+
                                 <span class="text-[10px] font-bold uppercase text-emerald-400">Usuarios Activos</span>
+
                                 <p id="stat-usuarios-activos" class="text-2xl font-extrabold text-white mt-1">0</p>
+
                             </div>
+
                             <div class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800">
+
                                 <span class="text-[10px] font-bold uppercase text-zinc-500">Usuarios Inactivos</span>
+
                                 <p id="stat-usuarios-inactivos" class="text-2xl font-extrabold text-white mt-1">0</p>
+
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
 
+
+
                 <div class="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+
                     <div class="overflow-x-auto">
+
                         <table class="w-full text-left text-xs">
+
                             <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+
                                 <tr>
+
                                     <th class="p-4">Correo Electrónico</th>
+
                                     <th class="p-4">Rol Asignado</th>
+
                                     <th class="p-4">Fecha de Creación</th>
+
                                     <th class="p-4 text-center">Acciones</th>
+
                                 </tr>
+
                             </thead>
+
                             <tbody id="tbody-usuarios" class="divide-y divide-zinc-800 text-zinc-300">
+
                                 <tr><td colspan="4" class="p-4 text-center text-zinc-500">Cargando usuarios...</td></tr>
+
                             </tbody>
+
                         </table>
+
                     </div>
+
                 </div>
-            </section><!-- 4. AUDITORÍA Y SEGURIDAD -->
+
+            </section>
+
+
+
+            <!-- 4. AUDITORÍA Y SEGURIDAD -->
+
             <section id="tab-auditoria" class="hidden space-y-6">
+
                 <div class="flex items-center justify-between">
+
                     <div>
+
                         <h1 class="text-2xl font-bold text-white">Auditoría y Seguridad (Control de Accesos y Acciones)</h1>
+
                         <p class="text-xs text-zinc-400">Monitoreo de ingresos, acciones operativas, intentos fallidos y lista negra.</p>
+
                     </div>
+
                     <div class="flex items-center space-x-3">
+
                         <button onclick="refrescarAuditoria(true)" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+
                             <i class="fa-solid fa-rotate-right text-red-500"></i>
+
                             <span>Actualizar</span>
+
                         </button>
+
                         <button onclick="exportToExcel('tabla-auditoria', 'Auditoria_Seguridad_CRM')" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+
                             <i class="fa-solid fa-file-excel text-emerald-400"></i>
+
                             <span>Exportar Excel</span>
+
                         </button>
+
                     </div>
+
                 </div>
+
+
 
                 <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4">
+
                     <h2 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-user-lock mr-2"></i> Usuarios Bloqueados (Lista Negra)</h2>
+
                     <div class="overflow-x-auto">
+
                         <table class="w-full text-left text-xs">
+
                             <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+
                                 <tr>
+
                                     <th class="p-3">Correo Electrónico</th>
+
                                     <th class="p-3">Motivo de Bloqueo</th>
+
                                     <th class="p-3">Fecha de Bloqueo</th>
+
                                     <th class="p-3 text-center">Acción Admin</th>
+
                                 </tr>
+
                             </thead>
+
                             <tbody id="tbody-bloqueados" class="divide-y divide-zinc-800 text-zinc-300">
+
                                 <tr><td colspan="4" class="p-3 text-center text-zinc-500">Sin usuarios bloqueados.</td></tr>
+
                             </tbody>
+
                         </table>
+
                     </div>
+
                 </div>
 
+
+
                 <div class="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+
                     <div class="p-4 border-b border-zinc-800">
+
                         <h2 class="text-sm font-bold uppercase text-zinc-300"><i class="fa-solid fa-shield-halved text-red-500 mr-2"></i> Registro de Actividad y Accesos</h2>
+
                     </div>
+
                     <div class="overflow-x-auto">
+
                         <table id="tabla-auditoria" class="w-full text-left text-xs">
+
                             <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+
                                 <tr>
+
                                     <th class="p-4">Fecha / Hora</th>
+
                                     <th class="p-4">Usuario Intentado / Operador</th>
+
                                     <th class="p-4">Resultado</th>
+
                                     <th class="p-4">Detalle / Acción</th>
+
                                 </tr>
+
                             </thead>
+
                             <tbody id="tbody-auditoria" class="divide-y divide-zinc-800 text-zinc-300">
+
                                 <tr><td colspan="4" class="p-4 text-center text-zinc-500">Cargando registros de auditoría...</td></tr>
+
                             </tbody>
+
                         </table>
+
                     </div>
+
                 </div>
+
             </section>
+
+
 
             <!-- 5. CAMPAÑAS (ADMINISTRADOR Y OPERADOR SEPARADOS) -->
+
             <section id="tab-campañas" class="hidden space-y-6">
+
                 <div class="flex items-center justify-between">
+
                     <div>
+
                         <h1 class="text-2xl font-bold text-white">Gestión y Asignación de Campañas</h1>
+
                         <p class="text-xs text-zinc-400">Importación de bases de datos y seguimiento de asignaciones.</p>
+
                     </div>
+
                 </div>
+
+
 
                 <!-- PANEL EXCLUSIVO PARA ADMINISTRADOR -->
+
                 <div id="admin-campaña-panel" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
                     <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
+
                         <h3 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-file-excel mr-2"></i> Importar Base de Excel</h3>
+
                         
+
                         <div class="space-y-4">
+
                             <div>
+
                                 <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Nombre de la Campaña</label>
+
                                 <input type="text" id="campaña-nombre" placeholder="Ej. Campaña POS Inactivos Q4" class="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
+
                             </div>
 
+
+
                             <div>
+
                                 <div class="flex items-center justify-between mb-1.5">
-                                    <label class="block text-[10px] font-bold uppercase text-zinc-400">Seleccionar Operadores Destino</label>
+
+                                    <label class="block text-[10px] font-bold uppercase text-zinc-400">Seleccionar Operadores Destino (Múltiples)</label>
+
                                     <button type="button" onclick="marcarTodosOperadores(true)" class="text-[10px] text-red-400 hover:underline">Seleccionar Todos</button>
+
                                 </div>
+
                                 <div id="contenedor-checkboxes-operadores" class="max-h-44 overflow-y-auto p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl space-y-2 custom-scrollbar">
+
                                     <p class="text-zinc-500 text-xs p-2 text-center">Cargando lista de operadores...</p>
+
                                 </div>
+
                             </div>
 
+
+
                             <div>
+
                                 <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Archivo Excel (.xlsx / .csv)</label>
+
                                 <input type="file" id="campaña-file" accept=".xlsx, .xls, .csv" class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 text-xs file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-500 cursor-pointer">
+
                             </div>
+
+
 
                             <button onclick="procesarImportacionCampania()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2 shadow-lg shadow-red-600/30">
+
                                 <i class="fa-solid fa-upload"></i>
+
                                 <span>Importar y Distribuir Registros</span>
+
                             </button>
+
                         </div>
+
                     </div>
+
+
 
                     <div class="lg:col-span-2 bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
+
                         <div class="flex items-center justify-between">
+
                             <h3 class="text-sm font-bold uppercase text-zinc-300"><i class="fa-solid fa-bullhorn text-red-500 mr-2"></i> Campañas Activas y Asignaciones</h3>
+
                             <button onclick="cargarCampañas()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition">Actualizar</button>
+
                         </div>
+
+
 
                         <div class="overflow-x-auto">
+
                             <table class="w-full text-left text-xs">
+
                                 <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+
                                     <tr>
+
                                         <th class="p-3">Campaña</th>
+
                                         <th class="p-3">Cliente / Cédula-RIF</th>
+
                                         <th class="p-3">Teléfono</th>
+
                                         <th class="p-3">Gestor / Operador Asignado</th>
+
                                         <th class="p-3">Estatus</th>
+
                                     </tr>
+
                                 </thead>
+
                                 <tbody id="tbody-campañas" class="divide-y divide-zinc-800 text-zinc-300">
+
                                     <tr><td colspan="5" class="p-4 text-center text-zinc-500">No hay registros de campañas importadas.</td></tr>
+
                                 </tbody>
+
                             </table>
+
                         </div>
+
                     </div>
+
                 </div>
 
-                <!-- PANEL EXCLUSIVO PARA OPERADOR -->
+
+
+                <!-- PANEL EXCLUSIVO PARA OPERADOR (SOLO VE SUS ASIGNACIONES) -->
+
                 <div id="operador-campaña-panel" class="hidden bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
+
                     <div class="flex items-center justify-between">
+
                         <div>
-                            <h3 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-list-check mr-2"></i> Mis Prospectos Asignados</h3>
-                            <p class="text-xs text-zinc-400">Gestiona únicamente los registros asignados por administración.</p>
+
+                            <h3 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-list-check mr-2"></i> Mis Prospectos Asignados (Campaña)</h3>
+
+                            <p class="text-xs text-zinc-400">Gestiona únicamente los registros que te ha asignado el administrador.</p>
+
                         </div>
+
                         <button onclick="cargarCampañas()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition">Actualizar Lista</button>
+
                     </div>
+
+
 
                     <div class="overflow-x-auto">
+
                         <table class="w-full text-left text-xs">
+
                             <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+
                                 <tr>
+
                                     <th class="p-3">Campaña</th>
+
                                     <th class="p-3">Cédula/RIF y Nombre</th>
+
                                     <th class="p-3">Teléfono</th>
-                                    <th class="p-3">Detalle POS</th>
+
+                                    <th class="p-3">Detalle POS (Inactivos/Serial)</th>
+
                                     <th class="p-3">Gestor Asignado</th>
+
                                     <th class="p-3">Gestión / Motivo</th>
+
                                     <th class="p-3">Estatus</th>
+
                                     <th class="p-3 text-center">Acción</th>
+
                                 </tr>
+
                             </thead>
+
                             <tbody id="tbody-operador-campañas" class="divide-y divide-zinc-800 text-zinc-300">
-                                <tr><td colspan="8" class="p-4 text-center text-zinc-500">No tienes prospectos asignados.</td></tr>
+
+                                <tr><td colspan="8" class="p-4 text-center text-zinc-500">No tienes prospectos asignados en este momento.</td></tr>
+
                             </tbody>
+
                         </table>
+
                     </div>
+
                 </div>
+
             </section>
+
+
 
             <!-- 6. BANDEJA DE OPERACIONES -->
+
             <section id="tab-operaciones-bandeja" class="hidden space-y-6">
+
                 <div class="flex items-center justify-between">
+
                     <div>
-                        <h1 class="text-2xl font-bold text-white">Bandeja de Casos de Operaciones</h1>
-                        <p class="text-xs text-zinc-400">Atención y resolución de requerimientos escalados.</p>
-                    </div>
-                </div>
 
-                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
-                                <tr>
-                                    <th class="p-4">Fecha Escalado</th>
-                                    <th class="p-4">Ticket / Cédula</th>
-                                    <th class="p-4">Cliente</th>
-                                    <th class="p-4">Motivo / Detalle</th>
-                                    <th class="p-4">Estatus Actual</th>
-                                    <th class="p-4 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody-operaciones-bandeja" class="divide-y divide-zinc-800 text-zinc-300">
-                                <tr><td colspan="6" class="p-4 text-center text-zinc-500">No hay casos pendientes en la bandeja de operaciones.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-    </div>
-
-    <!-- SCRIPT DE LÓGICA GENERAL -->
-    <script>
-        let chartMotivosInstance = null;
-        let chartCanalesInstance = null;
-        let chartUsuariosInstance = null;
-
-        // Toggle Mostrar/Ocultar Contraseña
-        document.getElementById('toggle-password')?.addEventListener('click', function() {
-            const input = document.getElementById('login-password');
-            const icon = document.getElementById('toggle-icon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
-        });
-
-        // Formulario Login
-        document.getElementById('login-form')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            document.getElementById('user-display-email').innerText = email;
-            
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-dashboard').classList.remove('hidden');
-            
-            inicializarGraficos();
-        });
-
-        // Logout
-        function logout() {
-            document.getElementById('app-dashboard').classList.add('hidden');
-            document.getElementById('login-screen').classList.remove('hidden');
-        }
-
-        // Navegación por Pestañas
-        function cambiarPestana(idTab) {
-            const pestanas = ['tab-dashboard', 'tab-clientes', 'tab-usuarios', 'tab-auditoria', 'tab-campañas', 'tab-operaciones-bandeja'];
-            pestanas.forEach(tab => {
-                const el = document.getElementById(tab);
-                if (el) el.classList.add('hidden');
-            });
-            const actual = document.getElementById(idTab);
-            if (actual) actual.classList.remove('hidden');
-        }
-
-        // Inicializar Gráficos Chart.js
-        function inicializarGraficos() {
-            if (chartMotivosInstance) chartMotivosInstance.destroy();
-            if (chartCanalesInstance) chartCanalesInstance.destroy();
-            if (chartUsuariosInstance) chartUsuariosInstance.destroy();
-
-            const ctxMotivos = document.getElementById('graficoMotivos')?.getContext('2d');
-            if (ctxMotivos) {
-                chartMotivosInstance = new Chart(ctxMotivos, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Soporte POS', 'Reclamos', 'Consultas', 'Fallas Web'],
-                        datasets: [{
-                            label: 'Interacciones',
-                            data: [12, 19, 7, 5],
-                            backgroundColor: '#ef4444',
-                            borderRadius: 6
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
-            }
-
-            const ctxCanales = document.getElementById('graficoCanales')?.getContext('2d');
-            if (ctxCanales) {
-                chartCanalesInstance = new Chart(ctxCanales, {
-                    type: 'pie',
-                    data: {
-                        labels: ['Llamada', 'WhatsApp', 'Correo'],
-                        datasets: [{
-                            data: [55, 30, 15],
-                            backgroundColor: ['#ef4444', '#10b981', '#3b82f6']
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
-            }
-
-            const ctxUsuarios = document.getElementById('graficoUsuariosEstatus')?.getContext('2d');
-            if (ctxUsuarios) {
-                chartUsuariosInstance = new Chart(ctxUsuarios, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Activos', 'Inactivos'],
-                        datasets: [{
-                            data: [3, 1],
-                            backgroundColor: ['#10b981', '#3f3f46']
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
-            }
-        }
-
-        // Exportación simple a Excel
-        function exportToExcel(tableID, filename = '') {
-            const tableSelect = document.getElementById(tableID);
-            if (!tableSelect) return;
-            const wb = XLSX.utils.table_to_book(tableSelect, { sheet: "Datos" });
-            XLSX.writeFile(wb, (filename || 'export') + '.xlsx');
-        }
-
-        // Funciones Stubs (placeholders) para evitar errores de consola
-        function aplicarFiltroFechas() {}
-        function limpiarFiltroFechas() {}
-        function abrirDetalleDashboard(tipo) {}
-        function abrirModalCliente() {}
-        function filtrarClientes() {}
-        function abrirModalUsuario() {}
-        function refrescarAuditoria() {}
-        function marcarTodosOperadores(val) {}
-        function procesarImportacionCampania() {}
-        function cargarCampañas() {}
-    </script>
-</body>
-</html>
+                        <h1 class="text-2xl font-bold 
