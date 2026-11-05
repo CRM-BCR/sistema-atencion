@@ -986,12 +986,14 @@
         async function cargarCampañas() {
             try {
                 const { data, error } = await _supabase.from('campañas_crm').select('*');
-                if (!error) {
-                    campañasGlobal = data || [];
-                    actualizarInterfazCampañas();
+                if (error) {
+                    console.error("Error al cargar campañas desde Supabase:", error);
+                    return;
                 }
+                campañasGlobal = data || [];
+                actualizarInterfazCampañas();
             } catch (err) {
-                console.warn("Tabla campañas_crm no inicializada aún:", err);
+                console.warn("Error en la conexión de campañas:", err);
             }
         }
 
@@ -1044,15 +1046,15 @@
             if (!tbody) return;
 
             if (campañasGlobal.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-zinc-500">No hay campañas importadas.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-zinc-500">No hay registros de campañas importadas.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = campañasGlobal.map(c => `
                 <tr class="hover:bg-zinc-900/50 transition">
                     <td class="p-3 font-bold text-white">${c.nombre_campaña || 'Campaña'}</td>
-                    <td class="p-3 font-mono text-zinc-300">${c.nombre_cliente || 'N/A'} <span class="text-[10px] text-zinc-500 block">CI-RIF: ${c.cedula || c['cedula-Rif'] || 'S/N'}</span></td>
-                    <td class="p-3 text-zinc-400">${c.telefono || '-'}</td>
+                    <td class="p-3 font-mono text-zinc-300">${c.nombre_cliente || c.Nombre || 'N/A'} <span class="text-[10px] text-zinc-500 block">CI-RIF: ${c.cedula || c['cedula-Rif'] || 'S/N'}</span></td>
+                    <td class="p-3 text-zinc-400">${c.telefono || c.Telefono || '-'}</td>
                     <td class="p-3 text-red-400 font-semibold">${c.gestor || c.operador_asignado || 'Sin asignar'}</td>
                     <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">${c.estatus || 'PENDIENTE'}</span></td>
                 </tr>
