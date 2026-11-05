@@ -86,7 +86,7 @@
                 </div>
                 
                 <nav class="space-y-1" id="sidebar-nav">
-                    <!-- Se llena dinámicamente según rol -->
+                    <!-- Se llena dinámicamente según el rol -->
                 </nav>
             </div>
             <div class="pt-4 border-t border-zinc-800/80">
@@ -696,9 +696,9 @@
                 currentUser = data.user;
                 document.getElementById('user-display-email').textContent = data.user.email;
                 
-                // Cargamos usuarios antes de configurar el menú para verificar roles
-                const { data: usrs } = await _supabase.from('usuarios_crm').select('*');
-                usuariosGlobal = usrs || [];
+                // Cargar usuarios globales para verificar roles en el menú
+                const { data: usuariosData } = await _supabase.from('usuarios_crm').select('*');
+                usuariosGlobal = usuariosData || [];
 
                 configurarMenuLateral(data.user.email);
                 registrarAuditoria(data.user.email, 'EXITOSO', 'Ingreso al sistema autorizado');
@@ -1002,7 +1002,8 @@
                     <tr class="hover:bg-zinc-900/50 transition">
                         <td class="p-4 font-mono text-zinc-400">${new Date(c.created_at || c.fecha || Date.now()).toLocaleDateString()}</td>
                         <td class="p-4 font-mono text-white">
-                            ${c.cedula}${ticketBadge}
+                            ${c.cedula}
+                            ${ticketBadge}
                         </td>
                         <td class="p-4 font-semibold text-white">${c.nombre}</td>
                         <td class="p-4 text-zinc-400">${c.telefono}</td>
@@ -1012,7 +1013,8 @@
                         </td>
                         <td class="p-4 text-zinc-300">${c.producto} <br><span class="text-[10px] text-zinc-500">${c.subservicio || ''}</span></td>
                         <td class="p-4 text-zinc-400 max-w-xs" title="${c.observaciones || ''}">
-                            <div class="truncate">${c.observaciones \vert{}\vert{} '-'}</div>${c.respuesta_operaciones ? `<div class="mt-1 text-[11px] text-emerald-400 bg-emerald-500/10 p-1.5 rounded border border-emerald-500/20"><strong>Op:</strong> ${c.respuesta_operaciones}</div>` : ''}
+                            <div class="truncate">${c.observaciones || '-'}</div>
+                            ${c.respuesta_operaciones ? `<div class="mt-1 text-[11px] text-emerald-400 bg-emerald-500/10 p-1.5 rounded border border-emerald-500/20"><strong>Op:</strong> ${c.respuesta_operaciones}</div>` : ''}
                         </td>
                         <td class="p-4 text-center">
                             ${esEscalado ? '<span class="text-amber-400 font-bold"><i class="fa-solid fa-check"></i> Sí</span>' : '<span class="text-zinc-600">No</span>'}
@@ -1054,11 +1056,11 @@
                         </td>
                         <td class="p-4 font-semibold text-white">
                             ${c.nombre}
-                            <span class="block text-[11px] font-mono text-zinc-400">CI: ${c.cedula} \vert{} Tel:${c.telefono}</span>
+                            <span class="block text-[11px] font-mono text-zinc-400">CI: ${c.cedula} | Tel: ${c.telefono}</span>
                         </td>
                         <td class="p-4 text-zinc-300">
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo}</span>
-                            <div class="mt-1 text-zinc-400 text-[11px]">${c.producto} -${c.subservicio || ''}</div>
+                            <div class="mt-1 text-zinc-400 text-[11px]">${c.producto} - ${c.subservicio || ''}</div>
                         </td>
                         <td class="p-4 text-zinc-300 max-w-xs">
                             <div class="bg-zinc-900 p-2 rounded-lg border border-zinc-800 text-xs">${c.observaciones || 'Sin observaciones detalladas'}</div>
@@ -1102,7 +1104,7 @@
 
             const { error } = await _supabase.from('clientes_crm').update(payload).eq('id', id);
             if (!error) {
-                await registrarAuditoria(opEmail, 'ACCION', `Operaciones actualizó ticket ID ${id} a estatus${nuevoEstatus}`);
+                await registrarAuditoria(opEmail, 'ACCION', `Operaciones actualizó ticket ID ${id} a estatus ${nuevoEstatus}`);
                 alert('¡Caso actualizado con éxito!');
                 cargarDatosGenerales();
             } else {
@@ -1186,4 +1188,194 @@
                 const esActivo = currentUser && currentUser.email.toLowerCase() === emailUsr.toLowerCase();
                 const badgeActivo = esActivo 
                     ? `<span class="ml-2 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">En línea</span>` 
-                    : `<span class="ml-2 px-2
+                    : `<span class="ml-2 px-2 py-0.5 rounded text-[9px] font-bold bg-zinc-800 text-zinc-500">Inactivo</span>`;
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-4 font-semibold text-white flex items-center">${emailUsr} ${badgeActivo}</td>
+                        <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-500 border border-red-500/20">${u.rol || 'OPERADOR'}</span></td>
+                        <td class="p-4 font-mono text-zinc-400">${new Date(u.created_at || Date.now()).toLocaleDateString()}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="eliminarUsuario('${u.id}', '${emailUsr}')" class="text-zinc-500 hover:text-red-400 transition"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function renderizarGraficoUsuarios(activos, inactivos) {
+            const canvasUsr = document.getElementById('graficoUsuariosEstatus');
+            if (!canvasUsr) return;
+
+            const ctx = canvasUsr.getContext('2d');
+            if (chartUsuariosEstatus) chartUsuariosEstatus.destroy();
+
+            chartUsuariosEstatus = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Activos (En línea)', 'Inactivos'],
+                    datasets: [{
+                        data: [activos, inactivos],
+                        backgroundColor: ['#10b981', '#3f3f46'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#d4d4d8', font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('form-usuario').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const opEmail = currentUser ? currentUser.email : 'Administrador';
+            const correo = document.getElementById('usr-correo').value.trim();
+            const password = document.getElementById('usr-password').value.trim();
+            const rol = document.getElementById('usr-rol').value;
+
+            if (!correo.toLowerCase().endsWith('@bancrecer.com.ve')) {
+                alert('El correo debe pertenecer al dominio @bancrecer.com.ve');
+                return;
+            }
+
+            const { data, error } = await _supabase.auth.signUp({ email: correo, password: password });
+            if (error) {
+                alert('Error creando usuario en Auth: ' + error.message);
+                return;
+            }
+
+            await _supabase.from('usuarios_crm').insert([{ correo: correo, rol: rol }]);
+            await registrarAuditoria(opEmail, 'ACCION', `Agregó un nuevo usuario al CRM: ${correo} (Rol: ${rol})`);
+
+            cerrarModalUsuario();
+            document.getElementById('form-usuario').reset();
+            cargarDatosGenerales();
+        });
+
+        async function eliminarUsuario(id, correoUsuario) {
+            if (confirm('¿Deseas eliminar este usuario de la administración?')) {
+                const opEmail = currentUser ? currentUser.email : 'Administrador';
+                await _supabase.from('usuarios_crm').delete().eq('id', id);
+                await registrarAuditoria(opEmail, 'ACCION', `Eliminó al usuario del CRM: ${correoUsuario || id}`);
+                cargarUsuarios();
+            }
+        }
+
+        function renderAuditoriaTab() {
+            const tbody = document.getElementById('tbody-auditoria');
+            if (!tbody) return;
+
+            if (!auditoriaGlobal || auditoriaGlobal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-zinc-500">Sin registros de auditoría recientes.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = auditoriaGlobal.map(log => {
+                const fechaLog = new Date(log.fecha || log.created_at || Date.now()).toLocaleString();
+                const usuarioLog = log.correo || log.email || 'Desconocido';
+                const resultadoLog = (log.resultado || log.status || 'ACCION').toUpperCase();
+                const detalleLog = log.detalle || log.description || log.reason || '-';
+                
+                let colorRes = 'bg-zinc-800 text-zinc-300 border border-zinc-700';
+                if (resultadoLog === 'EXITOSO') colorRes = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                if (resultadoLog === 'FALLIDO' || resultadoLog === 'BLOQUEADO') colorRes = 'bg-red-500/10 text-red-400 border border-red-500/20';
+                if (resultadoLog === 'ACCION') colorRes = 'bg-zinc-800 text-zinc-300 border border-zinc-700';
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-4 font-mono text-zinc-400">${fechaLog}</td>
+                        <td class="p-4 font-semibold text-white">${usuarioLog}</td>
+                        <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${colorRes}">${resultadoLog}</span></td>
+                        <td class="p-4 text-zinc-300">${detalleLog}</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function renderBloqueados() {
+            const tbody = document.getElementById('tbody-bloqueados');
+            if (!tbody) return;
+
+            if (!bloqueadosGlobal || bloqueadosGlobal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-zinc-500">No hay usuarios bloqueados en lista negra.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = bloqueadosGlobal.map(b => {
+                const correoB = b.correo || b.email || 'Desconocido';
+                const motivoB = b.motivo || b.reason || 'Bloqueado por seguridad';
+                const fechaB = new Date(b.fecha || b.created_at || Date.now()).toLocaleString();
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-3 font-semibold text-white">${correoB}</td>
+                        <td class="p-3 text-red-400">${motivoB}</td>
+                        <td class="p-3 font-mono text-zinc-400">${fechaB}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="desbloquearUsuario('${b.id}', '${correoB}')" class="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-lg text-xs font-semibold transition">Desbloquear</button>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        async function desbloquearUsuario(id, correo) {
+            if (confirm(`¿Estás seguro de desbloquear al usuario ${correo}?`)) {
+                await _supabase.from('usuarios_bloqueados').delete().eq('id', id);
+                
+                const adminEmail = currentUser ? currentUser.email : 'Administrador';
+                await registrarAuditoria(adminEmail, 'EXITOSO', `Desbloqueó al usuario: ${correo}`);
+
+                cargarDatosGenerales();
+            }
+        }
+
+        function switchTab(t) {
+            const esOperaciones = currentUser && currentUser.email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
+            
+            if (esOperaciones) t = 'operaciones-bandeja';
+
+            ['dashboard', 'clientes', 'usuarios', 'auditoria', 'campañas', 'operaciones-bandeja'].forEach(tab => {
+                const sec = document.getElementById(`tab-${tab}`);
+                const nav = document.getElementById(`nav-${tab}`);
+                if (sec) sec.classList.add('hidden');
+                if (nav) nav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition";
+            });
+
+            const activeSec = document.getElementById(`tab-${t}`);
+            const activeNav = document.getElementById(`nav-${t}`);
+            if (activeSec) activeSec.classList.remove('hidden');
+            if (activeNav) activeNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-red-500 bg-red-600/10 border border-red-500/20";
+
+            if (t === 'dashboard') cargarDatosGenerales();
+            if (t === 'clientes') cargarClientes();
+            if (t === 'usuarios') cargarUsuarios();
+            if (t === 'auditoria') refrescarAuditoria(false);
+            if (t === 'operaciones-bandeja') cargarDatosGenerales();
+        }
+
+        function abrirModalCliente() { 
+            const m = document.getElementById('modal-cliente');
+            if (m) m.classList.remove('hidden'); 
+            actualizarSubmenuServicio();
+        }
+        function cerrarModalCliente() { 
+            const m = document.getElementById('modal-cliente');
+            if (m) m.classList.add('hidden'); 
+        }
+        function abrirModalUsuario() { 
+            const m = document.getElementById('modal-usuario');
+            if (m) m.classList.remove('hidden'); 
+        }
+        function cerrarModalUsuario() { 
+            const m = document.getElementById('modal-usuario');
+            if (m) m.classList.add('hidden'); 
+        }
+
+        function exportToExcel(id, name) {
+            XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `${name}.xlsx`);
+        }
+
+        function logout() { location.reload(); }
+    </script>
+</body>
+</html>
