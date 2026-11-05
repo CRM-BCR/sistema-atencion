@@ -355,15 +355,16 @@
                 </div>
             </section>
 
-            <!-- 5. CAMPAÑAS (SELECCIÓN MÚLTIPLE CON CHECKBOXES) -->
+            <!-- 5. CAMPAÑAS (ADMINISTRADOR Y OPERADOR SEPARADOS) -->
             <section id="tab-campañas" class="hidden space-y-6">
                 <div class="flex items-center justify-between">
                     <div>
                         <h1 class="text-2xl font-bold text-white">Gestión y Asignación de Campañas</h1>
-                        <p class="text-xs text-zinc-400">Importa bases de datos en Excel y distribuye equitativamente los prospectos entre varios operadores.</p>
+                        <p class="text-xs text-zinc-400">Importación de bases de datos y seguimiento de asignaciones.</p>
                     </div>
                 </div>
 
+                <!-- PANEL EXCLUSIVO PARA ADMINISTRADOR -->
                 <div id="admin-campaña-panel" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
                         <h3 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-file-excel mr-2"></i> Importar Base de Excel</h3>
@@ -421,11 +422,12 @@
                     </div>
                 </div>
 
+                <!-- PANEL EXCLUSIVO PARA OPERADOR (SOLO VE SUS ASIGNACIONES) -->
                 <div id="operador-campaña-panel" class="hidden bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
                     <div class="flex items-center justify-between">
                         <div>
                             <h3 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-list-check mr-2"></i> Mis Prospectos Asignados (Campaña)</h3>
-                            <p class="text-xs text-zinc-400">Gestiona los registros asignados utilizando las listas desplegables del archivo.</p>
+                            <p class="text-xs text-zinc-400">Gestiona únicamente los registros que te ha asignado el administrador.</p>
                         </div>
                         <button onclick="cargarCampañas()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition">Actualizar Lista</button>
                     </div>
@@ -1023,10 +1025,11 @@
                 if (adminPanel) adminPanel.classList.add('hidden');
                 if (operadorPanel) operadorPanel.classList.remove('hidden');
 
-                const misCampañas = campañasGlobal.filter(c => 
-                    (c.operador_asignado || c.gestor || '').toLowerCase().trim() === emailUser && 
-                    (c.estatus || 'PENDIENTE') === 'PENDIENTE'
-                );
+                const misCampañas = campañasGlobal.filter(c => {
+                    const opAsignado = (c.operador_asignado || c.gestor || '').toLowerCase().trim();
+                    const estatusItem = (c.estatus || 'PENDIENTE').toUpperCase().trim();
+                    return opAsignado === emailUser && estatusItem === 'PENDIENTE';
+                });
 
                 if (badgeCampañas) {
                     if (misCampañas.length > 0) {
@@ -1050,15 +1053,24 @@
                 return;
             }
 
-            tbody.innerHTML = campañasGlobal.map(c => `
-                <tr class="hover:bg-zinc-900/50 transition">
-                    <td class="p-3 font-bold text-white">${c.nombre_campaña || 'Campaña'}</td>
-                    <td class="p-3 font-mono text-zinc-300">${c.nombre_cliente || c.Nombre || 'N/A'} <span class="text-[10px] text-zinc-500 block">CI-RIF: ${c.cedula || c['cedula-Rif'] || 'S/N'}</span></td>
-                    <td class="p-3 text-zinc-400">${c.telefono || c.Telefono || '-'}</td>
-                    <td class="p-3 text-red-400 font-semibold">${c.gestor || c.operador_asignado || 'Sin asignar'}</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">${c.estatus || 'PENDIENTE'}</span></td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = campañasGlobal.map(c => {
+                const nombreCamp = c.nombre_campaña || c.campaña || 'Campaña';
+                const nombreCliente = c.nombre_cliente || c.Nombre || c.cliente || 'N/A';
+                const cedulaRif = c.cedula_rif || c['cedula-Rif'] || c.cedula || c.ci || 'S/N';
+                const telefono = c.telefono || c.Telefono || c.tlf || '-';
+                const gestor = c.operador_asignado || c.gestor || 'Sin asignar';
+                const estatus = c.estatus || 'PENDIENTE';
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-3 font-bold text-white">${nombreCamp}</td>
+                        <td class="p-3 font-mono text-zinc-300">${nombreCliente} <span class="text-[10px] text-zinc-500 block">CI-RIF: ${cedulaRif}</span></td>
+                        <td class="p-3 text-zinc-400">${telefono}</td>
+                        <td class="p-3 text-red-400 font-semibold">${gestor}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">${estatus}</span></td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function renderCampañasOperadorTab(lista) {
@@ -1077,24 +1089,30 @@
                 const gestionOptions = gestionesLista.map(g => `<option value="${g}" ${(c.gestion || c.observaciones_gestion) === g ? 'selected' : ''}>${g}</option>`).join('');
                 const motivoOptions = motivosLista.map(m => `<option value="${m}" ${c.motivo === m ? 'selected' : ''}>${m}</option>`).join('');
 
-                const posInactivos = c['cuantos pos estan inactivos'] || c.pos_inactivos || 0;
-                const posTotal = c['cuantos pos tiene'] || c.pos_total || 0;
-                const diasInactivo = c['cuantos dias tiene inactivo'] || c.dias_inactivo || 0;
-                const serialModelo = c['serial y modelo del pos inactivo'] || c.serial_pos || 'N/A';
+                const posInactivos = c.cuantos_pos_estan_inactivos || c['cuantos pos estan inactivos'] || c.pos_inactivos || 0;
+                const posTotal = c.cuantos_pos_tiene || c['cuantos pos tiene'] || c.pos_total || 0;
+                const diasInactivo = c.cuantos_dias_tiene_inactivo || c['cuantos dias tiene inactivo'] || c.dias_inactivo || 0;
+                const serialModelo = c.serial_y_modelo_del_pos_inactivo || c['serial y modelo del pos inactivo'] || c.serial_pos || 'N/A';
+                
+                const nombreCamp = c.nombre_campaña || c.campaña || 'Campaña';
+                const nombreCliente = c.nombre_cliente || c.Nombre || c.cliente || 'Sin Nombre';
+                const cedulaRif = c.cedula_rif || c['cedula-Rif'] || c.cedula || c.ci || 'S/N';
+                const telefono = c.telefono || c.Telefono || c.tlf || '-';
+                const gestor = c.operador_asignado || c.gestor || '';
 
                 return `
                     <tr class="hover:bg-zinc-900/50 transition">
-                        <td class="p-3 font-bold text-white">${c.nombre_campaña || 'Campaña'}</td>
+                        <td class="p-3 font-bold text-white">${nombreCamp}</td>
                         <td class="p-3 font-mono text-zinc-300">
-                            ${c.nombre_cliente || c.Nombre || 'Sin Nombre'}
-                            <span class="text-[10px] text-zinc-500 block">RIF/CI: ${c.cedula || c['cedula-Rif'] || 'S/N'}</span>
+                            ${nombreCliente}
+                            <span class="text-[10px] text-zinc-500 block">RIF/CI: ${cedulaRif}</span>
                         </td>
-                        <td class="p-3 text-zinc-400">${c.telefono || c.Telefono || '-'}</td>
+                        <td class="p-3 text-zinc-400">${telefono}</td>
                         <td class="p-3 text-[11px] text-zinc-300 space-y-0.5">
                             <div><strong class="text-amber-400">${posInactivos} de ${posTotal}</strong> POS Inactivos (${diasInactivo} días)</div>
                             <div class="text-[10px] text-zinc-400 truncate max-w-xs" title="${serialModelo}">${serialModelo}</div>
                         </td>
-                        <td class="p-3 text-red-400 font-semibold">${c.gestor || c.operador_asignado}</td>
+                        <td class="p-3 text-red-400 font-semibold">${gestor}</td>
                         <td class="p-3 space-y-1">
                             <select id="camp-gestion-${c.id}" class="w-full p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-[11px] outline-none">${gestionOptions}</select>
                             <select id="camp-motivo-${c.id}" class="w-full p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-amber-400 text-[11px] outline-none">${motivoOptions}</select>
@@ -1126,7 +1144,6 @@
             const payloadCampania = {
                 gestion: gestion,
                 motivo: motivo,
-                observaciones_gestion: gestion,
                 estatus: estatus
             };
 
@@ -1139,14 +1156,14 @@
 
             if (estatus === 'GESTIONADO') {
                 const nuevoClienteCRM = {
-                    cedula: campItem.cedula || campItem['cedula-Rif'],
-                    nombre: campItem.nombre_cliente || campItem.Nombre,
+                    cedula: campItem.cedula_rif || campItem['cedula-Rif'] || campItem.cedula,
+                    nombre: campItem.nombre_cliente || campItem.Nombre || campItem.cliente,
                     telefono: campItem.telefono || campItem.Telefono,
                     canal: 'Llamada',
                     motivo: motivo,
                     producto: 'Pos',
-                    subservicio: 'Campaña: ' + campItem.nombre_campaña,
-                    observaciones: `Gestión: ${gestion} | Motivo: ${motivo} | POS Inactivo: ${campItem['serial y modelo del pos inactivo'] || ''}`,
+                    subservicio: 'Campaña: ' + (campItem.nombre_campaña || campItem.campaña),
+                    observaciones: `Gestión: ${gestion} | Motivo: ${motivo} | POS Inactivo: ${campItem.serial_y_modelo_del_pos_inactivo || campItem['serial y modelo del pos inactivo'] || ''}`,
                     escalado: false,
                     estatus_operaciones: 'REGISTRADO',
                     operador: currentUser.email,
@@ -1155,7 +1172,7 @@
                 await _supabase.from('clientes_crm').insert([nuevoClienteCRM]);
             }
 
-            await registrarAuditoria(currentUser.email, 'ACCION', `Gestionó prospecto de campaña "${campItem.nombre_campaña}" (RIF: ${campItem.cedula || campItem['cedula-Rif']}) - Estatus: ${estatus}`);
+            await registrarAuditoria(currentUser.email, 'ACCION', `Gestionó prospecto de campaña "${campItem.nombre_campaña || campItem.campaña}" - Estatus: ${estatus}`);
             alert('¡Gestión guardada correctamente!');
             cargarCampañas();
         }
@@ -1201,26 +1218,22 @@
 
                     for (let index = 0; index < rows.length; index++) {
                         const row = rows[index];
-                        const cedulaRif = String(row['cedula-Rif'] || row.Cedula || row.CEDULA || row.ci || row.CI || row.Documento || row.Rif || row.RIF || '');
-                        const nombre = String(row.Nombre || row.NOMBRE || row.Cliente || row.CLIENTE || 'Sin Nombre');
-                        const telefono = String(row.Telefono || row.TELEFONO || row.Tlf || row.TLF || '');
+                        const cedulaRif = String(row['cedula-Rif'] || row.cedula_rif || row.Cedula || row.CEDULA || row.ci || row.CI || row.Documento || row.Rif || row.RIF || '');
+                        const nombre = String(row.Nombre || row.NOMBRE || row.nombre_cliente || row.Cliente || row.CLIENTE || 'Sin Nombre');
+                        const telefono = String(row.Telefono || row.TELEFONO || row.telefono || row.Tlf || row.TLF || '');
 
                         if (cedulaRif) {
                             const operadorAsignado = operadoresSeleccionados[index % totalOperadores];
 
                             const payload = {
                                 nombre_campaña: nombreCampaña,
-                                cedula: cedulaRif,
-                                'cedula-Rif': cedulaRif,
+                                cedula_rif: cedulaRif,
                                 nombre_cliente: nombre,
-                                Nombre: nombre,
                                 telefono: telefono,
-                                Telefono: telefono,
-                                'cuantos pos tiene': row['cuantos pos tiene'] || 0,
-                                'cuantos pos estan inactivos': row['cuantos pos estan inactivos'] || 0,
-                                'cuantos dias tiene inactivo': row['cuantos dias tiene inactivo'] || 0,
-                                'serial y modelo del pos inactivo': row['serial y modelo del pos inactivo'] || 'N/A',
-                                gestor: operadorAsignado,
+                                cuantos_pos_tiene: row['cuantos pos tiene'] || row.cuantos_pos_tiene || 0,
+                                cuantos_pos_estan_inactivos: row['cuantos pos estan inactivos'] || row.cuantos_pos_estan_inactivos || 0,
+                                cuantos_dias_tiene_inactivo: row['cuantos dias tiene inactivo'] || row.cuantos_dias_tiene_inactivo || 0,
+                                serial_y_modelo_del_pos_inactivo: row['serial y modelo del pos inactivo'] || row.serial_y_modelo_del_pos_inactivo || 'N/A',
                                 operador_asignado: operadorAsignado,
                                 gestion: row.gestion || 'Pendiente de llamada',
                                 motivo: row.motivo || 'Falla de comunicación',
@@ -1228,8 +1241,12 @@
                                 created_at: new Date().toISOString()
                             };
 
-                            await _supabase.from('campañas_crm').insert([payload]);
-                            registrosImportados++;
+                            const { error: insertErr } = await _supabase.from('campañas_crm').insert([payload]);
+                            if (insertErr) {
+                                console.error("Error insertando registro de campaña:", insertErr.message);
+                            } else {
+                                registrosImportados++;
+                            }
                         }
                     }
 
