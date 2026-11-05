@@ -648,88 +648,69 @@
                     detalle: detalle, 
                     fecha: new Date().toISOString() 
                 };
-                const { error } = await _supabase.from('auditoria_crm').insert([payload]);
-                if (error) console.error("Error al insertar auditoría:", error.message);
+                await _supabase.from('auditoria_crm').insert([payload]);
             } catch (err) {
-                console.error("Excepción en auditoría:", err);
+                console.warn("Auditoría no guardada:", err);
             }
         }
 
-        async function registrarBloqueo(correo, motivo) {
-            try {
-                const payload = { correo: correo, motivo: motivo, fecha: new Date().toISOString() };
-                const { error } = await _supabase.from('usuarios_bloqueados').insert([payload]);
-                if (error) console.error("Error al insertar bloqueo:", error.message);
-            } catch (err) {
-                console.error("Excepción en bloqueo:", err);
-            }
-        }
-
+        // LOGIN DIRECTO Y SEGURO
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const emailInput = document.getElementById('login-email');
             const email = emailInput.value.trim();
             const password = document.getElementById('login-password').value.trim();
             const errorBox = document.getElementById('login-error');
-            errorBox.classList.add('hidden');
-            
-            emailInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500', 'border-purple-500', 'ring-purple-500', 'border-emerald-500', 'ring-emerald-500');
+            const btnLogin = document.getElementById('btn-login');
 
-            await cargarBloqueados();
+            errorBox.classList.add('hidden');
+            emailInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500', 'border-emerald-500', 'ring-emerald-500');
 
             if (!email.toLowerCase().endsWith('@bancrecer.com.ve')) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
-                await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso con dominio no autorizado');
-                await registrarBloqueo(email, 'Intento de acceso con dominio externo no permitido');
                 errorBox.textContent = "Acceso denegado: Dominio no autorizado.";
                 errorBox.classList.remove('hidden');
                 return;
             }
 
-            if (bloqueadosGlobal.some(b => (b.correo || '').toLowerCase() === email.toLowerCase())) {
-                emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
-                await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso con usuario bloqueado');
-                errorBox.textContent = "Este usuario se encuentra bloqueado.";
-                errorBox.classList.remove('hidden');
-                return;
-            }
+            btnLogin.disabled = true;
+            btnLogin.innerHTML = `<span>Autenticando...</span>`;
 
             try {
-                const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+                const { data, error } = await _supabase.auth.signInWithPassword({ 
+                    email: email, 
+                    password: password 
+                });
 
                 if (error || !data.user) {
                     emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
-                    await registrarAuditoria(email, 'FALLIDO', 'Contraseña o credenciales inválidas');
-
-                    const { data: logsData } = await _supabase.from('auditoria_crm').select('*');
-                    const logsFallidos = (logsData || []).filter(l => (l.correo === email) && l.resultado === 'FALLIDO');
-
-                    if (logsFallidos.length >= 2) {
-                        await registrarBloqueo(email, 'Bloqueado por 2 intentos fallidos de contraseña');
-                        emailInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
-                        emailInput.classList.add('border-purple-500', 'ring-2', 'ring-purple-500');
-                    }
-                    errorBox.textContent = "Credenciales incorrectas.";
+                    errorBox.textContent = "Credenciales incorrectas o usuario no registrado.";
                     errorBox.classList.remove('hidden');
+                    btnLogin.disabled = false;
+                    btnLogin.innerHTML = `<span>Iniciar Sesión</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
+                    registrarAuditoria(email, 'FALLIDO', 'Intento de contraseña incorrecto');
                     return;
                 }
 
                 emailInput.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500');
-                await registrarAuditoria(data.user.email, 'EXITOSO', 'Ingreso al sistema autorizado');
-
                 currentUser = data.user;
                 document.getElementById('user-display-email').textContent = data.user.email;
                 
                 configurarMenuLateral(data.user.email);
+                registrarAuditoria(data.user.email, 'EXITOSO', 'Ingreso al sistema autorizado');
 
                 setTimeout(() => {
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('app-dashboard').classList.remove('hidden');
                     cargarDatosGenerales();
-                }, 400);
+                }, 300);
 
             } catch (err) {
-                console.error("Error en login:", err);
+                console.error("Error crítico de autenticación:", err);
+                errorBox.textContent = "Error de conexión con la base de datos.";
+                errorBox.classList.remove('hidden');
+                btnLogin.disabled = false;
+                btnLogin.innerHTML = `<span>Iniciar Sesión</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
             }
         });
 
@@ -1195,4 +1176,84 @@
         }
 
         function renderizarGraficoUsuarios(activos, inactivos) {
-            const
+            const canvasUsr = document.getElementById('graficoUsuariosEstatus');
+            if (!canvasUsr) return;
+
+            const ctx = canvasUsr.getContext('2d');
+            if (chartUsuariosEstatus) chartUsuariosEstatus.destroy();
+
+            chartUsuariosEstatus = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Activos (En línea)', 'Inactivos'],
+                    datasets: [{
+                        data: [activos, inactivos],
+                        backgroundColor: ['#10b981', '#3f3f46'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#d4d4d8', font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('form-usuario').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const opEmail = currentUser ? currentUser.email : 'Administrador';
+            const correo = document.getElementById('usr-correo').value.trim();
+            const password = document.getElementById('usr-password').value.trim();
+            const rol = document.getElementById('usr-rol').value;
+
+            if (!correo.toLowerCase().endsWith('@bancrecer.com.ve')) {
+                alert('El correo debe pertenecer al dominio @bancrecer.com.ve');
+                return;
+            }
+
+            const { data, error } = await _supabase.auth.signUp({ email: correo, password: password });
+            if (error) {
+                alert('Error creando usuario en Auth: ' + error.message);
+                return;
+            }
+
+            await _supabase.from('usuarios_crm').insert([{ correo: correo, rol: rol }]);
+            await registrarAuditoria(opEmail, 'ACCION', `Agregó un nuevo usuario al CRM: ${correo} (Rol: ${rol})`);
+
+            cerrarModalUsuario();
+            document.getElementById('form-usuario').reset();
+            cargarDatosGenerales();
+        });
+
+        async function eliminarUsuario(id, correoUsuario) {
+            if (confirm('¿Deseas eliminar este usuario de la administración?')) {
+                const opEmail = currentUser ? currentUser.email : 'Administrador';
+                await _supabase.from('usuarios_crm').delete().eq('id', id);
+                await registrarAuditoria(opEmail, 'ACCION', `Eliminó al usuario del CRM: ${correoUsuario || id}`);
+                cargarUsuarios();
+            }
+        }
+
+        function renderAuditoriaTab() {
+            const tbody = document.getElementById('tbody-auditoria');
+            if (!tbody) return;
+
+            if (!auditoriaGlobal || auditoriaGlobal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-zinc-500">Sin registros de auditoría recientes.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = auditoriaGlobal.map(log => {
+                const fechaLog = new Date(log.fecha || log.created_at || Date.now()).toLocaleString();
+                const usuarioLog = log.correo || log.email || 'Desconocido';
+                const resultadoLog = (log.resultado || log.status || 'ACCION').toUpperCase();
+                const detalleLog = log.detalle || log.description || log.reason || '-';
+                
+                let colorRes = 'bg-zinc-800 text-zinc-300 border border-zinc-700';
+                if (resultadoLog === 'EXITOSO') colorRes = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                if (resultadoLog === 'FALLIDO' || resultadoLog === 'BLOQUEADO') colorRes = 'bg-red-500/10 text-red-400 border border-red-500/20';
+                if (resultadoLog === 'ACCION') colorRes = 'bg-zinc-800 text-zinc-300 border border-zinc-700';
+
+                return
