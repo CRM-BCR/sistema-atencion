@@ -86,7 +86,7 @@
                 </div>
                 
                 <nav class="space-y-1" id="sidebar-nav">
-                    <!-- Se llena dinámicamente según el rol -->
+                    <!-- Dinámico según rol -->
                 </nav>
             </div>
             <div class="pt-4 border-t border-zinc-800/80">
@@ -262,7 +262,7 @@
                     </div>
                     <div class="lg:col-span-2 bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-center space-y-4">
                         <h3 class="text-sm font-bold uppercase text-zinc-300"><i class="fa-solid fa-users-gear text-amber-500 mr-2"></i> Resumen de Sesiones</h3>
-                        <p class="text-xs text-zinc-400">El gráfico circular muestra la proporción actual de usuarios registrados que se encuentran conectados (activos en esta sesión) en comparación con los perfiles inactivos.</p>
+                        <p class="text-xs text-zinc-400">El gráfico circular muestra la proporción actual de usuarios registrados conectados en comparación con los inactivos.</p>
                         <div class="grid grid-cols-2 gap-4 pt-2">
                             <div class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800">
                                 <span class="text-[10px] font-bold uppercase text-emerald-400">Usuarios Activos</span>
@@ -355,31 +355,33 @@
                 </div>
             </section>
 
-            <!-- 5. CAMPAÑAS (IMPORTACIÓN, NOTIFICACIÓN Y GESTIÓN DE OPERADOR) -->
+            <!-- 5. CAMPAÑAS (SELECCIÓN MÚLTIPLE CON CHECKBOXES) -->
             <section id="tab-campañas" class="hidden space-y-6">
                 <div class="flex items-center justify-between">
                     <div>
                         <h1 class="text-2xl font-bold text-white">Gestión y Asignación de Campañas</h1>
-                        <p class="text-xs text-zinc-400">Importa bases de datos en Excel y distribuye los prospectos entre los operadores.</p>
+                        <p class="text-xs text-zinc-400">Importa bases de datos en Excel y distribuye equitativamente los prospectos entre varios operadores.</p>
                     </div>
                 </div>
 
-                <!-- SECCIÓN ADMINISTRADOR: Importación -->
                 <div id="admin-campaña-panel" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
                         <h3 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-file-excel mr-2"></i> Importar Base de Excel</h3>
                         
-                        <div class="space-y-3">
+                        <div class="space-y-4">
                             <div>
                                 <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Nombre de la Campaña</label>
-                                <input type="text" id="campaña-nombre" placeholder="Ej. Campaña Recuperación TDD" class="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
+                                <input type="text" id="campaña-nombre" placeholder="Ej. Campaña POS Inactivos Q4" class="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
                             <div>
-                                <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Seleccionar Operador Destino</label>
-                                <select id="campaña-operador" class="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
-                                    <option value="">Cargando operadores...</option>
-                                </select>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="block text-[10px] font-bold uppercase text-zinc-400">Seleccionar Operadores Destino (Múltiples)</label>
+                                    <button type="button" onclick="marcarTodosOperadores(true)" class="text-[10px] text-red-400 hover:underline">Seleccionar Todos</button>
+                                </div>
+                                <div id="contenedor-checkboxes-operadores" class="max-h-44 overflow-y-auto p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl space-y-2 custom-scrollbar">
+                                    <p class="text-zinc-500 text-xs p-2 text-center">Cargando lista de operadores...</p>
+                                </div>
                             </div>
 
                             <div>
@@ -387,9 +389,9 @@
                                 <input type="file" id="campaña-file" accept=".xlsx, .xls, .csv" class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 text-xs file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-500 cursor-pointer">
                             </div>
 
-                            <button onclick="procesarImportacionCampania()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2">
+                            <button onclick="procesarImportacionCampania()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2 shadow-lg shadow-red-600/30">
                                 <i class="fa-solid fa-upload"></i>
-                                <span>Importar y Asignar Registros</span>
+                                <span>Importar y Distribuir Registros</span>
                             </button>
                         </div>
                     </div>
@@ -405,9 +407,9 @@
                                 <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
                                     <tr>
                                         <th class="p-3">Campaña</th>
-                                        <th class="p-3">Cliente / Cédula</th>
+                                        <th class="p-3">Cliente / Cédula-RIF</th>
                                         <th class="p-3">Teléfono</th>
-                                        <th class="p-3">Operador Asignado</th>
+                                        <th class="p-3">Gestor / Operador Asignado</th>
                                         <th class="p-3">Estatus</th>
                                     </tr>
                                 </thead>
@@ -419,12 +421,11 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN OPERADOR: Lista de Prospectos Asignados con Listas Desplegables -->
                 <div id="operador-campaña-panel" class="hidden bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
                     <div class="flex items-center justify-between">
                         <div>
                             <h3 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-list-check mr-2"></i> Mis Prospectos Asignados (Campaña)</h3>
-                            <p class="text-xs text-zinc-400">Gestiona los registros asignados utilizando los campos y listas desplegables del archivo.</p>
+                            <p class="text-xs text-zinc-400">Gestiona los registros asignados utilizando las listas desplegables del archivo.</p>
                         </div>
                         <button onclick="cargarCampañas()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition">Actualizar Lista</button>
                     </div>
@@ -434,16 +435,17 @@
                             <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
                                 <tr>
                                     <th class="p-3">Campaña</th>
-                                    <th class="p-3">Cédula y Nombre</th>
+                                    <th class="p-3">Cédula/RIF y Nombre</th>
                                     <th class="p-3">Teléfono</th>
-                                    <th class="p-3">Canal / Motivo</th>
-                                    <th class="p-3">Producto / Servicio</th>
-                                    <th class="p-3">Observación / Estatus</th>
+                                    <th class="p-3">Detalle POS (Inactivos/Serial)</th>
+                                    <th class="p-3">Gestor Asignado</th>
+                                    <th class="p-3">Gestión / Motivo</th>
+                                    <th class="p-3">Estatus</th>
                                     <th class="p-3 text-center">Acción</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody-operador-campañas" class="divide-y divide-zinc-800 text-zinc-300">
-                                <tr><td colspan="7" class="p-4 text-center text-zinc-500">No tienes prospectos asignados en este momento.</td></tr>
+                                <tr><td colspan="8" class="p-4 text-center text-zinc-500">No tienes prospectos asignados en este momento.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -548,8 +550,7 @@
 
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-red-400 mb-1">Detalle Específico</label>
-                    <select id="cli-subservicio" required class="w-full p-2.5 bg-zinc-950 border border-red-500/30 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
-                    </select>
+                    <select id="cli-subservicio" required class="w-full p-2.5 bg-zinc-950 border border-red-500/30 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500"></select>
                 </div>
 
                 <div class="p-3 bg-zinc-950 border border-zinc-800 rounded-xl space-y-3">
@@ -612,7 +613,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE FILTRO DE CASOS DESDE EL DASHBOARD -->
+    <!-- MODAL DE FILTRO DE CASOS -->
     <div id="modal-filtro-dashboard" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 p-4">
         <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-4xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
@@ -641,9 +642,7 @@
                 <button type="button" onclick="cerrarModalFiltroDashboard()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold">Cerrar</button>
             </div>
         </div>
-    </div>
-
-    <!-- SCRIPTS -->
+    </div><!-- SCRIPTS -->
     <script>
         const opcionesServicios = {
             "Bdigital": ["Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", "Notificación de Viajes", "OTP no recibido"],
@@ -766,7 +765,6 @@
             }
         }
 
-        // LOGIN DIRECTO Y SEGURO
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const emailInput = document.getElementById('login-email');
@@ -812,7 +810,7 @@
                 usuariosGlobal = usuariosData || [];
 
                 configurarMenuLateral(data.user.email);
-                poblarSelectOperadoresCampania();
+                poblarCheckboxesOperadoresCampania();
                 registrarAuditoria(data.user.email, 'EXITOSO', 'Ingreso al sistema autorizado');
 
                 setTimeout(() => {
@@ -913,6 +911,8 @@
                 clientesGlobal = clientes || [];
                 usuariosGlobal = usuarios || [];
 
+                poblarCheckboxesOperadoresCampania();
+
                 const esOperaciones = currentUser && currentUser.email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
 
                 if (esOperaciones) {
@@ -955,20 +955,32 @@
             }
         }
 
-        function poblarSelectOperadoresCampania() {
-            const selectOp = document.getElementById('campaña-operador');
-            if (!selectOp) return;
+        function poblarCheckboxesOperadoresCampania() {
+            const container = document.getElementById('contenedor-checkboxes-operadores');
+            if (!container) return;
 
             const operadores = usuariosGlobal.filter(u => (u.rol || '').toUpperCase() === 'OPERADOR');
             if (operadores.length === 0) {
-                selectOp.innerHTML = `<option value="">No hay operadores registrados</option>`;
+                container.innerHTML = `<p class="text-zinc-500 text-xs p-2 text-center">No hay operadores registrados.</p>`;
                 return;
             }
 
-            selectOp.innerHTML = `<option value="">-- Seleccionar Operador --</option>` + operadores.map(op => {
+            container.innerHTML = operadores.map(op => {
                 const correo = op.correo || op.email;
-                return `<option value="${correo}">${correo}</option>`;
+                const nombreCorto = correo.split('@')[0];
+                return `
+                    <label class="flex items-center space-x-2 text-xs text-zinc-300 hover:text-white cursor-pointer select-none p-1 bg-zinc-950/40 rounded-lg hover:bg-zinc-950 transition">
+                        <input type="checkbox" name="op-campania-chk" value="${correo}" class="w-4 h-4 rounded text-red-600 focus:ring-red-500 bg-zinc-950 border-zinc-700">
+                        <span class="capitalize font-medium">${nombreCorto}</span>
+                        <span class="text-[10px] text-zinc-500 ml-auto">(${correo})</span>
+                    </label>
+                `;
             }).join('');
+        }
+
+        function marcarTodosOperadores(marcar = true) {
+            const checkboxes = document.querySelectorAll('input[name="op-campania-chk"]');
+            checkboxes.forEach(chk => chk.checked = marcar);
         }
 
         async function cargarCampañas() {
@@ -1009,8 +1021,10 @@
                 if (adminPanel) adminPanel.classList.add('hidden');
                 if (operadorPanel) operadorPanel.classList.remove('hidden');
 
-                // Filtrar campañas asignadas a este operador que estén pendientes
-                const misCampañas = campañasGlobal.filter(c => (c.operador_asignado || '').toLowerCase().trim() === emailUser && (c.estatus || 'PENDIENTE') === 'PENDIENTE');
+                const misCampañas = campañasGlobal.filter(c => 
+                    (c.operador_asignado || c.gestor || '').toLowerCase().trim() === emailUser && 
+                    (c.estatus || 'PENDIENTE') === 'PENDIENTE'
+                );
 
                 if (badgeCampañas) {
                     if (misCampañas.length > 0) {
@@ -1037,9 +1051,9 @@
             tbody.innerHTML = campañasGlobal.map(c => `
                 <tr class="hover:bg-zinc-900/50 transition">
                     <td class="p-3 font-bold text-white">${c.nombre_campaña || 'Campaña'}</td>
-                    <td class="p-3 font-mono text-zinc-300">${c.nombre_cliente || 'N/A'} <span class="text-[10px] text-zinc-500 block">CI: ${c.cedula || 'S/N'}</span></td>
+                    <td class="p-3 font-mono text-zinc-300">${c.nombre_cliente || 'N/A'} <span class="text-[10px] text-zinc-500 block">CI-RIF: ${c.cedula || c['cedula-Rif'] || 'S/N'}</span></td>
                     <td class="p-3 text-zinc-400">${c.telefono || '-'}</td>
-                    <td class="p-3 text-red-400 font-semibold">${c.operador_asignado || 'Sin asignar'}</td>
+                    <td class="p-3 text-red-400 font-semibold">${c.gestor || c.operador_asignado || 'Sin asignar'}</td>
                     <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">${c.estatus || 'PENDIENTE'}</span></td>
                 </tr>
             `).join('');
@@ -1050,33 +1064,41 @@
             if (!tbody) return;
 
             if (lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-zinc-500">No tienes prospectos asignados en este momento.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-zinc-500">No tienes prospectos asignados en este momento.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = lista.map(c => {
-                const canalesOptions = ['Llamada', 'Whatsapp', 'Correo', 'Instagram', 'Facebook'].map(opt => `<option value="${opt}" ${c.canal_asignado === opt ? 'selected' : ''}>${opt}</option>`).join('');
-                const motivosOptions = ['Consulta', 'Solicitud', 'Reclamo', 'Incidencia', 'Soporte'].map(opt => `<option value="${opt}" ${c.motivo_asignado === opt ? 'selected' : ''}>${opt}</option>`).join('');
-                const productosOptions = Object.keys(opcionesServicios).map(prod => `<option value="${prod}" ${c.producto_asignado === prod ? 'selected' : ''}>${prod}</option>`).join('');
+                const gestionesLista = ['Pendiente de llamada', 'Contactado', 'En seguimiento', 'Gestionado'];
+                const motivosLista = ['Falla de comunicación', 'Comercio cerrado temporalmente', 'Cambio de domicilio', 'Equipo dañado / Avería', 'Falta de operador / Personal nuevo'];
+
+                const gestionOptions = gestionesLista.map(g => `<option value="${g}" ${(c.gestion || c.observaciones_gestion) === g ? 'selected' : ''}>${g}</option>`).join('');
+                const motivoOptions = motivosLista.map(m => `<option value="${m}" ${c.motivo === m ? 'selected' : ''}>${m}</option>`).join('');
+
+                const posInactivos = c['cuantos pos estan inactivos'] || c.pos_inactivos || 0;
+                const posTotal = c['cuantos pos tiene'] || c.pos_total || 0;
+                const diasInactivo = c['cuantos dias tiene inactivo'] || c.dias_inactivo || 0;
+                const serialModelo = c['serial y modelo del pos inactivo'] || c.serial_pos || 'N/A';
 
                 return `
                     <tr class="hover:bg-zinc-900/50 transition">
                         <td class="p-3 font-bold text-white">${c.nombre_campaña || 'Campaña'}</td>
                         <td class="p-3 font-mono text-zinc-300">
-                            ${c.nombre_cliente || 'Sin Nombre'}
-                            <span class="text-[10px] text-zinc-500 block">CI: ${c.cedula || 'S/N'}</span>
+                            ${c.nombre_cliente || c.Nombre || 'Sin Nombre'}
+                            <span class="text-[10px] text-zinc-500 block">RIF/CI: ${c.cedula || c['cedula-Rif'] || 'S/N'}</span>
                         </td>
-                        <td class="p-3 text-zinc-400">${c.telefono || '-'}</td>
+                        <td class="p-3 text-zinc-400">${c.telefono || c.Telefono || '-'}</td>
+                        <td class="p-3 text-[11px] text-zinc-300 space-y-0.5">
+                            <div><strong class="text-amber-400">${posInactivos} de ${posTotal}</strong> POS Inactivos (${diasInactivo} días)</div>
+                            <div class="text-[10px] text-zinc-400 truncate max-w-xs" title="${serialModelo}">${serialModelo}</div>
+                        </td>
+                        <td class="p-3 text-red-400 font-semibold">${c.gestor || c.operador_asignado}</td>
                         <td class="p-3 space-y-1">
-                            <select id="camp-canal-${c.id}" class="w-full p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-[11px] outline-none">${canalesOptions}</select>
-                            <select id="camp-motivo-${c.id}" class="w-full p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-[11px] outline-none">${motivosOptions}</select>
+                            <select id="camp-gestion-${c.id}" class="w-full p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-[11px] outline-none">${gestionOptions}</select>
+                            <select id="camp-motivo-${c.id}" class="w-full p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-amber-400 text-[11px] outline-none">${motivoOptions}</select>
                         </td>
                         <td class="p-3">
-                            <select id="camp-producto-${c.id}" class="w-full p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-[11px] outline-none">${productosOptions}</select>
-                        </td>
-                        <td class="p-3 space-y-1">
-                            <input type="text" id="camp-obs-${c.id}" placeholder="Observaciones de gestión..." value="${c.observaciones_gestion || ''}" class="w-full p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-[11px] outline-none">
-                            <select id="camp-estatus-${c.id}" class="w-full p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-amber-400 text-[11px] font-bold outline-none">
+                            <select id="camp-estatus-${c.id}" class="w-full p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-[11px] font-bold outline-none">
                                 <option value="PENDIENTE">PENDIENTE</option>
                                 <option value="GESTIONADO">GESTIONADO / CERRADO</option>
                             </select>
@@ -1092,20 +1114,17 @@
         }
 
         async function guardarGestionCampania(id) {
-            const canal = document.getElementById(`camp-canal-${id}`).value;
+            const gestion = document.getElementById(`camp-gestion-${id}`).value;
             const motivo = document.getElementById(`camp-motivo-${id}`).value;
-            const producto = document.getElementById(`camp-producto-${id}`).value;
-            const observaciones = document.getElementById(`camp-obs-${id}`).value.trim();
             const estatus = document.getElementById(`camp-estatus-${id}`).value;
 
             const campItem = campañasGlobal.find(c => c.id === id);
             if (!campItem) return;
 
             const payloadCampania = {
-                canal_asignado: canal,
-                motivo_asignado: motivo,
-                producto_asignado: producto,
-                observaciones_gestion: observaciones,
+                gestion: gestion,
+                motivo: motivo,
+                observaciones_gestion: gestion,
                 estatus: estatus
             };
 
@@ -1118,14 +1137,14 @@
 
             if (estatus === 'GESTIONADO') {
                 const nuevoClienteCRM = {
-                    cedula: campItem.cedula,
-                    nombre: campItem.nombre_cliente,
-                    telefono: campItem.telefono,
-                    canal: canal,
+                    cedula: campItem.cedula || campItem['cedula-Rif'],
+                    nombre: campItem.nombre_cliente || campItem.Nombre,
+                    telefono: campItem.telefono || campItem.Telefono,
+                    canal: 'Llamada',
                     motivo: motivo,
-                    producto: producto,
+                    producto: 'Pos',
                     subservicio: 'Campaña: ' + campItem.nombre_campaña,
-                    observaciones: observaciones,
+                    observaciones: `Gestión: ${gestion} | Motivo: ${motivo} | POS Inactivo: ${campItem['serial y modelo del pos inactivo'] || ''}`,
                     escalado: false,
                     estatus_operaciones: 'REGISTRADO',
                     operador: currentUser.email,
@@ -1134,22 +1153,24 @@
                 await _supabase.from('clientes_crm').insert([nuevoClienteCRM]);
             }
 
-            await registrarAuditoria(currentUser.email, 'ACCION', `Gestionó prospecto de campaña "${campItem.nombre_campaña}" (CI: ${campItem.cedula}) - Estatus: ${estatus}`);
+            await registrarAuditoria(currentUser.email, 'ACCION', `Gestionó prospecto de campaña "${campItem.nombre_campaña}" (RIF: ${campItem.cedula || campItem['cedula-Rif']}) - Estatus: ${estatus}`);
             alert('¡Gestión guardada correctamente!');
             cargarCampañas();
         }
 
         async function procesarImportacionCampania() {
             const nombreCampaña = document.getElementById('campaña-nombre').value.trim();
-            const operadorAsignado = document.getElementById('campaña-operador').value;
             const fileInput = document.getElementById('campaña-file');
+            
+            const checkboxes = document.querySelectorAll('input[name="op-campania-chk"]:checked');
+            const operadoresSeleccionados = Array.from(checkboxes).map(chk => chk.value);
 
             if (!nombreCampaña) {
                 alert('Por favor ingresa un nombre para la campaña.');
                 return;
             }
-            if (!operadorAsignado) {
-                alert('Por favor selecciona un operador destino.');
+            if (operadoresSeleccionados.length === 0) {
+                alert('Por favor selecciona al menos un operador destino para la campaña.');
                 return;
             }
             if (!fileInput.files || fileInput.files.length === 0) {
@@ -1174,18 +1195,33 @@
                     }
 
                     let registrosImportados = 0;
-                    for (const row of rows) {
-                        const cedula = String(row.Cedula || row.CEDULA || row.ci || row.CI || row.Documento || '');
+                    const totalOperadores = operadoresSeleccionados.length;
+
+                    for (let index = 0; index < rows.length; index++) {
+                        const row = rows[index];
+                        const cedulaRif = String(row['cedula-Rif'] || row.Cedula || row.CEDULA || row.ci || row.CI || row.Documento || row.Rif || row.RIF || '');
                         const nombre = String(row.Nombre || row.NOMBRE || row.Cliente || row.CLIENTE || 'Sin Nombre');
                         const telefono = String(row.Telefono || row.TELEFONO || row.Tlf || row.TLF || '');
 
-                        if (cedula) {
+                        if (cedulaRif) {
+                            const operadorAsignado = operadoresSeleccionados[index % totalOperadores];
+
                             const payload = {
                                 nombre_campaña: nombreCampaña,
-                                cedula: cedula,
+                                cedula: cedulaRif,
+                                'cedula-Rif': cedulaRif,
                                 nombre_cliente: nombre,
+                                Nombre: nombre,
                                 telefono: telefono,
+                                Telefono: telefono,
+                                'cuantos pos tiene': row['cuantos pos tiene'] || 0,
+                                'cuantos pos estan inactivos': row['cuantos pos estan inactivos'] || 0,
+                                'cuantos dias tiene inactivo': row['cuantos dias tiene inactivo'] || 0,
+                                'serial y modelo del pos inactivo': row['serial y modelo del pos inactivo'] || 'N/A',
+                                gestor: operadorAsignado,
                                 operador_asignado: operadorAsignado,
+                                gestion: row.gestion || 'Pendiente de llamada',
+                                motivo: row.motivo || 'Falla de comunicación',
                                 estatus: 'PENDIENTE',
                                 created_at: new Date().toISOString()
                             };
@@ -1195,15 +1231,16 @@
                         }
                     }
 
-                    alert(`¡Campaña importada con éxito! Se asignaron ${registrosImportados} registros a ${operadorAsignado}.`);
+                    alert(`¡Campaña importada con éxito! Se distribuyeron ${registrosImportados} registros equitativamente entre ${totalOperadores} operadores seleccionados.`);
                     document.getElementById('campaña-nombre').value = '';
                     fileInput.value = '';
+                    marcarTodosOperadores(false);
                     cargarCampañas();
-                    registrarAuditoria(currentUser.email, 'ACCION', `Importó campaña "${nombreCampaña}" con ${registrosImportados} registros para ${operadorAsignado}`);
+                    registrarAuditoria(currentUser.email, 'ACCION', `Importó campaña "${nombreCampaña}" con ${registrosImportados} registros distribuidos entre ${totalOperadores} operadores`);
 
                 } catch (err) {
                     console.error("Error al procesar el archivo Excel:", err);
-                    alert("Error al procesar el archivo Excel. Asegúrate de que las columnas tengan nombres válidos (Cedula, Nombre, Telefono).");
+                    alert("Error al procesar el archivo Excel. Asegúrate de utilizar las columnas requeridas.");
                 }
             };
 
@@ -1771,7 +1808,7 @@
                 modal.classList.remove('hidden');
             } catch (err) {
                 console.error("Error al renderizar el detalle del dashboard:", err);
-                alert("Ocurrió un error al cargar los detalles. Revisa la consola (F12).");
+                alert("Ocurrió un error al cargar los detalles.");
             }
         }
 
