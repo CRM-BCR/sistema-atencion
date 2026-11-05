@@ -250,6 +250,29 @@
                     </button>
                 </div>
 
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex flex-col items-center justify-center">
+                        <h3 class="text-sm font-bold uppercase text-zinc-300 mb-4 self-start"><i class="fa-solid fa-chart-pie text-red-500 mr-2"></i> Estatus de Usuarios</h3>
+                        <div class="w-full h-56 relative flex justify-center items-center">
+                            <canvas id="graficoUsuariosEstatus"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-center space-y-4">
+                        <h3 class="text-sm font-bold uppercase text-zinc-300"><i class="fa-solid fa-users-gear text-amber-500 mr-2"></i> Resumen de Sesiones</h3>
+                        <p class="text-xs text-zinc-400">El gráfico circular muestra la proporción actual de usuarios registrados que se encuentran conectados (activos en esta sesión) en comparación con los perfiles inactivos.</p>
+                        <div class="grid grid-cols-2 gap-4 pt-2">
+                            <div class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800">
+                                <span class="text-[10px] font-bold uppercase text-emerald-400">Usuarios Activos</span>
+                                <p id="stat-usuarios-activos" class="text-2xl font-extrabold text-white mt-1">0</p>
+                            </div>
+                            <div class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800">
+                                <span class="text-[10px] font-bold uppercase text-zinc-500">Usuarios Inactivos</span>
+                                <p id="stat-usuarios-inactivos" class="text-2xl font-extrabold text-white mt-1">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
@@ -457,8 +480,8 @@
                         </label>
                     </div>
                     <div id="contenedor-ticket" class="hidden space-y-1">
-                        <label class="block text-[10px] font-bold uppercase text-zinc-400">Número de Reporte / Ticket (Obligatorio si escala)</label>
-                        <input type="text" id="cli-ticket" placeholder="Ej: 00000001" class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-xs outline-none focus:ring-2 focus:ring-red-500 font-mono">
+                        <label class="block text-[10px] font-bold uppercase text-zinc-400">Número de Reporte / Ticket (Generado Automáticamente)</label>
+                        <input type="text" id="cli-ticket" readonly class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-amber-400 text-xs outline-none font-mono cursor-not-allowed">
                     </div>
                 </div>
 
@@ -475,6 +498,7 @@
         </div>
     </div>
 
+    <!-- MODAL NUEVO USUARIO -->
     <div id="modal-usuario" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 p-4">
         <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-md space-y-4">
             <h2 class="text-lg font-bold text-white">Registrar Nuevo Usuario CRM</h2>
@@ -485,14 +509,19 @@
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Contraseña Temporal</label>
-                    <input type="password" id="usr-password" required class="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
+                    <div class="relative">
+                        <input type="password" id="usr-password" required placeholder="••••••••" class="w-full p-2.5 pr-10 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
+                        <button type="button" id="toggle-usr-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-white transition focus:outline-none cursor-pointer">
+                            <i class="fa-solid fa-eye" id="toggle-usr-icon"></i>
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Rol</label>
                     <select id="usr-rol" class="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
                         <option value="OPERADOR">OPERADOR</option>
                         <option value="ADMINISTRADOR">ADMINISTRADOR</option>
-                        <option value="OPERACIONES">OPERACIONES (operaciones.atu@bancrecer.com.ve)</option>
+                        <option value="OPERACIONES">OPERACIONES</option>
                     </select>
                 </div>
                 <div class="flex justify-end space-x-3 pt-2">
@@ -521,26 +550,42 @@
         function actualizarSubmenuServicio() {
             const selectProducto = document.getElementById('cli-producto');
             const selectSub = document.getElementById('cli-subservicio');
+            if (!selectProducto || !selectSub) return;
             const opciones = opcionesServicios[selectProducto.value] || ["General"];
             selectSub.innerHTML = opciones.map(op => `<option value="${op}">${op}</option>`).join('');
         }
 
-        function toggleEscalamiento() {
+        async function generarSiguienteTicket() {
+            let maxNum = 0;
+            clientesGlobal.forEach(c => {
+                if (c.nro_ticket) {
+                    const num = parseInt(c.nro_ticket, 10);
+                    if (!isNaN(num) && num > maxNum) {
+                        maxNum = num;
+                    }
+                }
+            });
+            const siguiente = maxNum + 1;
+            return String(siguiente).padStart(8, '0');
+        }
+
+        async function toggleEscalamiento() {
             const isChecked = document.getElementById('cli-escalar').checked;
             const container = document.getElementById('contenedor-ticket');
             const inputTicket = document.getElementById('cli-ticket');
             if (isChecked) {
                 container.classList.remove('hidden');
-                inputTicket.required = true;
+                const nuevoTicket = await generarSiguienteTicket();
+                inputTicket.value = nuevoTicket;
             } else {
                 container.classList.add('hidden');
-                inputTicket.required = false;
                 inputTicket.value = '';
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             actualizarSubmenuServicio();
+
             const passwordInput = document.getElementById('login-password');
             const togglePasswordBtn = document.getElementById('toggle-password');
             const toggleIcon = document.getElementById('toggle-icon');
@@ -554,6 +599,23 @@
                     } else {
                         passwordInput.type = 'password';
                         toggleIcon.className = "fa-solid fa-eye";
+                    }
+                });
+            }
+
+            const usrPasswordInput = document.getElementById('usr-password');
+            const toggleUsrBtn = document.getElementById('toggle-usr-password');
+            const toggleUsrIcon = document.getElementById('toggle-usr-icon');
+
+            if (toggleUsrBtn && usrPasswordInput) {
+                toggleUsrBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (usrPasswordInput.type === 'password') {
+                        usrPasswordInput.type = 'text';
+                        toggleUsrIcon.className = "fa-solid fa-eye-slash";
+                    } else {
+                        usrPasswordInput.type = 'password';
+                        toggleUsrIcon.className = "fa-solid fa-eye";
                     }
                 });
             }
@@ -576,6 +638,7 @@
         let bloqueadosGlobal = [];
         let chartMotivos = null;
         let chartCanales = null;
+        let chartUsuariosEstatus = null;
 
         async function registrarAuditoria(correoUser, resultado, detalle) {
             try {
@@ -783,13 +846,11 @@
 
         function actualizarDashboardConFiltro(clientes, auditoria, usuarios) {
             const elTotalReg = document.getElementById('stat-total-registros');
-            const elTotalUsr = document.getElementById('stat-total-usuarios');
             const elTotalEsc = document.getElementById('stat-total-escalados');
             const elEnProc = document.getElementById('stat-en-proceso');
             const elProc = document.getElementById('stat-procesados');
 
             if (elTotalReg) elTotalReg.textContent = clientes.length;
-            if (elTotalUsr) elTotalUsr.textContent = usuarios.length;
 
             const totalEscalados = clientes.filter(c => c.escalado === true || c.escalado === 'true').length;
             const enProceso = clientes.filter(c => (c.escalado === true || c.escalado === 'true') && (c.estatus_operaciones === 'EN PROCESO' || c.estatus_operaciones === 'PENDIENTE')).length;
@@ -798,36 +859,6 @@
             if (elTotalEsc) elTotalEsc.textContent = totalEscalados;
             if (elEnProc) elEnProc.textContent = enProceso;
             if (elProc) elProc.textContent = procesados;
-
-            const contenedorUsuarios = document.getElementById('contenedor-usuarios-activos');
-            if (contenedorUsuarios) {
-                if (usuarios.length === 0) {
-                    contenedorUsuarios.innerHTML = `<p class="text-zinc-500 text-xs text-center py-2">Sin usuarios registrados.</p>`;
-                } else {
-                    contenedorUsuarios.innerHTML = usuarios.map(u => {
-                        const emailUser = u.correo || u.email || 'Usuario';
-                        const esActivo = currentUser && currentUser.email.toLowerCase() === emailUser.toLowerCase();
-                        
-                        const estiloFondo = esActivo ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-zinc-900/60 border-zinc-800';
-                        const puntoEstado = esActivo ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-zinc-600';
-                        const textoEstado = esActivo ? 'En línea' : 'Inactivo';
-                        const colorTextoEstado = esActivo ? 'text-emerald-400 font-bold' : 'text-zinc-500';
-
-                        return `
-                            <div class="flex items-center justify-between px-3 py-2 rounded-xl border ${estiloFondo} text-xs">
-                                <div class="flex items-center space-x-2 truncate pr-2">
-                                    <span class="w-2.5 h-2.5 rounded-full ${puntoEstado} flex-shrink-0"></span>
-                                    <span class="font-semibold text-zinc-200 truncate" title="${emailUser}">${emailUser}</span>
-                                </div>
-                                <div class="flex items-center space-x-2 flex-shrink-0">
-                                    <span class="${colorTextoEstado} text-[10px]">${textoEstado}</span>
-                                    <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 border border-red-500/20">${u.rol || 'OPERADOR'}</span>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-            }
 
             const conteoOperadores = {};
             clientes.forEach(c => {
@@ -1134,163 +1165,34 @@
                 tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-zinc-500">No se pudieron cargar los usuarios.</td></tr>`;
                 return;
             }
-            tbody.innerHTML = data.map(u => `
-                <tr class="hover:bg-zinc-900/50 transition">
-                    <td class="p-4 font-semibold text-white">${u.correo || u.email}</td>
-                    <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-500 border border-red-500/20">${u.rol || 'OPERADOR'}</span></td>
-                    <td class="p-4 font-mono text-zinc-400">${new Date(u.created_at || Date.now()).toLocaleDateString()}</td>
-                    <td class="p-4 text-center">
-                        <button onclick="eliminarUsuario('${u.id}', '${u.correo || u.email}')" class="text-zinc-500 hover:text-red-400 transition"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>`).join('');
-        }
 
-        document.getElementById('form-usuario').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const opEmail = currentUser ? currentUser.email : 'Administrador';
-            const correo = document.getElementById('usr-correo').value.trim();
-            const password = document.getElementById('usr-password').value.trim();
-            const rol = document.getElementById('usr-rol').value;
+            const totalUsuarios = data.length;
+            const cantActivos = currentUser ? 1 : 0;
+            const cantInactivos = Math.max(0, totalUsuarios - cantActivos);
 
-            if (!correo.toLowerCase().endsWith('@bancrecer.com.ve')) {
-                alert('El correo debe pertenecer al dominio @bancrecer.com.ve');
-                return;
-            }
+            document.getElementById('stat-usuarios-activos').textContent = cantActivos;
+            document.getElementById('stat-usuarios-inactivos').textContent = cantInactivos;
 
-            const { data, error } = await _supabase.auth.signUp({ email: correo, password: password });
-            if (error) {
-                alert('Error creando usuario en Auth: ' + error.message);
-                return;
-            }
+            renderizarGraficoUsuarios(cantActivos, cantInactivos);
 
-            await _supabase.from('usuarios_crm').insert([{ correo: correo, rol: rol }]);
-            await registrarAuditoria(opEmail, 'ACCION', `Agregó un nuevo usuario al CRM: ${correo} (Rol: ${rol})`);
-
-            cerrarModalUsuario();
-            document.getElementById('form-usuario').reset();
-            cargarDatosGenerales();
-        });
-
-        async function eliminarUsuario(id, correoUsuario) {
-            if (confirm('¿Deseas eliminar este usuario de la administración?')) {
-                const opEmail = currentUser ? currentUser.email : 'Administrador';
-                await _supabase.from('usuarios_crm').delete().eq('id', id);
-                await registrarAuditoria(opEmail, 'ACCION', `Eliminó al usuario del CRM: ${correoUsuario || id}`);
-                cargarUsuarios();
-            }
-        }
-
-        function renderAuditoriaTab() {
-            const tbody = document.getElementById('tbody-auditoria');
-            if (!tbody) return;
-
-            if (!auditoriaGlobal || auditoriaGlobal.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-zinc-500">Sin registros de auditoría recientes.</td></tr>`;
-                return;
-            }
-            tbody.innerHTML = auditoriaGlobal.map(log => {
-                const fechaLog = new Date(log.fecha || log.created_at || Date.now()).toLocaleString();
-                const usuarioLog = log.correo || log.email || 'Desconocido';
-                const resultadoLog = (log.resultado || log.status || 'ACCION').toUpperCase();
-                const detalleLog = log.detalle || log.description || log.reason || '-';
-                
-                let colorRes = 'bg-zinc-800 text-zinc-300 border border-zinc-700';
-                if (resultadoLog === 'EXITOSO') colorRes = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-                if (resultadoLog === 'FALLIDO' || resultadoLog === 'BLOQUEADO') colorRes = 'bg-red-500/10 text-red-400 border border-red-500/20';
-                if (resultadoLog === 'ACCION') colorRes = 'bg-zinc-800 text-zinc-300 border border-zinc-700';
+            tbody.innerHTML = data.map(u => {
+                const emailUsr = u.correo || u.email || 'Usuario';
+                const esActivo = currentUser && currentUser.email.toLowerCase() === emailUsr.toLowerCase();
+                const badgeActivo = esActivo 
+                    ? `<span class="ml-2 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">En línea</span>` 
+                    : `<span class="ml-2 px-2 py-0.5 rounded text-[9px] font-bold bg-zinc-800 text-zinc-500">Inactivo</span>`;
 
                 return `
                     <tr class="hover:bg-zinc-900/50 transition">
-                        <td class="p-4 font-mono text-zinc-400">${fechaLog}</td>
-                        <td class="p-4 font-semibold text-white">${usuarioLog}</td>
-                        <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${colorRes}">${resultadoLog}</span></td>
-                        <td class="p-4 text-zinc-300">${detalleLog}</td>
-                    </tr>`;
-            }).join('');
-        }
-
-        function renderBloqueados() {
-            const tbody = document.getElementById('tbody-bloqueados');
-            if (!tbody) return;
-
-            if (!bloqueadosGlobal || bloqueadosGlobal.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-zinc-500">No hay usuarios bloqueados en lista negra.</td></tr>`;
-                return;
-            }
-            tbody.innerHTML = bloqueadosGlobal.map(b => {
-                const correoB = b.correo || b.email || 'Desconocido';
-                const motivoB = b.motivo || b.reason || 'Bloqueado por seguridad';
-                const fechaB = new Date(b.fecha || b.created_at || Date.now()).toLocaleString();
-
-                return `
-                    <tr class="hover:bg-zinc-900/50 transition">
-                        <td class="p-3 font-semibold text-white">${correoB}</td>
-                        <td class="p-3 text-red-400">${motivoB}</td>
-                        <td class="p-3 font-mono text-zinc-400">${fechaB}</td>
-                        <td class="p-3 text-center">
-                            <button onclick="desbloquearUsuario('${b.id}', '${correoB}')" class="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-lg text-xs font-semibold transition">Desbloquear</button>
+                        <td class="p-4 font-semibold text-white flex items-center">${emailUsr} ${badgeActivo}</td>
+                        <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-500 border border-red-500/20">${u.rol || 'OPERADOR'}</span></td>
+                        <td class="p-4 font-mono text-zinc-400">${new Date(u.created_at || Date.now()).toLocaleDateString()}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="eliminarUsuario('${u.id}', '${emailUsr}')" class="text-zinc-500 hover:text-red-400 transition"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>`;
             }).join('');
         }
 
-        async function desbloquearUsuario(id, correo) {
-            if (confirm(`¿Estás seguro de desbloquear al usuario ${correo}?`)) {
-                await _supabase.from('usuarios_bloqueados').delete().eq('id', id);
-                
-                const adminEmail = currentUser ? currentUser.email : 'Administrador';
-                await registrarAuditoria(adminEmail, 'EXITOSO', `Desbloqueó al usuario: ${correo}`);
-
-                cargarDatosGenerales();
-            }
-        }
-
-        function switchTab(t) {
-            const esOperaciones = currentUser && currentUser.email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
-            
-            if (esOperaciones) t = 'operaciones-bandeja';
-
-            ['dashboard', 'clientes', 'usuarios', 'auditoria', 'campañas', 'operaciones-bandeja'].forEach(tab => {
-                const sec = document.getElementById(`tab-${tab}`);
-                const nav = document.getElementById(`nav-${tab}`);
-                if (sec) sec.classList.add('hidden');
-                if (nav) nav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition";
-            });
-
-            const activeSec = document.getElementById(`tab-${t}`);
-            const activeNav = document.getElementById(`nav-${t}`);
-            if (activeSec) activeSec.classList.remove('hidden');
-            if (activeNav) activeNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-red-500 bg-red-600/10 border border-red-500/20";
-
-            if (t === 'dashboard') cargarDatosGenerales();
-            if (t === 'clientes') cargarClientes();
-            if (t === 'usuarios') cargarUsuarios();
-            if (t === 'auditoria') refrescarAuditoria(false);
-            if (t === 'operaciones-bandeja') cargarDatosGenerales();
-        }
-
-        function abrirModalCliente() { 
-            const m = document.getElementById('modal-cliente');
-            if (m) m.classList.remove('hidden'); 
-        }
-        function cerrarModalCliente() { 
-            const m = document.getElementById('modal-cliente');
-            if (m) m.classList.add('hidden'); 
-        }
-        function abrirModalUsuario() { 
-            const m = document.getElementById('modal-usuario');
-            if (m) m.classList.remove('hidden'); 
-        }
-        function cerrarModalUsuario() { 
-            const m = document.getElementById('modal-usuario');
-            if (m) m.classList.add('hidden'); 
-        }
-
-        function exportToExcel(id, name) {
-            XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `${name}.xlsx`);
-        }
-
-        function logout() { location.reload(); }
-    </script>
-</body>
-</html>
+        function renderizarGraficoUsuarios(activos, inactivos) {
+            const
