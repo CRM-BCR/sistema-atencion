@@ -720,10 +720,21 @@
 
         function configurarMenuLateral(email) {
             const nav = document.getElementById('sidebar-nav');
-            const esOperaciones = email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
+            const emailLower = email.toLowerCase().trim();
+            const esOperaciones = emailLower === 'operaciones.atu@bancrecer.com.ve';
             
-            const usuarioCRM = usuariosGlobal.find(u => (u.correo || u.email || '').toLowerCase() === email.toLowerCase());
-            const esAdmin = !esOperaciones && (usuarioCRM ? usuarioCRM.rol === 'ADMINISTRADOR' : email.toLowerCase().includes('elio') || email.toLowerCase().includes('oriany'));
+            const usuarioCRM = usuariosGlobal.find(u => {
+                const uEmail = (u.correo || u.email || '').toLowerCase().trim();
+                return uEmail === emailLower;
+            });
+
+            const rolBD = usuarioCRM ? (usuarioCRM.rol || '').toUpperCase().trim() : '';
+            const esAdmin = !esOperaciones && (
+                rolBD === 'ADMINISTRADOR' || 
+                rolBD === 'ADMIN' || 
+                emailLower === 'elio.ravelo@bancrecer.com.ve' || 
+                emailLower === 'oriany.albarran@bancrecer.com.ve'
+            );
 
             if (esOperaciones) {
                 document.getElementById('user-display-role').textContent = 'OPERACIONES';
