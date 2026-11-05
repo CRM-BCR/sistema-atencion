@@ -84,28 +84,16 @@
                         <span class="text-[10px] uppercase tracking-wider text-red-500 font-semibold">Call Center</span>
                     </div>
                 </div>
-                <nav class="space-y-1">
-                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-red-500 bg-red-600/10 border border-red-500/20">
-                        <i class="fa-solid fa-chart-pie w-5"></i><span>Dashboard</span>
-                    </button>
-                    <button onclick="switchTab('clientes')" id="nav-clientes" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
-                        <i class="fa-solid fa-users w-5"></i><span>Gestión Clientes</span>
-                    </button>
-                    <button onclick="switchTab('usuarios')" id="nav-usuarios" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
-                        <i class="fa-solid fa-user-gear w-5"></i><span>Usuarios CRM</span>
-                    </button>
-                    <button onclick="switchTab('auditoria')" id="nav-auditoria" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
-                        <i class="fa-solid fa-shield-halved w-5"></i><span>Auditoría y Seguridad</span>
-                    </button>
-                    <button onclick="switchTab('campañas')" id="nav-campañas" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
-                        <i class="fa-solid fa-bullhorn w-5"></i><span>Campañas</span>
-                    </button>
+                
+                <!-- MENÚ DINÁMICO SEGÚN ROL -->
+                <nav class="space-y-1" id="sidebar-nav">
+                    <!-- Se llena automáticamente con JS según el usuario -->
                 </nav>
             </div>
             <div class="pt-4 border-t border-zinc-800/80">
                 <div class="px-3 py-2 mb-3 bg-zinc-900/60 rounded-xl border border-zinc-800">
                     <p id="user-display-email" class="text-xs font-semibold text-zinc-200 truncate">usuario@bancrecer.com.ve</p>
-                    <span id="user-display-role" class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">ADMINISTRADOR</span>
+                    <span id="user-display-role" class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">OPERADOR</span>
                 </div>
                 <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-semibold transition">
                     <i class="fa-solid fa-right-from-bracket"></i><span>Cerrar Sesión</span>
@@ -120,7 +108,7 @@
                 <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div>
                         <h1 class="text-2xl font-bold text-white">Resumen General de Operaciones</h1>
-                        <p class="text-xs text-zinc-400">Métricas y estadísticas de gestión telefónica en tiempo real.</p>
+                        <p class="text-xs text-zinc-400">Métricas y estadísticas de gestión telefónica y escalamientos.</p>
                     </div>
                     
                     <div class="bg-zinc-950 p-3 rounded-2xl border border-zinc-800 flex flex-wrap items-center gap-3">
@@ -136,7 +124,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-lg">
                         <div class="flex items-center justify-between text-red-500 mb-2">
                             <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Registros</span>
@@ -144,17 +132,26 @@
                         </div>
                         <p id="stat-total-registros" class="text-3xl font-extrabold text-white">0</p>
                     </div>
-                    <div class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-lg flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between text-emerald-400 mb-2">
-                                <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Usuarios en el Sistema</span>
-                                <i class="fa-solid fa-shield-halved text-lg"></i>
-                            </div>
-                            <p id="stat-total-usuarios" class="text-3xl font-extrabold text-white">0</p>
+                    <div class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-lg">
+                        <div class="flex items-center justify-between text-amber-500 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Escalados Total</span>
+                            <i class="fa-solid fa-share-nodes text-lg"></i>
                         </div>
-                        <div id="contenedor-usuarios-activos" class="mt-3 pt-3 border-t border-zinc-800/80 space-y-2 max-h-36 overflow-y-auto custom-scrollbar">
-                            <p class="text-zinc-500 text-xs text-center">Cargando usuarios...</p>
+                        <p id="stat-total-escalados" class="text-3xl font-extrabold text-white">0</p>
+                    </div>
+                    <div class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-lg">
+                        <div class="flex items-center justify-between text-blue-500 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">En Proceso (Op)</span>
+                            <i class="fa-solid fa-clock-rotate-left text-lg"></i>
                         </div>
+                        <p id="stat-en-proceso" class="text-3xl font-extrabold text-white">0</p>
+                    </div>
+                    <div class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-lg">
+                        <div class="flex items-center justify-between text-emerald-400 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Procesados / Cierre</span>
+                            <i class="fa-solid fa-circle-check text-lg"></i>
+                        </div>
+                        <p id="stat-procesados" class="text-3xl font-extrabold text-white">0</p>
                     </div>
                 </div>
 
@@ -211,7 +208,7 @@
                 <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 flex items-center space-x-4">
                     <div class="relative flex-1">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-500"><i class="fa-solid fa-search"></i></span>
-                        <input type="text" id="input-buscar-cliente" onkeyup="filtrarClientes()" placeholder="Buscar por Cédula, Nombre o Correo..." class="w-full pl-10 pr-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
+                        <input type="text" id="input-buscar-cliente" onkeyup="filtrarClientes()" placeholder="Buscar por Cédula, Nombre o Ticket..." class="w-full pl-10 pr-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
                     </div>
                 </div>
 
@@ -221,14 +218,14 @@
                             <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
                                 <tr>
                                     <th class="p-4">Fecha</th>
-                                    <th class="p-4">Cédula / ID</th>
+                                    <th class="p-4">Ticket / Cédula</th>
                                     <th class="p-4">Nombre del Cliente</th>
                                     <th class="p-4">Teléfono</th>
-                                    <th class="p-4">Canal</th>
-                                    <th class="p-4">Motivo</th>
-                                    <th class="p-4">Producto / Servicio</th>
-                                    <th class="p-4">Detalle Específico</th>
+                                    <th class="p-4">Canal / Motivo</th>
+                                    <th class="p-4">Servicio</th>
                                     <th class="p-4">Observaciones</th>
+                                    <th class="p-4">Escalado Operaciones</th>
+                                    <th class="p-4">Estatus Op.</th>
                                     <th class="p-4">Operador</th>
                                     <th class="p-4 text-center">Acciones</th>
                                 </tr>
@@ -246,7 +243,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h1 class="text-2xl font-bold text-white">Administración de Usuarios CRM</h1>
-                        <p class="text-xs text-zinc-400">Control de operadores, accesos y roles del sistema.</p>
+                        <p class="text-xs text-zinc-400">Control de operadores, administradores y operaciones.</p>
                     </div>
                     <button onclick="abrirModalUsuario()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
                         <i class="fa-solid fa-user-shield"></i>
@@ -292,7 +289,6 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN DE BLOQUEADOS / LISTA NEGRA -->
                 <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4">
                     <h2 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-user-lock mr-2"></i> Usuarios Bloqueados (Lista Negra)</h2>
                     <div class="overflow-x-auto">
@@ -312,7 +308,6 @@
                     </div>
                 </div>
 
-                <!-- HISTORIAL DE AUDITORÍA -->
                 <div class="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
                     <div class="p-4 border-b border-zinc-800">
                         <h2 class="text-sm font-bold uppercase text-zinc-300"><i class="fa-solid fa-shield-halved text-red-500 mr-2"></i> Registro de Actividad y Accesos</h2>
@@ -350,6 +345,40 @@
                     </div>
                     <h3 class="text-lg font-bold text-white">Módulo de Campañas en Configuración</h3>
                     <p class="text-xs text-zinc-400 max-w-md mx-auto">Pronto podrás registrar, programar y monitorear las campañas de atención telefónica y masiva desde este apartado.</p>
+                </div>
+            </section>
+
+            <!-- 6. BANDEJA DE OPERACIONES (VISTA EXCLUSIVA PARA EL ROL DE OPERACIONES) -->
+            <section id="tab-operaciones-bandeja" class="hidden space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Bandeja de Casos Escalados - Operaciones</h1>
+                        <p class="text-xs text-zinc-400">Revisión, estatus y resolución de requerimientos escalados desde el Call Center.</p>
+                    </div>
+                    <button onclick="cargarDatosGenerales()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                        <i class="fa-solid fa-rotate-right text-red-500"></i>
+                        <span>Actualizar Bandeja</span>
+                    </button>
+                </div>
+
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-4">Ticket / Fecha</th>
+                                    <th class="p-4">Cliente / Cédula</th>
+                                    <th class="p-4">Servicio / Motivo</th>
+                                    <th class="p-4">Requerimiento / Observación</th>
+                                    <th class="p-4">Estatus Actual</th>
+                                    <th class="p-4">Acción y Resolución Operativa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-operaciones" class="divide-y divide-zinc-800 text-zinc-300">
+                                <tr><td colspan="6" class="p-4 text-center text-zinc-500">Cargando casos escalados...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </main>
@@ -421,9 +450,23 @@
                     </select>
                 </div>
 
+                <!-- SECCIÓN DE ESCALAMIENTO A OPERACIONES -->
+                <div class="p-3 bg-zinc-950 border border-zinc-800 rounded-xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold uppercase text-amber-500 flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="cli-escalar" onchange="toggleEscalamiento()" class="w-4 h-4 rounded text-red-600 focus:ring-red-500 bg-zinc-900 border-zinc-700">
+                            <span>¿Escalar caso a Operaciones?</span>
+                        </label>
+                    </div>
+                    <div id="contenedor-ticket" class="hidden space-y-1">
+                        <label class="block text-[10px] font-bold uppercase text-zinc-400">Número de Reporte / Ticket (Obligatorio si escala)</label>
+                        <input type="text" id="cli-ticket" placeholder="Ej: 00000001" class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-xs outline-none focus:ring-2 focus:ring-red-500 font-mono">
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Observaciones</label>
-                    <textarea id="cli-observaciones" rows="3" class="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500"></textarea>
+                    <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Observaciones / Requerimiento</label>
+                    <textarea id="cli-observaciones" rows="3" placeholder="Detalle bien el requerimiento para operaciones..." class="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500"></textarea>
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-2">
@@ -451,6 +494,7 @@
                     <select id="usr-rol" class="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
                         <option value="OPERADOR">OPERADOR</option>
                         <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+                        <option value="OPERACIONES">OPERACIONES (operaciones.atu@bancrecer.com.ve)</option>
                     </select>
                 </div>
                 <div class="flex justify-end space-x-3 pt-2">
@@ -481,6 +525,20 @@
             const selectSub = document.getElementById('cli-subservicio');
             const opciones = opcionesServicios[selectProducto.value] || ["General"];
             selectSub.innerHTML = opciones.map(op => `<option value="${op}">${op}</option>`).join('');
+        }
+
+        function toggleEscalamiento() {
+            const isChecked = document.getElementById('cli-escalar').checked;
+            const container = document.getElementById('contenedor-ticket');
+            const inputTicket = document.getElementById('cli-ticket');
+            if (isChecked) {
+                container.classList.remove('hidden');
+                inputTicket.required = true;
+            } else {
+                container.classList.add('hidden');
+                inputTicket.required = false;
+                inputTicket.value = '';
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -521,7 +579,6 @@
         let chartMotivos = null;
         let chartCanales = null;
 
-        // FUNCIÓN DE REGISTRO LIMPIA
         async function registrarAuditoria(correoUser, resultado, detalle) {
             try {
                 const payload = { 
@@ -531,9 +588,7 @@
                     fecha: new Date().toISOString() 
                 };
                 const { error } = await _supabase.from('auditoria_crm').insert([payload]);
-                if (error) {
-                    console.error("Error al insertar auditoría:", error.message);
-                }
+                if (error) console.error("Error al insertar auditoría:", error.message);
             } catch (err) {
                 console.error("Excepción en auditoría:", err);
             }
@@ -549,7 +604,7 @@
             }
         }
 
-        // INICIO DE SESIÓN
+        // INICIO DE SESIÓN CON CONFIGURACIÓN DE MENÚ DINÁMICO
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const emailInput = document.getElementById('login-email');
@@ -562,7 +617,6 @@
 
             await cargarBloqueados();
 
-            // 1. Dominio Incorrecto
             if (!email.toLowerCase().endsWith('@bancrecer.com.ve')) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
                 await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso con dominio no autorizado');
@@ -572,7 +626,6 @@
                 return;
             }
 
-            // 2. Usuario en Lista Negra
             if (bloqueadosGlobal.some(b => (b.correo || '').toLowerCase() === email.toLowerCase())) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
                 await registrarAuditoria(email, 'BLOQUEADO', 'Intento de acceso con usuario bloqueado');
@@ -601,13 +654,15 @@
                     return;
                 }
 
-                // INGRESO EXITOSO
                 emailInput.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500');
                 await registrarAuditoria(data.user.email, 'EXITOSO', 'Ingreso al sistema autorizado');
 
                 currentUser = data.user;
                 document.getElementById('user-display-email').textContent = data.user.email;
                 
+                // Configurar menú lateral según sea Operaciones u Operador/Admin
+                configurarMenuLateral(data.user.email);
+
                 setTimeout(() => {
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('app-dashboard').classList.remove('hidden');
@@ -619,6 +674,39 @@
             }
         });
 
+        function configurarMenuLateral(email) {
+            const nav = document.getElementById('sidebar-nav');
+            const esOperaciones = email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
+
+            if (esOperaciones) {
+                document.getElementById('user-display-role').textContent = 'OPERACIONES';
+                nav.innerHTML = `
+                    <button onclick="switchTab('operaciones-bandeja')" id="nav-operaciones-bandeja" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-red-500 bg-red-600/10 border border-red-500/20">
+                        <i class="fa-solid fa-list-check w-5"></i><span>Casos Escalados</span>
+                    </button>
+                `;
+            } else {
+                document.getElementById('user-display-role').textContent = 'ADMINISTRADOR / OPERADOR';
+                nav.innerHTML = `
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-red-500 bg-red-600/10 border border-red-500/20">
+                        <i class="fa-solid fa-chart-pie w-5"></i><span>Dashboard</span>
+                    </button>
+                    <button onclick="switchTab('clientes')" id="nav-clientes" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
+                        <i class="fa-solid fa-users w-5"></i><span>Gestión Clientes</span>
+                    </button>
+                    <button onclick="switchTab('usuarios')" id="nav-usuarios" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
+                        <i class="fa-solid fa-user-gear w-5"></i><span>Usuarios CRM</span>
+                    </button>
+                    <button onclick="switchTab('auditoria')" id="nav-auditoria" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
+                        <i class="fa-solid fa-shield-halved w-5"></i><span>Auditoría y Seguridad</span>
+                    </button>
+                    <button onclick="switchTab('campañas')" id="nav-campañas" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
+                        <i class="fa-solid fa-bullhorn w-5"></i><span>Campañas</span>
+                    </button>
+                `;
+            }
+        }
+
         async function cargarDatosGenerales() {
             try {
                 const { data: clientes } = await _supabase.from('clientes_crm').select('*');
@@ -628,9 +716,15 @@
                 clientesGlobal = clientes || [];
                 usuariosGlobal = usuarios || [];
 
-                actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal, usuariosGlobal);
-                renderClientes(clientesGlobal);
-                cargarUsuarios();
+                const esOperaciones = currentUser && currentUser.email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
+
+                if (esOperaciones) {
+                    renderBandejaOperaciones(clientesGlobal);
+                } else {
+                    actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal, usuariosGlobal);
+                    renderClientes(clientesGlobal);
+                    cargarUsuarios();
+                }
             } catch (err) {
                 console.error("Error general:", err);
             }
@@ -658,9 +752,7 @@
                 renderAuditoriaTab();
                 renderBloqueados();
 
-                if (mostrarAlerta) {
-                    alert("¡Datos de auditoría actualizados correctamente!");
-                }
+                if (mostrarAlerta) alert("¡Datos de auditoría actualizados correctamente!");
             } catch (err) {
                 console.error("Error al refrescar auditoría:", err);
             }
@@ -696,6 +788,14 @@
         function actualizarDashboardConFiltro(clientes, auditoria, usuarios) {
             document.getElementById('stat-total-registros').textContent = clientes.length;
             document.getElementById('stat-total-usuarios').textContent = usuarios.length;
+
+            const totalEscalados = clientes.filter(c => c.escalado === true || c.escalado === 'true').length;
+            const enProceso = clientes.filter(c => (c.escalado === true || c.escalado === 'true') && (c.estatus_operaciones === 'EN PROCESO' || c.estatus_operaciones === 'PENDIENTE')).length;
+            const procesados = clientes.filter(c => (c.escalado === true || c.escalado === 'true') && c.estatus_operaciones === 'PROCESADO').length;
+
+            document.getElementById('stat-total-escalados').textContent = totalEscalados;
+            document.getElementById('stat-en-proceso').textContent = enProceso;
+            document.getElementById('stat-procesados').textContent = procesados;
 
             const contenedorUsuarios = document.getElementById('contenedor-usuarios-activos');
             if (usuarios.length === 0) {
@@ -833,29 +933,136 @@
                 tbody.innerHTML = `<tr><td colspan="11" class="p-4 text-center text-zinc-500">Sin resultados disponibles.</td></tr>`;
                 return;
             }
-            tbody.innerHTML = lista.map(c => `
-                <tr class="hover:bg-zinc-900/50 transition">
-                    <td class="p-4 font-mono text-zinc-400">${new Date(c.created_at || c.fecha || Date.now()).toLocaleDateString()}</td>
-                    <td class="p-4 font-mono text-white">${c.cedula}</td>
-                    <td class="p-4 font-semibold text-white">${c.nombre}</td>
-                    <td class="p-4 text-zinc-400">${c.telefono}</td>
-                    <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">${c.canal || 'Llamada'}</span></td>
-                    <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo || 'Consulta'}</span></td>
-                    <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${c.producto || 'Cuenta'}</span></td>
-                    <td class="p-4 text-zinc-300">${c.subservicio || 'N/A'}</td>
-                    <td class="p-4 text-zinc-400">${c.observaciones || c.detalle || '-'}</td>
-                    <td class="p-4 text-zinc-400">${c.operador || 'Sistema'}</td>
-                    <td class="p-4 text-center">
-                        <button onclick="eliminarCliente('${c.id}', '${c.nombre}')" class="text-zinc-500 hover:text-red-400 transition"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>`).join('');
+
+            tbody.innerHTML = lista.map(c => {
+                const esEscalado = c.escalado === true || c.escalado === 'true';
+                const ticketBadge = esEscalado ? `<span class="text-amber-400 font-mono text-[11px] font-bold block"><i class="fa-solid fa-ticket mr-1"></i>Ticket: ${c.nro_ticket || 'S/N'}</span>` : '';
+                const estatusOp = c.estatus_operaciones || (esEscalado ? 'EN PROCESO' : 'N/A');
+                
+                let badgeColor = 'bg-zinc-800 text-zinc-400';
+                if (estatusOp === 'EN PROCESO') badgeColor = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                if (estatusOp === 'PENDIENTE') badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                if (estatusOp === 'PROCESADO') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                if (estatusOp === 'DADO DE BAJA') badgeColor = 'bg-red-500/10 text-red-400 border border-red-500/20';
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-4 font-mono text-zinc-400">${new Date(c.created_at || c.fecha || Date.now()).toLocaleDateString()}</td>
+                        <td class="p-4 font-mono text-white">
+                            ${c.cedula}
+                            ${ticketBadge}
+                        </td>
+                        <td class="p-4 font-semibold text-white">${c.nombre}</td>
+                        <td class="p-4 text-zinc-400">${c.telefono}</td>
+                        <td class="p-4">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">${c.canal || 'Llamada'}</span>
+                            <span class="block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo || 'Consulta'}</span>
+                        </td>
+                        <td class="p-4 text-zinc-300">${c.producto} <br><span class="text-[10px] text-zinc-500">${c.subservicio || ''}</span></td>
+                        <td class="p-4 text-zinc-400 max-w-xs" title="${c.observaciones || ''}">
+                            <div class="truncate">${c.observaciones || '-'}</div>
+                            ${c.respuesta_operaciones ? `<div class="mt-1 text-[11px] text-emerald-400 bg-emerald-500/10 p-1.5 rounded border border-emerald-500/20"><strong>Op:</strong> ${c.respuesta_operaciones}</div>` : ''}
+                        </td>
+                        <td class="p-4 text-center">
+                            ${esEscalado ? '<span class="text-amber-400 font-bold"><i class="fa-solid fa-check"></i> Sí</span>' : '<span class="text-zinc-600">No</span>'}
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded text-[10px] font-bold ${badgeColor}">${estatusOp}</span>
+                        </td>
+                        <td class="p-4 text-zinc-400">${c.operador || 'Sistema'}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="eliminarCliente('${c.id}', '${c.nombre}')" class="text-zinc-500 hover:text-red-400 transition"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        // RENDERIZAR BANDEJA EXCLUSIVA PARA EL ROL DE OPERACIONES
+        function renderBandejaOperaciones(lista) {
+            const tbody = document.getElementById('tbody-operaciones');
+            const escalados = lista.filter(c => c.escalado === true || c.escalado === 'true');
+
+            if (escalados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-zinc-500">No hay casos escalados a operaciones en este momento.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = escalados.map(c => {
+                const estatusOp = c.estatus_operaciones || 'EN PROCESO';
+                let badgeColor = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                if (estatusOp === 'PENDIENTE') badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                if (estatusOp === 'PROCESADO') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                if (estatusOp === 'DADO DE BAJA') badgeColor = 'bg-red-500/10 text-red-400 border border-red-500/20';
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-4 font-mono text-zinc-400">
+                            <span class="text-amber-400 font-bold block"><i class="fa-solid fa-ticket mr-1"></i>Ticket: ${c.nro_ticket || 'S/N'}</span>
+                            <span class="text-[10px] text-zinc-500">${new Date(c.created_at || c.fecha || Date.now()).toLocaleString()}</span>
+                        </td>
+                        <td class="p-4 font-semibold text-white">
+                            ${c.nombre}
+                            <span class="block text-[11px] font-mono text-zinc-400">CI: ${c.cedula} | Tel: ${c.telefono}</span>
+                        </td>
+                        <td class="p-4 text-zinc-300">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo}</span>
+                            <div class="mt-1 text-zinc-400 text-[11px]">${c.producto} - ${c.subservicio || ''}</div>
+                        </td>
+                        <td class="p-4 text-zinc-300 max-w-xs">
+                            <div class="bg-zinc-900 p-2 rounded-lg border border-zinc-800 text-xs">${c.observaciones || 'Sin observaciones detalladas'}</div>
+                            <div class="mt-1 text-[10px] text-zinc-500">Registrado por: ${c.operador || 'Sistema'}</div>
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded text-[10px] font-bold ${badgeColor}">${estatusOp}</span>
+                        </td>
+                        <td class="p-4 space-y-2">
+                            <textarea id="resp-${c.id}" rows="2" placeholder="Escriba la observación o resolución definitiva..." class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-xs outline-none focus:ring-2 focus:ring-red-500">${c.respuesta_operaciones || ''}</textarea>
+                            
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="actualizarCasoOperaciones('${c.id}', 'PROCESADO')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-semibold transition flex items-center space-x-1">
+                                    <i class="fa-solid fa-check"></i><span>Procesar / Cerrar</span>
+                                </button>
+                                <button onclick="actualizarCasoOperaciones('${c.id}', 'PENDIENTE')" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-[10px] font-semibold transition flex items-center space-x-1">
+                                    <i class="fa-solid fa-clock"></i><span>Pendiente Resp.</span>
+                                </button>
+                                <button onclick="actualizarCasoOperaciones('${c.id}', 'DADO DE BAJA')" class="px-3 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 rounded-lg text-[10px] font-semibold transition">
+                                    Dar de baja
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        async function actualizarCasoOperaciones(id, nuevoEstatus) {
+            const respuestaTxt = document.getElementById(`resp-${id}`).value.trim();
+            if (!respuestaTxt && nuevoEstatus === 'PROCESADO') {
+                alert('Por favor ingrese la observación o resolución definitiva antes de procesar el caso.');
+                return;
+            }
+
+            const opEmail = currentUser ? currentUser.email : 'operaciones.atu@bancrecer.com.ve';
+            const payload = {
+                estatus_operaciones: nuevoEstatus,
+                respuesta_operaciones: respuestaTxt
+            };
+
+            const { error } = await _supabase.from('clientes_crm').update(payload).eq('id', id);
+            if (!error) {
+                await registrarAuditoria(opEmail, 'ACCION', `Operaciones actualizó ticket ID ${id} a estatus ${nuevoEstatus}`);
+                alert('¡Caso actualizado con éxito!');
+                cargarDatosGenerales();
+            } else {
+                alert('Error al actualizar el caso: ' + error.message);
+            }
         }
 
         function filtrarClientes() {
             const filtro = document.getElementById('input-buscar-cliente').value.toLowerCase();
             const filtrados = clientesGlobal.filter(c => 
                 c.cedula.toLowerCase().includes(filtro) || 
-                c.nombre.toLowerCase().includes(filtro)
+                c.nombre.toLowerCase().includes(filtro) ||
+                (c.nro_ticket && c.nro_ticket.toLowerCase().includes(filtro))
             );
             renderClientes(filtrados);
         }
@@ -863,6 +1070,9 @@
         document.getElementById('form-cliente').addEventListener('submit', async (e) => {
             e.preventDefault();
             const opEmail = currentUser ? currentUser.email : 'Sistema';
+            const estaEscalado = document.getElementById('cli-escalar').checked;
+            const nroTicket = document.getElementById('cli-ticket').value.trim();
+
             const nuevoCliente = {
                 cedula: document.getElementById('cli-cedula').value.trim(),
                 nombre: document.getElementById('cli-nombre').value.trim(),
@@ -872,30 +1082,25 @@
                 producto: document.getElementById('cli-producto').value,
                 subservicio: document.getElementById('cli-subservicio').value,
                 observaciones: document.getElementById('cli-observaciones').value.trim(),
+                escalado: estaEscalado,
+                nro_ticket: estaEscalado ? nroTicket : null,
+                estatus_operaciones: estaEscalado ? 'EN PROCESO' : 'REGISTRADO',
                 operador: opEmail,
                 created_at: new Date().toISOString()
             };
 
             const { error } = await _supabase.from('clientes_crm').insert([nuevoCliente]);
             if (!error) {
-                await registrarAuditoria(opEmail, 'ACCION', `Agregó registro de cliente: ${nuevoCliente.nombre}`);
+                await registrarAuditoria(opEmail, 'ACCION', `Agregó gestión de cliente${estaEscalado ? ' (Escalado a Operaciones - Ticket: ' + nroTicket + ')' : ''}: ${nuevoCliente.nombre}`);
                 cerrarModalCliente();
                 document.getElementById('form-cliente').reset();
+                document.getElementById('contenedor-ticket').classList.add('hidden');
                 actualizarSubmenuServicio();
                 cargarDatosGenerales();
             } else {
                 alert('Error al registrar cliente: ' + error.message);
             }
         });
-
-        async function eliminarCliente(id, nombreCliente) {
-            if (confirm('¿Seguro deseas eliminar este registro?')) {
-                const opEmail = currentUser ? currentUser.email : 'Sistema';
-                await _supabase.from('clientes_crm').delete().eq('id', id);
-                await registrarAuditoria(opEmail, 'ACCION', `Eliminó el registro de cliente: ${nombreCliente || id}`);
-                cargarDatosGenerales();
-            }
-        }
 
         async function cargarUsuarios() {
             const tbody = document.getElementById('tbody-usuarios');
@@ -950,7 +1155,6 @@
             }
         }
 
-        // RENDERIZADO DE LA TABLA DE AUDITORÍA
         function renderAuditoriaTab() {
             const tbody = document.getElementById('tbody-auditoria');
             if (!auditoriaGlobal || auditoriaGlobal.length === 0) {
@@ -1013,7 +1217,12 @@
         }
 
         function switchTab(t) {
-            ['dashboard', 'clientes', 'usuarios', 'auditoria', 'campañas'].forEach(tab => {
+            const esOperaciones = currentUser && currentUser.email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
+            
+            // Si es operaciones, forzar siempre la pestaña de bandeja
+            if (esOperaciones) t = 'operaciones-bandeja';
+
+            ['dashboard', 'clientes', 'usuarios', 'auditoria', 'campañas', 'operaciones-bandeja'].forEach(tab => {
                 const sec = document.getElementById(`tab-${tab}`);
                 const nav = document.getElementById(`nav-${tab}`);
                 if (sec) sec.classList.add('hidden');
@@ -1029,6 +1238,7 @@
             if (t === 'clientes') cargarClientes();
             if (t === 'usuarios') cargarUsuarios();
             if (t === 'auditoria') refrescarAuditoria(false);
+            if (t === 'operaciones-bandeja') cargarDatosGenerales();
         }
 
         function abrirModalCliente() { document.getElementById('modal-cliente').classList.remove('hidden'); }
