@@ -1256,4 +1256,99 @@
                 if (resultadoLog === 'FALLIDO' || resultadoLog === 'BLOQUEADO') colorRes = 'bg-red-500/10 text-red-400 border border-red-500/20';
                 if (resultadoLog === 'ACCION') colorRes = 'bg-zinc-800 text-zinc-300 border border-zinc-700';
 
-                return
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-4 font-mono text-zinc-400">${fechaLog}</td>
+                        <td class="p-4 font-semibold text-white">${usuarioLog}</td>
+                        <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${colorRes}">${resultadoLog}</span></td>
+                        <td class="p-4 text-zinc-300">${detalleLog}</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function renderBloqueados() {
+            const tbody = document.getElementById('tbody-bloqueados');
+            if (!tbody) return;
+
+            if (!bloqueadosGlobal || bloqueadosGlobal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-zinc-500">No hay usuarios bloqueados en lista negra.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = bloqueadosGlobal.map(b => {
+                const correoB = b.correo || b.email || 'Desconocido';
+                const motivoB = b.motivo || b.reason || 'Bloqueado por seguridad';
+                const fechaB = new Date(b.fecha || b.created_at || Date.now()).toLocaleString();
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-3 font-semibold text-white">${correoB}</td>
+                        <td class="p-3 text-red-400">${motivoB}</td>
+                        <td class="p-3 font-mono text-zinc-400">${fechaB}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="desbloquearUsuario('${b.id}', '${correoB}')" class="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-lg text-xs font-semibold transition">Desbloquear</button>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        async function desbloquearUsuario(id, correo) {
+            if (confirm(`¿Estás seguro de desbloquear al usuario ${correo}?`)) {
+                await _supabase.from('usuarios_bloqueados').delete().eq('id', id);
+                
+                const adminEmail = currentUser ? currentUser.email : 'Administrador';
+                await registrarAuditoria(adminEmail, 'EXITOSO', `Desbloqueó al usuario: ${correo}`);
+
+                cargarDatosGenerales();
+            }
+        }
+
+        function switchTab(t) {
+            const esOperaciones = currentUser && currentUser.email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
+            
+            if (esOperaciones) t = 'operaciones-bandeja';
+
+            ['dashboard', 'clientes', 'usuarios', 'auditoria', 'campañas', 'operaciones-bandeja'].forEach(tab => {
+                const sec = document.getElementById(`tab-${tab}`);
+                const nav = document.getElementById(`nav-${tab}`);
+                if (sec) sec.classList.add('hidden');
+                if (nav) nav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition";
+            });
+
+            const activeSec = document.getElementById(`tab-${t}`);
+            const activeNav = document.getElementById(`nav-${t}`);
+            if (activeSec) activeSec.classList.remove('hidden');
+            if (activeNav) activeNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-red-500 bg-red-600/10 border border-red-500/20";
+
+            if (t === 'dashboard') cargarDatosGenerales();
+            if (t === 'clientes') cargarClientes();
+            if (t === 'usuarios') cargarUsuarios();
+            if (t === 'auditoria') refrescarAuditoria(false);
+            if (t === 'operaciones-bandeja') cargarDatosGenerales();
+        }
+
+        function abrirModalCliente() { 
+            const m = document.getElementById('modal-cliente');
+            if (m) m.classList.remove('hidden'); 
+            actualizarSubmenuServicio();
+        }
+        function cerrarModalCliente() { 
+            const m = document.getElementById('modal-cliente');
+            if (m) m.classList.add('hidden'); 
+        }
+        function abrirModalUsuario() { 
+            const m = document.getElementById('modal-usuario');
+            if (m) m.classList.remove('hidden'); 
+        }
+        function cerrarModalUsuario() { 
+            const m = document.getElementById('modal-usuario');
+            if (m) m.classList.add('hidden'); 
+        }
+
+        function exportToExcel(id, name) {
+            XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `${name}.xlsx`);
+        }
+
+        function logout() { location.reload(); }
+    </script>
+</body>
+</html>
