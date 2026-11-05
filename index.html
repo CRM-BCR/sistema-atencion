@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM Call Center - Bancrecer</title>
+    <title>CRM Call Center</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -34,14 +34,14 @@
                 <h1 class="text-2xl font-bold text-white tracking-wide">CRM Call Center</h1>
             </div>
 
-            <form id="login-form" class="space-y-5" onsubmit="event.preventDefault(); iniciarSesion();">
+            <form id="login-form" class="space-y-5">
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Correo Electrónico</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
-                        <input type="email" id="login-email" required value="elio.ravelo@bancrecer.com.ve"
+                        <input type="email" id="login-email" required 
                             class="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm transition">
                     </div>
                 </div>
@@ -55,7 +55,7 @@
                         <input type="password" id="login-password" required placeholder="••••••••" 
                             class="w-full pl-10 pr-12 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm placeholder-zinc-600 transition">
                         
-                        <button type="button" id="toggle-password" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-white transition focus:outline-none cursor-pointer">
+                        <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-white transition focus:outline-none cursor-pointer">
                             <i class="fa-solid fa-eye" id="toggle-icon"></i>
                         </button>
                     </div>
@@ -86,27 +86,13 @@
                 </div>
                 
                 <nav class="space-y-1" id="sidebar-nav">
-                    <button onclick="cambiarTab('dashboard')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-red-600/10 text-red-400 border border-red-500/20">
-                        <i class="fa-solid fa-chart-line w-4"></i><span>Dashboard</span>
-                    </button>
-                    <button onclick="cambiarTab('clientes')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
-                        <i class="fa-solid fa-users w-4"></i><span>Gestión Clientes</span>
-                    </button>
-                    <button onclick="cambiarTab('usuarios')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
-                        <i class="fa-solid fa-user-gear w-4"></i><span>Usuarios CRM</span>
-                    </button>
-                    <button onclick="cambiarTab('auditoria')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
-                        <i class="fa-solid fa-shield-halved w-4"></i><span>Auditoría y Seguridad</span>
-                    </button>
-                    <button onclick="cambiarTab('campañas')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
-                        <i class="fa-solid fa-bullhorn w-4"></i><span>Campañas</span>
-                    </button>
+                    <!-- Se llena dinámicamente según el rol -->
                 </nav>
             </div>
             <div class="pt-4 border-t border-zinc-800/80">
                 <div class="px-3 py-2 mb-3 bg-zinc-900/60 rounded-xl border border-zinc-800">
-                    <p id="user-display-email" class="text-xs font-semibold text-zinc-200 truncate">elio.ravelo@bancrecer.com.ve</p>
-                    <span id="user-display-role" class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">ADMINISTRADOR</span>
+                    <p id="user-display-email" class="text-xs font-semibold text-zinc-200 truncate">usuario@bancrecer.com.ve</p>
+                    <span id="user-display-role" class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">OPERADOR</span>
                 </div>
                 <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-semibold transition">
                     <i class="fa-solid fa-right-from-bracket"></i><span>Cerrar Sesión</span>
@@ -137,35 +123,37 @@
                     </div>
                 </div>
 
-                <!-- TARJETAS INTERACTIVAS CON CLIC -->
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                    <div onclick="abrirModalFiltroEstado('TODOS')" class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-lg cursor-pointer hover:border-zinc-600 transition group">
+                    <div class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-lg">
                         <div class="flex items-center justify-between text-red-500 mb-2">
-                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-white transition">Total Registros</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Registros</span>
                             <i class="fa-solid fa-folder-open text-lg"></i>
                         </div>
-                        <p id="stat-total-registros" class="text-3xl font-extrabold text-white">13</p>
+                        <p id="stat-total-registros" class="text-3xl font-extrabold text-white">0</p>
                     </div>
-
-                    <div onclick="abrirModalFiltroEstado('ESCALADO')" class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-lg cursor-pointer hover:border-amber-500/50 transition group">
+                    
+                    <!-- Tarjeta interactiva: Escalados Total -->
+                    <div onclick="abrirDetalleDashboard('escalados')" class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 hover:border-amber-500/50 shadow-lg cursor-pointer transition group">
                         <div class="flex items-center justify-between text-amber-500 mb-2">
                             <span class="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-amber-400 transition">Escalados Total</span>
                             <i class="fa-solid fa-share-nodes text-lg"></i>
                         </div>
-                        <p id="stat-total-escalados" class="text-3xl font-extrabold text-white">2</p>
+                        <p id="stat-total-escalados" class="text-3xl font-extrabold text-white">0</p>
                     </div>
 
-                    <div onclick="abrirModalFiltroEstado('EN PROCESO')" class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-lg cursor-pointer hover:border-blue-500/50 transition group">
+                    <!-- Tarjeta interactiva: En Proceso -->
+                    <div onclick="abrirDetalleDashboard('en_proceso')" class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 hover:border-blue-500/50 shadow-lg cursor-pointer transition group">
                         <div class="flex items-center justify-between text-blue-500 mb-2">
                             <span class="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-blue-400 transition">En Proceso (Op)</span>
                             <i class="fa-solid fa-clock-rotate-left text-lg"></i>
                         </div>
-                        <p id="stat-en-proceso" class="text-3xl font-extrabold text-white">2</p>
+                        <p id="stat-en-proceso" class="text-3xl font-extrabold text-white">0</p>
                     </div>
 
-                    <div onclick="abrirModalFiltroEstado('PROCESADO / CIERRE')" class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-lg cursor-pointer hover:border-emerald-500/50 transition group">
+                    <!-- Tarjeta interactiva: Procesados / Cierre -->
+                    <div onclick="abrirDetalleDashboard('procesados')" class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 hover:border-emerald-500/50 shadow-lg cursor-pointer transition group">
                         <div class="flex items-center justify-between text-emerald-400 mb-2">
-                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-emerald-300 transition">Procesados / Cierre</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-400 group-hover:text-emerald-400 transition">Procesados / Cierre</span>
                             <i class="fa-solid fa-circle-check text-lg"></i>
                         </div>
                         <p id="stat-procesados" class="text-3xl font-extrabold text-white">0</p>
@@ -182,18 +170,7 @@
                                 <span class="text-[10px] font-semibold text-zinc-500 uppercase">Gestiones</span>
                             </div>
                             <div id="contenedor-ranking-operadores" class="space-y-3">
-                                <div class="flex items-center justify-between p-2 rounded-xl bg-zinc-900 border border-zinc-800">
-                                    <span class="text-xs font-semibold text-zinc-200">🥇 elio.ravelo</span>
-                                    <span class="text-xs font-bold text-red-400">8</span>
-                                </div>
-                                <div class="flex items-center justify-between p-2 rounded-xl bg-zinc-900 border border-zinc-800">
-                                    <span class="text-xs font-semibold text-zinc-200">🥈 jose.lindarte</span>
-                                    <span class="text-xs font-bold text-red-400">2</span>
-                                </div>
-                                <div class="flex items-center justify-between p-2 rounded-xl bg-zinc-900 border border-zinc-800">
-                                    <span class="text-xs font-semibold text-zinc-200">🥉 oriany.albarran</span>
-                                    <span class="text-xs font-bold text-red-400">1</span>
-                                </div>
+                                <p class="text-zinc-500 text-xs text-center py-4">Cargando datos...</p>
                             </div>
                         </div>
                     </div>
@@ -222,7 +199,7 @@
                         <p class="text-xs text-zinc-400">Registro y consulta de interacciones por canal y servicio.</p>
                     </div>
                     <div class="flex items-center space-x-3">
-                        <button id="btn-exportar-excel-clientes" onclick="exportToExcel('tabla-clientes', 'Clientes_CRM')" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                        <button id="btn-exportar-excel-clientes" onclick="exportToExcel('tabla-clientes', 'Clientes_CRM')" class="hidden px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-xl text-xs font-semibold transition flex items-center space-x-2">
                             <i class="fa-solid fa-file-excel text-emerald-400"></i>
                             <span>Exportar Excel</span>
                         </button>
@@ -265,62 +242,181 @@
                     </div>
                 </div>
             </section>
+
+            <!-- 3. USUARIOS CRM -->
+            <section id="tab-usuarios" class="hidden space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Administración de Usuarios CRM</h1>
+                        <p class="text-xs text-zinc-400">Control de operadores, administradores y operaciones.</p>
+                    </div>
+                    <button onclick="abrirModalUsuario()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span>Nuevo Usuario CRM</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex flex-col items-center justify-center">
+                        <h3 class="text-sm font-bold uppercase text-zinc-300 mb-4 self-start"><i class="fa-solid fa-chart-pie text-red-500 mr-2"></i> Estatus de Usuarios</h3>
+                        <div class="w-full h-56 relative flex justify-center items-center">
+                            <canvas id="graficoUsuariosEstatus"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-center space-y-4">
+                        <h3 class="text-sm font-bold uppercase text-zinc-300"><i class="fa-solid fa-users-gear text-amber-500 mr-2"></i> Resumen de Sesiones</h3>
+                        <p class="text-xs text-zinc-400">El gráfico circular muestra la proporción actual de usuarios registrados que se encuentran conectados (activos en esta sesión) en comparación con los perfiles inactivos.</p>
+                        <div class="grid grid-cols-2 gap-4 pt-2">
+                            <div class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800">
+                                <span class="text-[10px] font-bold uppercase text-emerald-400">Usuarios Activos</span>
+                                <p id="stat-usuarios-activos" class="text-2xl font-extrabold text-white mt-1">0</p>
+                            </div>
+                            <div class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800">
+                                <span class="text-[10px] font-bold uppercase text-zinc-500">Usuarios Inactivos</span>
+                                <p id="stat-usuarios-inactivos" class="text-2xl font-extrabold text-white mt-1">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-4">Correo Electrónico</th>
+                                    <th class="p-4">Rol Asignado</th>
+                                    <th class="p-4">Fecha de Creación</th>
+                                    <th class="p-4 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-usuarios" class="divide-y divide-zinc-800 text-zinc-300">
+                                <tr><td colspan="4" class="p-4 text-center text-zinc-500">Cargando usuarios...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. AUDITORÍA Y SEGURIDAD -->
+            <section id="tab-auditoria" class="hidden space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Auditoría y Seguridad (Control de Accesos y Acciones)</h1>
+                        <p class="text-xs text-zinc-400">Monitoreo de ingresos, acciones operativas, intentos fallidos y lista negra.</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="refrescarAuditoria(true)" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                            <i class="fa-solid fa-rotate-right text-red-500"></i>
+                            <span>Actualizar</span>
+                        </button>
+                        <button onclick="exportToExcel('tabla-auditoria', 'Auditoria_Seguridad_CRM')" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                            <i class="fa-solid fa-file-excel text-emerald-400"></i>
+                            <span>Exportar Excel</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4">
+                    <h2 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-user-lock mr-2"></i> Usuarios Bloqueados (Lista Negra)</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3">Correo Electrónico</th>
+                                    <th class="p-3">Motivo de Bloqueo</th>
+                                    <th class="p-3">Fecha de Bloqueo</th>
+                                    <th class="p-3 text-center">Acción Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-bloqueados" class="divide-y divide-zinc-800 text-zinc-300">
+                                <tr><td colspan="4" class="p-3 text-center text-zinc-500">Sin usuarios bloqueados.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+                    <div class="p-4 border-b border-zinc-800">
+                        <h2 class="text-sm font-bold uppercase text-zinc-300"><i class="fa-solid fa-shield-halved text-red-500 mr-2"></i> Registro de Actividad y Accesos</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="tabla-auditoria" class="w-full text-left text-xs">
+                            <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-4">Fecha / Hora</th>
+                                    <th class="p-4">Usuario Intentado / Operador</th>
+                                    <th class="p-4">Resultado</th>
+                                    <th class="p-4">Detalle / Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-auditoria" class="divide-y divide-zinc-800 text-zinc-300">
+                                <tr><td colspan="4" class="p-4 text-center text-zinc-500">Cargando registros de auditoría...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. CAMPAÑAS -->
+            <section id="tab-campañas" class="hidden space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Gestión de Campañas</h1>
+                        <p class="text-xs text-zinc-400">Control y seguimiento de campañas activas e informativas del call center.</p>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 text-center space-y-4">
+                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-red-600/10 text-red-500 border border-red-500/20">
+                        <i class="fa-solid fa-bullhorn text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Módulo de Campañas en Configuración</h3>
+                    <p class="text-xs text-zinc-400 max-w-md mx-auto">Pronto podrás registrar, programar y monitorear las campañas de atención telefónica y masiva desde este apartado.</p>
+                </div>
+            </section>
+
+            <!-- 6. BANDEJA DE OPERACIONES -->
+            <section id="tab-operaciones-bandeja" class="hidden space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Bandeja de Casos Escalados - Operaciones</h1>
+                        <p class="text-xs text-zinc-400">Revisión, estatus y resolución de requerimientos escalados desde el Call Center.</p>
+                    </div>
+                    <button onclick="cargarDatosGenerales()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-xl text-xs font-semibold transition flex items-center space-x-2">
+                        <i class="fa-solid fa-rotate-right text-red-500"></i>
+                        <span>Actualizar Bandeja</span>
+                    </button>
+                </div>
+
+                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-4">Ticket / Fecha</th>
+                                    <th class="p-4">Cliente / Cédula</th>
+                                    <th class="p-4">Servicio / Motivo</th>
+                                    <th class="p-4">Requerimiento / Observación</th>
+                                    <th class="p-4">Estatus Actual</th>
+                                    <th class="p-4">Acción y Resolución Operativa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-operaciones" class="divide-y divide-zinc-800 text-zinc-300">
+                                <tr><td colspan="6" class="p-4 text-center text-zinc-500">Cargando casos escalados...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
-    <!-- MODAL DE FILTRO POR ESTADO (DESPLEGABLE EN PANTALLA) -->
-    <div id="modal-filtro-estado" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 p-4 backdrop-blur-sm">
-        <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-4xl space-y-4 max-h-[90vh] flex flex-col shadow-2xl">
-            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-lg bg-red-600/10 text-red-500 flex items-center justify-center border border-red-500/20">
-                        <i class="fa-solid fa-filter text-sm"></i>
-                    </div>
-                    <div>
-                        <h2 id="modal-filtro-titulo" class="text-lg font-bold text-white">Casos Filtrados</h2>
-                        <p class="text-xs text-zinc-400">Listado detallado correspondiente a la métrica seleccionada.</p>
-                    </div>
-                </div>
-                <button onclick="cerrarModalFiltroEstado()" class="text-zinc-400 hover:text-white transition text-lg px-2">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <div class="overflow-y-auto custom-scrollbar flex-1">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-zinc-950 border-b border-zinc-800 text-zinc-400 uppercase font-semibold sticky top-0">
-                        <tr>
-                            <th class="p-3">Ticket</th>
-                            <th class="p-3">Cliente</th>
-                            <th class="p-3">Cédula</th>
-                            <th class="p-3">Motivo / Canal</th>
-                            <th class="p-3">Estatus Op.</th>
-                            <th class="p-3">Operador</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-modal-filtro" class="divide-y divide-zinc-800 text-zinc-300">
-                        <!-- Se llena con JS dinámicamente -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="flex justify-end pt-2 border-t border-zinc-800">
-                <button onclick="cerrarModalFiltroEstado()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition">
-                    Cerrar Pestaña
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL NUEVA GESTIÓN DE CLIENTE -->
-    <div id="modal-cliente" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 p-4 backdrop-blur-sm">
+    <!-- MODALES -->
+    <div id="modal-cliente" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 p-4">
         <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-                <h2 class="text-lg font-bold text-white">Registrar Gestión de Cliente</h2>
-                <button onclick="cerrarModalCliente()" class="text-zinc-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <form id="form-cliente" onsubmit="event.preventDefault(); guardarGestionCliente();" class="space-y-3">
+            <h2 class="text-lg font-bold text-white">Registrar Gestión de Cliente</h2>
+            <form id="form-cliente" class="space-y-3">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Cédula / ID</label>
@@ -378,165 +474,1021 @@
 
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-red-400 mb-1">Detalle Específico</label>
-                    <select id="cli-subservicio" required class="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
-                        <option value="General">General</option>
-                        <option value="Desbloqueo de Usuario">Desbloqueo de Usuario</option>
-                        <option value="Falla de Clave / Acceso">Falla de Clave / Acceso</option>
-                        <option value="Reclamo de Transacción">Reclamo de Transacción</option>
-                        <option value="Consulta de Saldo">Consulta de Saldo</option>
+                    <select id="cli-subservicio" required class="w-full p-2.5 bg-zinc-950 border border-red-500/30 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
                     </select>
                 </div>
 
+                <div class="p-3 bg-zinc-950 border border-zinc-800 rounded-xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold uppercase text-amber-500 flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="cli-escalar" onchange="toggleEscalamiento()" class="w-4 h-4 rounded text-red-600 focus:ring-red-500 bg-zinc-900 border-zinc-700">
+                            <span>¿Escalar caso a Operaciones?</span>
+                        </label>
+                    </div>
+                    <div id="contenedor-ticket" class="hidden space-y-1">
+                        <label class="block text-[10px] font-bold uppercase text-zinc-400">Número de Reporte / Ticket (Generado Automáticamente)</label>
+                        <input type="text" id="cli-ticket" readonly class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-amber-400 text-xs outline-none font-mono cursor-not-allowed">
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Observaciones</label>
-                    <textarea id="cli-observacion" rows="3" required class="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500"></textarea>
+                    <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Observaciones / Requerimiento</label>
+                    <textarea id="cli-observaciones" rows="3" placeholder="Detalle bien el requerimiento para operaciones..." class="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500"></textarea>
                 </div>
 
-                <div class="flex items-center space-x-2 pt-1">
-                    <input type="checkbox" id="cli-escalar" class="rounded bg-zinc-950 border-zinc-800 text-red-600 focus:ring-red-500">
-                    <label for="cli-escalar" class="text-xs text-zinc-300 font-medium">Escalar a Operaciones</label>
-                </div>
-
-                <div class="flex justify-end space-x-3 pt-3">
-                    <button type="button" onclick="cerrarModalCliente()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition">Guardar Gestión</button>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="cerrarModalCliente()" class="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-xl text-xs font-semibold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold">Guardar Gestión</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- LOGICA JAVASCRIPT -->
+    <!-- MODAL NUEVO USUARIO -->
+    <div id="modal-usuario" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 p-4">
+        <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-md space-y-4">
+            <h2 class="text-lg font-bold text-white">Registrar Nuevo Usuario CRM</h2>
+            <form id="form-usuario" class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Correo Electrónico (@bancrecer.com.ve)</label>
+                    <input type="email" id="usr-correo" required class="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Contraseña Temporal</label>
+                    <div class="relative">
+                        <input type="password" id="usr-password" required placeholder="••••••••" class="w-full p-2.5 pr-10 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
+                        <button type="button" id="toggle-usr-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-white transition focus:outline-none cursor-pointer">
+                            <i class="fa-solid fa-eye" id="toggle-usr-icon"></i>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Rol</label>
+                    <select id="usr-rol" class="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
+                        <option value="OPERADOR">OPERADOR</option>
+                        <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+                        <option value="OPERACIONES">OPERACIONES</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="cerrarModalUsuario()" class="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-xl text-xs font-semibold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold">Crear Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE FILTRO DE CASOS DESDE EL DASHBOARD -->
+    <div id="modal-filtro-dashboard" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 p-4">
+        <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-4xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <h2 id="modal-filtro-titulo" class="text-lg font-bold text-white">Detalle de Casos</h2>
+                <button onclick="cerrarModalFiltroDashboard()" class="text-zinc-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-zinc-950 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+                        <tr>
+                            <th class="p-3">Ticket / Fecha</th>
+                            <th class="p-3">Cédula y Nombre</th>
+                            <th class="p-3">Servicio / Motivo</th>
+                            <th class="p-3">Observaciones / Respuesta</th>
+                            <th class="p-3">Estatus</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-modal-filtro" class="divide-y divide-zinc-800 text-zinc-300">
+                        <tr><td colspan="5" class="p-4 text-center text-zinc-500">Sin registros.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button type="button" onclick="cerrarModalFiltroDashboard()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
     <script>
-        // Datos Mock de demostración local
-        const registrosCasos = [
-            { ticket: "TK-1001", fecha: "2026-11-05", cliente: "Carlos Mendoza", cedula: "V-18234567", telefono: "04121234567", canal: "Llamada", motivo: "Reclamo", servicio: "Pago Movil", estado: "ESCALADO", operador: "elio.ravelo" },
-            { ticket: "TK-1002", fecha: "2026-11-05", cliente: "María Gutiérrez", cedula: "V-20112334", telefono: "04149876543", canal: "Whatsapp", motivo: "Solicitud", servicio: "Bdigital", estado: "EN PROCESO", operador: "elio.ravelo" },
-            { ticket: "TK-1003", fecha: "2026-11-04", cliente: "Pedro López", cedula: "V-15443211", telefono: "04245554433", canal: "Correo", motivo: "Soporte", servicio: "Pos", estado: "ESCALADO", operador: "jose.lindarte" },
-            { ticket: "TK-1004", fecha: "2026-11-04", cliente: "Ana Torres", cedula: "V-22998877", telefono: "04163332211", canal: "Llamada", motivo: "Consulta", servicio: "Cuenta", estado: "EN PROCESO", operador: "jose.lindarte" },
-            { ticket: "TK-1005", fecha: "2026-11-03", cliente: "Jesús Blanco", cedula: "V-19887766", telefono: "04127778899", canal: "Instagram", motivo: "Consulta", servicio: "Crecermovil", estado: "PROCESADO / CIERRE", operador: "oriany.albarran" }
-        ];
+        const opcionesServicios = {
+            "Bdigital": ["Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", "Notificación de Viajes", "OTP no recibido"],
+            "Credito inmediato": ["Afiliación", "Pago / Consultas", "Mis contactos", "Estatus Operación Fallida Crédito Inmediato", "Consultar Pagos Emitidos / Recibidos"],
+            "Pago Movil": ["Afiliación", "Consultar Pagos Emitidos / Recibidos", "Regularización", "Solicitar Clave C2P", "Mis contactos", "Estatus Operación Fallida Pago Móvil", "Confirmación SMS receptor"],
+            "Pos": ["Desafiliación POS", "Adquisición de equipo", "Cobro de Comisión Aliado", "Cobro de Comisión Banco", "Cierre de lote", "Soporte", "Contracargo"],
+            "TDD": ["Bloqueo", "Desbloqueo", "Reposición/Solicitud", "Cambio Clave", "Estatus Operación Fallida TDD", "Cobro de Comisión Biopago"],
+            "Agencia": ["En Servicio / Ubicación"],
+            "Cuenta": ["Actualización de Datos", "Desbloqueo de Cuenta OTP", "Cobro de Comisión de Servicios", "Requisitos Apertura de Cuenta", "Bloqueo de Cuenta Reclamo ATC", "Estatus Reclamo ATC", "Solicitud de Cancelacion de Cuenta", "Estatus Bloqueo de Cuenta Masiva", "Estatus Bloqueo de Cuenta Seguridad"],
+            "Credito Digital": ["Línea de Crédito Digital Información y Características", "Línea de Crédito Digital Cuotas", "Blog Financiero", "Información de cobros"],
+            "Solicitud de empleo": ["Envio de curriculum"],
+            "Crecermovil": ["Afiliación", "Consulta de Saldo", "Transferencias", "Pago de Servicios"]
+        };
 
-        function iniciarSesion() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-dashboard').classList.remove('hidden');
-            inicializarGraficos();
+        function actualizarSubmenuServicio() {
+            const selectProducto = document.getElementById('cli-producto');
+            const selectSub = document.getElementById('cli-subservicio');
+            if (!selectProducto || !selectSub) return;
+            const opciones = opcionesServicios[selectProducto.value] || ["General"];
+            selectSub.innerHTML = opciones.map(op => `<option value="${op}">${op}</option>`).join('');
         }
 
-        function logout() {
-            document.getElementById('app-dashboard').classList.add('hidden');
-            document.getElementById('login-screen').classList.remove('hidden');
-        }
-
-        function togglePasswordVisibility() {
-            const pwd = document.getElementById('login-password');
-            const icon = document.getElementById('toggle-icon');
-            if (pwd.type === 'password') {
-                pwd.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                pwd.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
-        }
-
-        function abrirModalCliente() {
-            document.getElementById('modal-cliente').classList.remove('hidden');
-        }
-
-        function cerrarModalCliente() {
-            document.getElementById('modal-cliente').classList.add('hidden');
-        }
-
-        // FUNCIONALIDAD: Abrir Modal Desplegable filtrado al hacer clic en las tarjetas
-        function abrirModalFiltroEstado(filtro) {
-            const modal = document.getElementById('modal-filtro-estado');
-            const titulo = document.getElementById('modal-filtro-titulo');
-            const tbody = document.getElementById('tbody-modal-filtro');
-
-            titulo.innerText = `Casos: ${filtro}`;
-            tbody.innerHTML = '';
-
-            let resultados = registrosCasos;
-            if (filtro !== 'TODOS') {
-                resultados = registrosCasos.filter(item => item.estado === filtro);
-            }
-
-            if (resultados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-zinc-500">No se encontraron registros en estado ${filtro}.</td></tr>`;
-            } else {
-                resultados.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-zinc-800/40 transition';
-                    tr.innerHTML = `
-                        <td class="p-3 font-semibold text-red-400">${item.ticket}</td>
-                        <td class="p-3">${item.cliente}</td>
-                        <td class="p-3">${item.cedula}</td>
-                        <td class="p-3"><span class="bg-zinc-800 px-2 py-0.5 rounded text-[10px] border border-zinc-700">${item.motivo}</span> (${item.canal})</td>
-                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.estado === 'ESCALADO' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : item.estado === 'EN PROCESO' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">${item.estado}</span></td>
-                        <td class="p-3 text-zinc-400">${item.operador}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        function cerrarModalFiltroEstado() {
-            document.getElementById('modal-filtro-estado').classList.add('hidden');
-        }
-
-        function cambiarTab(tab) {
-            const tabs = ['dashboard', 'clientes', 'usuarios', 'auditoria', 'campañas'];
-            tabs.forEach(t => {
-                const el = document.getElementById(`tab-${t}`);
-                if (el) el.classList.add('hidden');
-            });
-            document.getElementById(`tab-${tab}`).classList.remove('hidden');
-        }
-
-        function inicializarGraficos() {
-            const ctxMotivos = document.getElementById('graficoMotivos').getContext('2d');
-            new Chart(ctxMotivos, {
-                type: 'bar',
-                data: {
-                    labels: ['Consulta', 'Reclamo', 'Solicitud', 'Soporte'],
-                    datasets: [{
-                        label: 'Motivos',
-                        data: [5, 5, 1, 2],
-                        backgroundColor: '#dc2626',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: '#a1a1aa' }, grid: { display: false } },
-                        y: { ticks: { color: '#a1a1aa' }, grid: { color: '#27272a' } }
+        async function generarSiguienteTicket() {
+            let maxNum = 0;
+            clientesGlobal.forEach(c => {
+                if (c.nro_ticket) {
+                    const num = parseInt(c.nro_ticket, 10);
+                    if (!isNaN(num) && num > maxNum) {
+                        maxNum = num;
                     }
                 }
             });
+            const siguiente = maxNum + 1;
+            return String(siguiente).padStart(8, '0');
+        }
 
-            const ctxCanales = document.getElementById('graficoCanales').getContext('2d');
-            new Chart(ctxCanales, {
+        async function toggleEscalamiento() {
+            const isChecked = document.getElementById('cli-escalar').checked;
+            const container = document.getElementById('contenedor-ticket');
+            const inputTicket = document.getElementById('cli-ticket');
+            if (isChecked) {
+                container.classList.remove('hidden');
+                const nuevoTicket = await generarSiguienteTicket();
+                inputTicket.value = nuevoTicket;
+            } else {
+                container.classList.add('hidden');
+                inputTicket.value = '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            actualizarSubmenuServicio();
+
+            const passwordInput = document.getElementById('login-password');
+            const togglePasswordBtn = document.getElementById('toggle-password');
+            const toggleIcon = document.getElementById('toggle-icon');
+
+            if (togglePasswordBtn && passwordInput) {
+                togglePasswordBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        toggleIcon.className = "fa-solid fa-eye-slash";
+                    } else {
+                        passwordInput.type = 'password';
+                        toggleIcon.className = "fa-solid fa-eye";
+                    }
+                });
+            }
+
+            const usrPasswordInput = document.getElementById('usr-password');
+            const toggleUsrBtn = document.getElementById('toggle-usr-password');
+            const toggleUsrIcon = document.getElementById('toggle-usr-icon');
+
+            if (toggleUsrBtn && usrPasswordInput) {
+                toggleUsrBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (usrPasswordInput.type === 'password') {
+                        usrPasswordInput.type = 'text';
+                        toggleUsrIcon.className = "fa-solid fa-eye-slash";
+                    } else {
+                        usrPasswordInput.type = 'password';
+                        toggleUsrIcon.className = "fa-solid fa-eye";
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js" onerror="console.log('Usando respaldo interno de configuración')"></script>
+
+    <script>
+        const SUPABASE_URL = (typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.URL) ? SUPABASE_CONFIG.URL : 'https://mchlteunhcjzuetzyajz.supabase.co';
+        const SUPABASE_KEY = (typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.KEY) ? SUPABASE_CONFIG.KEY : 'sb_publishable_S5LJcX40QJ8HPVIRU7l75w_LYNzVWQk';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+        let clientesGlobal = [];
+        let auditoriaGlobal = [];
+        let usuariosGlobal = [];
+        let bloqueadosGlobal = [];
+        let chartMotivos = null;
+        let chartCanales = null;
+        let chartUsuariosEstatus = null;
+
+        async function registrarAuditoria(correoUser, resultado, detalle) {
+            try {
+                const payload = { 
+                    correo: correoUser, 
+                    resultado: resultado, 
+                    detalle: detalle, 
+                    fecha: new Date().toISOString() 
+                };
+                await _supabase.from('auditoria_crm').insert([payload]);
+            } catch (err) {
+                console.warn("Auditoría no guardada:", err);
+            }
+        }
+
+        // LOGIN DIRECTO Y SEGURO
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const emailInput = document.getElementById('login-email');
+            const email = emailInput.value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            const errorBox = document.getElementById('login-error');
+            const btnLogin = document.getElementById('btn-login');
+
+            errorBox.classList.add('hidden');
+            emailInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500', 'border-emerald-500', 'ring-emerald-500');
+
+            if (!email.toLowerCase().endsWith('@bancrecer.com.ve')) {
+                emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+                errorBox.textContent = "Acceso denegado: Dominio no autorizado.";
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            btnLogin.disabled = true;
+            btnLogin.innerHTML = `<span>Autenticando...</span>`;
+
+            try {
+                const { data, error } = await _supabase.auth.signInWithPassword({ 
+                    email: email, 
+                    password: password 
+                });
+
+                if (error || !data.user) {
+                    emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+                    errorBox.textContent = "Credenciales incorrectas o usuario no registrado.";
+                    errorBox.classList.remove('hidden');
+                    btnLogin.disabled = false;
+                    btnLogin.innerHTML = `<span>Iniciar Sesión</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
+                    registrarAuditoria(email, 'FALLIDO', 'Intento de contraseña incorrecto');
+                    return;
+                }
+
+                emailInput.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500');
+                currentUser = data.user;
+                document.getElementById('user-display-email').textContent = data.user.email;
+                
+                const { data: usuariosData } = await _supabase.from('usuarios_crm').select('*');
+                usuariosGlobal = usuariosData || [];
+
+                configurarMenuLateral(data.user.email);
+                registrarAuditoria(data.user.email, 'EXITOSO', 'Ingreso al sistema autorizado');
+
+                setTimeout(() => {
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('app-dashboard').classList.remove('hidden');
+                    cargarDatosGenerales();
+                }, 300);
+
+            } catch (err) {
+                console.error("Error crítico de autenticación:", err);
+                errorBox.textContent = "Error de conexión con la base de datos.";
+                errorBox.classList.remove('hidden');
+                btnLogin.disabled = false;
+                btnLogin.innerHTML = `<span>Iniciar Sesión</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
+            }
+        });
+
+        function configurarMenuLateral(email) {
+            const nav = document.getElementById('sidebar-nav');
+            const emailLower = email.toLowerCase().trim();
+            const esOperaciones = emailLower === 'operaciones.atu@bancrecer.com.ve';
+            
+            const usuarioCRM = usuariosGlobal.find(u => {
+                const uEmail = (u.correo || u.email || '').toLowerCase().trim();
+                return uEmail === emailLower;
+            });
+
+            const rolBD = usuarioCRM ? (usuarioCRM.rol || '').toUpperCase().trim() : '';
+            const esAdmin = !esOperaciones && (
+                rolBD === 'ADMINISTRADOR' || 
+                rolBD === 'ADMIN' || 
+                emailLower === 'elio.ravelo@bancrecer.com.ve' || 
+                emailLower === 'oriany.albarran@bancrecer.com.ve'
+            );
+
+            if (esOperaciones) {
+                document.getElementById('user-display-role').textContent = 'OPERACIONES';
+                nav.innerHTML = `
+                    <button onclick="switchTab('operaciones-bandeja')" id="nav-operaciones-bandeja" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-red-500 bg-red-600/10 border border-red-500/20">
+                        <i class="fa-solid fa-list-check w-5"></i><span>Casos Escalados</span>
+                    </button>
+                `;
+                setTimeout(() => switchTab('operaciones-bandeja'), 100);
+
+            } else if (esAdmin) {
+                document.getElementById('user-display-role').textContent = 'ADMINISTRADOR';
+                nav.innerHTML = `
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-red-500 bg-red-600/10 border border-red-500/20">
+                        <i class="fa-solid fa-chart-pie w-5"></i><span>Dashboard</span>
+                    </button>
+                    <button onclick="switchTab('clientes')" id="nav-clientes" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
+                        <i class="fa-solid fa-users w-5"></i><span>Gestión Clientes</span>
+                    </button>
+                    <button onclick="switchTab('usuarios')" id="nav-usuarios" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
+                        <i class="fa-solid fa-user-gear w-5"></i><span>Usuarios CRM</span>
+                    </button>
+                    <button onclick="switchTab('auditoria')" id="nav-auditoria" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
+                        <i class="fa-solid fa-shield-halved w-5"></i><span>Auditoría y Seguridad</span>
+                    </button>
+                    <button onclick="switchTab('campañas')" id="nav-campañas" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
+                        <i class="fa-solid fa-bullhorn w-5"></i><span>Campañas</span>
+                    </button>
+                `;
+                const btnExportar = document.getElementById('btn-exportar-excel-clientes');
+                if (btnExportar) btnExportar.classList.remove('hidden');
+
+            } else {
+                document.getElementById('user-display-role').textContent = 'OPERADOR';
+                nav.innerHTML = `
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-red-500 bg-red-600/10 border border-red-500/20">
+                        <i class="fa-solid fa-chart-pie w-5"></i><span>Dashboard</span>
+                    </button>
+                    <button onclick="switchTab('clientes')" id="nav-clientes" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
+                        <i class="fa-solid fa-users w-5"></i><span>Gestión Clientes</span>
+                    </button>
+                    <button onclick="switchTab('campañas')" id="nav-campañas" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition">
+                        <i class="fa-solid fa-bullhorn w-5"></i><span>Campañas</span>
+                    </button>
+                `;
+                const btnExportar = document.getElementById('btn-exportar-excel-clientes');
+                if (btnExportar) btnExportar.classList.add('hidden');
+            }
+        }
+
+        async function cargarDatosGenerales() {
+            try {
+                const { data: clientes } = await _supabase.from('clientes_crm').select('*');
+                const { data: usuarios } = await _supabase.from('usuarios_crm').select('*');
+                await refrescarAuditoria(false);
+
+                clientesGlobal = clientes || [];
+                usuariosGlobal = usuarios || [];
+
+                const esOperaciones = currentUser && currentUser.email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
+
+                if (esOperaciones) {
+                    renderBandejaOperaciones(clientesGlobal);
+                } else {
+                    actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal, usuariosGlobal);
+                    renderClientes(clientesGlobal);
+                    cargarUsuarios();
+                }
+            } catch (err) {
+                console.error("Error general:", err);
+            }
+        }
+
+        async function cargarBloqueados() {
+            try {
+                const { data } = await _supabase.from('usuarios_bloqueados').select('*');
+                bloqueadosGlobal = data || [];
+            } catch (err) {
+                bloqueadosGlobal = [];
+            }
+        }
+
+        async function refrescarAuditoria(mostrarAlerta = false) {
+            try {
+                const { data: auditoria, error } = await _supabase.from('auditoria_crm').select('*');
+                if (error) console.error("Error al consultar auditoría:", error.message);
+
+                auditoriaGlobal = auditoria || [];
+                auditoriaGlobal.sort((a, b) => new Date(b.fecha || b.created_at || 0) - new Date(a.fecha || a.created_at || 0));
+
+                await cargarBloqueados();
+
+                renderAuditoriaTab();
+                renderBloqueados();
+
+                if (mostrarAlerta) alert("¡Datos de auditoría actualizados correctamente!");
+            } catch (err) {
+                console.error("Error al refrescar auditoría:", err);
+            }
+        }
+
+        function aplicarFiltroFechas() {
+            const desde = document.getElementById('filtro-fecha-desde').value;
+            const hasta = document.getElementById('filtro-fecha-hasta').value;
+
+            let clientesFiltrados = clientesGlobal;
+
+            if (desde) {
+                const d = new Date(desde);
+                clientesFiltrados = clientesFiltrados.filter(c => new Date(c.created_at || c.fecha) >= d);
+            }
+            if (hasta) {
+                const h = new Date(hasta);
+                h.setHours(23, 59, 59);
+                clientesFiltrados = clientesFiltrados.filter(c => new Date(c.created_at || c.fecha) <= h);
+            }
+
+            actualizarDashboardConFiltro(clientesFiltrados, auditoriaGlobal, usuariosGlobal);
+            renderClientes(clientesFiltrados);
+        }
+
+        function limpiarFiltroFechas() {
+            document.getElementById('filtro-fecha-desde').value = '';
+            document.getElementById('filtro-fecha-hasta').value = '';
+            actualizarDashboardConFiltro(clientesGlobal, auditoriaGlobal, usuariosGlobal);
+            renderClientes(clientesGlobal);
+        }
+
+        function actualizarDashboardConFiltro(clientes, auditoria, usuarios) {
+            const elTotalReg = document.getElementById('stat-total-registros');
+            const elTotalEsc = document.getElementById('stat-total-escalados');
+            const elEnProc = document.getElementById('stat-en-proceso');
+            const elProc = document.getElementById('stat-procesados');
+
+            if (elTotalReg) elTotalReg.textContent = clientes.length;
+
+            const totalEscalados = clientes.filter(c => c.escalado === true || c.escalado === 'true').length;
+            const enProceso = clientes.filter(c => (c.escalado === true || c.escalado === 'true') && (c.estatus_operaciones === 'EN PROCESO' || c.estatus_operaciones === 'PENDIENTE')).length;
+            const procesados = clientes.filter(c => (c.escalado === true || c.escalado === 'true') && c.estatus_operaciones === 'PROCESADO').length;
+
+            if (elTotalEsc) elTotalEsc.textContent = totalEscalados;
+            if (elEnProc) elEnProc.textContent = enProceso;
+            if (elProc) elProc.textContent = procesados;
+
+            const conteoOperadores = {};
+            clientes.forEach(c => {
+                const op = c.operador || 'Sistema / Sin asignar';
+                conteoOperadores[op] = (conteoOperadores[op] || 0) + 1;
+            });
+
+            const rankingOrdenado = Object.entries(conteoOperadores).sort((a, b) => b[1] - a[1]);
+            const contenedorRanking = document.getElementById('contenedor-ranking-operadores');
+
+            if (contenedorRanking) {
+                if (rankingOrdenado.length === 0) {
+                    contenedorRanking.innerHTML = `<p class="text-zinc-500 text-xs text-center py-4">Sin registros en este periodo.</p>`;
+                } else {
+                    const maxRegistros = rankingOrdenado[0][1];
+                    contenedorRanking.innerHTML = rankingOrdenado.map(([op, total], idx) => {
+                        const porcentaje = Math.round((total / maxRegistros) * 100);
+                        const esPrimero = idx === 0 ? 'border-amber-500/30 bg-amber-500/5' : 'border-zinc-800 bg-zinc-900/40';
+                        const medalla = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
+                        
+                        return `
+                            <div class="p-2.5 rounded-xl border ${esPrimero} space-y-1.5">
+                                <div class="flex items-center justify-between text-xs">
+                                    <div class="flex items-center space-x-2 truncate">
+                                        <span class="font-bold text-zinc-400 w-5 text-center">${medalla}</span>
+                                        <span class="font-semibold text-zinc-200 truncate" title="${op}">${op.split('@')[0]}</span>
+                                    </div>
+                                    <span class="font-bold text-red-500 ml-2">${total}</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-red-600 rounded-full transition-all duration-500" style="width: ${porcentaje}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            const conteoMotivos = {};
+            clientes.forEach(c => {
+                const m = c.motivo || 'Sin Motivo';
+                conteoMotivos[m] = (conteoMotivos[m] || 0) + 1;
+            });
+
+            const conteoCanales = {};
+            clientes.forEach(c => {
+                const ch = c.canal || 'Llamada';
+                conteoCanales[ch] = (conteoCanales[ch] || 0) + 1;
+            });
+
+            renderizarGraficos(
+                Object.keys(conteoMotivos), Object.values(conteoMotivos),
+                Object.keys(conteoCanales), Object.values(conteoCanales)
+            );
+        }
+
+        function renderizarGraficos(motivosLabels, motivosData, canalesLabels, canalesData) {
+            const canvasMotivos = document.getElementById('graficoMotivos');
+            if (canvasMotivos) {
+                const ctxMotivos = canvasMotivos.getContext('2d');
+                if (chartMotivos) chartMotivos.destroy();
+                chartMotivos = new Chart(ctxMotivos, {
+                    type: 'bar',
+                    data: {
+                        labels: motivosLabels.length ? motivosLabels : ['Sin Datos'],
+                        datasets: [{
+                            label: 'Registros por Motivo',
+                            data: motivosData.length ? motivosData : [0],
+                            backgroundColor: '#dc2626',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { color: '#a1a1aa', font: { size: 10 } }, grid: { display: false } },
+                            y: { ticks: { color: '#a1a1aa', precision: 0 }, grid: { color: '#27272a' } }
+                        }
+                    }
+                });
+            }
+
+            const canvasCanales = document.getElementById('graficoCanales');
+            if (canvasCanales) {
+                const ctxCanales = canvasCanales.getContext('2d');
+                if (chartCanales) chartCanales.destroy();
+                chartCanales = new Chart(ctxCanales, {
+                    type: 'doughnut',
+                    data: {
+                        labels: canalesLabels.length ? canalesLabels : ['Sin Datos'],
+                        datasets: [{
+                            data: canalesData.length ? canalesData : [1],
+                            backgroundColor: ['#dc2626', '#10b981', '#a855f7', '#f59e0b', '#71717a'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: '#d4d4d8', font: { size: 11 } } }
+                        }
+                    }
+                });
+            }
+        }
+
+        async function cargarClientes() { await cargarDatosGenerales(); }
+
+        function renderClientes(lista) {
+            const tbody = document.getElementById('tbody-clientes');
+            if (!tbody) return;
+
+            if (lista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="11" class="p-4 text-center text-zinc-500">Sin resultados disponibles.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = lista.map(c => {
+                const esEscalado = c.escalado === true || c.escalado === 'true';
+                const ticketBadge = esEscalado ? `<span class="text-amber-400 font-mono text-[11px] font-bold block"><i class="fa-solid fa-ticket mr-1"></i>Ticket: ${c.nro_ticket || 'S/N'}</span>` : '';
+                const estatusOp = c.estatus_operaciones || (esEscalado ? 'EN PROCESO' : 'N/A');
+                
+                let badgeColor = 'bg-zinc-800 text-zinc-400';
+                if (estatusOp === 'EN PROCESO') badgeColor = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                if (estatusOp === 'PENDIENTE') badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                if (estatusOp === 'PROCESADO') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                if (estatusOp === 'DADO DE BAJA') badgeColor = 'bg-red-500/10 text-red-400 border border-red-500/20';
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-4 font-mono text-zinc-400">${new Date(c.created_at || c.fecha || Date.now()).toLocaleDateString()}</td>
+                        <td class="p-4 font-mono text-white">
+                            ${c.cedula}
+                            ${ticketBadge}
+                        </td>
+                        <td class="p-4 font-semibold text-white">${c.nombre}</td>
+                        <td class="p-4 text-zinc-400">${c.telefono}</td>
+                        <td class="p-4">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">${c.canal || 'Llamada'}</span>
+                            <span class="block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo || 'Consulta'}</span>
+                        </td>
+                        <td class="p-4 text-zinc-300">${c.producto} <br><span class="text-[10px] text-zinc-500">${c.subservicio || ''}</span></td>
+                        <td class="p-4 text-zinc-400 max-w-xs" title="${c.observaciones || ''}">
+                            <div class="truncate">${c.observaciones || '-'}</div>
+                            ${c.respuesta_operaciones ? `<div class="mt-1 text-[11px] text-emerald-400 bg-emerald-500/10 p-1.5 rounded border border-emerald-500/20"><strong>Op:</strong> ${c.respuesta_operaciones}</div>` : ''}
+                        </td>
+                        <td class="p-4 text-center">
+                            ${esEscalado ? '<span class="text-amber-400 font-bold"><i class="fa-solid fa-check"></i> Sí</span>' : '<span class="text-zinc-600">No</span>'}
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded text-[10px] font-bold ${badgeColor}">${estatusOp}</span>
+                        </td>
+                        <td class="p-4 text-zinc-400">${c.operador || 'Sistema'}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="eliminarCliente('${c.id}', '${c.nombre}')" class="text-zinc-500 hover:text-red-400 transition"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function renderBandejaOperaciones(lista) {
+            const tbody = document.getElementById('tbody-operaciones');
+            if (!tbody) return;
+
+            const escalados = lista.filter(c => c.escalado === true || c.escalado === 'true');
+
+            if (escalados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-zinc-500">No hay casos escalados a operaciones en este momento.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = escalados.map(c => {
+                const estatusOp = c.estatus_operaciones || 'EN PROCESO';
+                let badgeColor = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                if (estatusOp === 'PENDIENTE') badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                if (estatusOp === 'PROCESADO') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                if (estatusOp === 'DADO DE BAJA') badgeColor = 'bg-red-500/10 text-red-400 border border-red-500/20';
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-4 font-mono text-zinc-400">
+                            <span class="text-amber-400 font-bold block"><i class="fa-solid fa-ticket mr-1"></i>Ticket: ${c.nro_ticket || 'S/N'}</span>
+                            <span class="text-[10px] text-zinc-500">${new Date(c.created_at || c.fecha || Date.now()).toLocaleString()}</span>
+                        </td>
+                        <td class="p-4 font-semibold text-white">
+                            ${c.nombre}
+                            <span class="block text-[11px] font-mono text-zinc-400">CI: ${c.cedula} | Tel: ${c.telefono}</span>
+                        </td>
+                        <td class="p-4 text-zinc-300">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo}</span>
+                            <div class="mt-1 text-zinc-400 text-[11px]">${c.producto} - ${c.subservicio || ''}</div>
+                        </td>
+                        <td class="p-4 text-zinc-300 max-w-xs">
+                            <div class="bg-zinc-900 p-2 rounded-lg border border-zinc-800 text-xs">${c.observaciones || 'Sin observaciones detalladas'}</div>
+                            <div class="mt-1 text-[10px] text-zinc-500">Registrado por: ${c.operador || 'Sistema'}</div>
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded text-[10px] font-bold ${badgeColor}">${estatusOp}</span>
+                        </td>
+                        <td class="p-4 space-y-2">
+                            <textarea id="resp-${c.id}" rows="2" placeholder="Escriba la observación o resolución definitiva..." class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-xs outline-none focus:ring-2 focus:ring-red-500">${c.respuesta_operaciones || ''}</textarea>
+                            
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="actualizarCasoOperaciones('${c.id}', 'PROCESADO')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-semibold transition flex items-center space-x-1">
+                                    <i class="fa-solid fa-check"></i><span>Procesar / Cerrar</span>
+                                </button>
+                                <button onclick="actualizarCasoOperaciones('${c.id}', 'PENDIENTE')" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-[10px] font-semibold transition flex items-center space-x-1">
+                                    <i class="fa-solid fa-clock"></i><span>Pendiente Resp.</span>
+                                </button>
+                                <button onclick="actualizarCasoOperaciones('${c.id}', 'DADO DE BAJA')" class="px-3 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 rounded-lg text-[10px] font-semibold transition">
+                                    Dar de baja
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        async function actualizarCasoOperaciones(id, nuevoEstatus) {
+            const txtArea = document.getElementById(`resp-${id}`);
+            const respuestaTxt = txtArea ? txtArea.value.trim() : '';
+            if (!respuestaTxt && nuevoEstatus === 'PROCESADO') {
+                alert('Por favor ingrese la observación o resolución definitiva antes de procesar el caso.');
+                return;
+            }
+
+            const opEmail = currentUser ? currentUser.email : 'operaciones.atu@bancrecer.com.ve';
+            const payload = {
+                estatus_operaciones: nuevoEstatus,
+                respuesta_operaciones: respuestaTxt
+            };
+
+            const { error } = await _supabase.from('clientes_crm').update(payload).eq('id', id);
+            if (!error) {
+                await registrarAuditoria(opEmail, 'ACCION', `Operaciones actualizó ticket ID ${id} a estatus ${nuevoEstatus}`);
+                alert('¡Caso actualizado con éxito!');
+                cargarDatosGenerales();
+            } else {
+                alert('Error al actualizar el caso: ' + error.message);
+            }
+        }
+
+        function filtrarClientes() {
+            const inputBuscar = document.getElementById('input-buscar-cliente');
+            if (!inputBuscar) return;
+
+            const filtro = inputBuscar.value.toLowerCase();
+            const filtrados = clientesGlobal.filter(c => 
+                c.cedula.toLowerCase().includes(filtro) || 
+                c.nombre.toLowerCase().includes(filtro) ||
+                (c.nro_ticket && c.nro_ticket.toLowerCase().includes(filtro))
+            );
+            renderClientes(filtrados);
+        }
+
+        document.getElementById('form-cliente').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const opEmail = currentUser ? currentUser.email : 'Sistema';
+            const escalarCheckbox = document.getElementById('cli-escalar');
+            const ticketInput = document.getElementById('cli-ticket');
+            
+            const estaEscalado = escalarCheckbox ? escalarCheckbox.checked : false;
+            const nroTicket = ticketInput ? ticketInput.value.trim() : '';
+
+            const nuevoCliente = {
+                cedula: document.getElementById('cli-cedula').value.trim(),
+                nombre: document.getElementById('cli-nombre').value.trim(),
+                telefono: document.getElementById('cli-telefono').value.trim(),
+                canal: document.getElementById('cli-canal').value,
+                motivo: document.getElementById('cli-motivo').value,
+                producto: document.getElementById('cli-producto').value,
+                subservicio: document.getElementById('cli-subservicio').value,
+                observaciones: document.getElementById('cli-observaciones').value.trim(),
+                escalado: estaEscalado,
+                nro_ticket: estaEscalado ? nroTicket : null,
+                estatus_operaciones: estaEscalado ? 'EN PROCESO' : 'REGISTRADO',
+                operador: opEmail,
+                created_at: new Date().toISOString()
+            };
+
+            const { error } = await _supabase.from('clientes_crm').insert([nuevoCliente]);
+            if (!error) {
+                await registrarAuditoria(opEmail, 'ACCION', `Agregó gestión de cliente${estaEscalado ? ' (Escalado a Operaciones - Ticket: ' + nroTicket + ')' : ''}: ${nuevoCliente.nombre}`);
+                cerrarModalCliente();
+                document.getElementById('form-cliente').reset();
+                const contTicket = document.getElementById('contenedor-ticket');
+                if (contTicket) contTicket.classList.add('hidden');
+                actualizarSubmenuServicio();
+                cargarDatosGenerales();
+            } else {
+                alert('Error al registrar cliente: ' + error.message);
+            }
+        });
+
+        async function cargarUsuarios() {
+            const tbody = document.getElementById('tbody-usuarios');
+            if (!tbody) return;
+
+            const { data, error } = await _supabase.from('usuarios_crm').select('*');
+            if (error || !data) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-zinc-500">No se pudieron cargar los usuarios.</td></tr>`;
+                return;
+            }
+
+            const totalUsuarios = data.length;
+            const cantActivos = currentUser ? 1 : 0;
+            const cantInactivos = Math.max(0, totalUsuarios - cantActivos);
+
+            document.getElementById('stat-usuarios-activos').textContent = cantActivos;
+            document.getElementById('stat-usuarios-inactivos').textContent = cantInactivos;
+
+            renderizarGraficoUsuarios(cantActivos, cantInactivos);
+
+            tbody.innerHTML = data.map(u => {
+                const emailUsr = u.correo || u.email || 'Usuario';
+                const esActivo = currentUser && currentUser.email.toLowerCase() === emailUsr.toLowerCase();
+                const badgeActivo = esActivo 
+                    ? `<span class="ml-2 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">En línea</span>` 
+                    : `<span class="ml-2 px-2 py-0.5 rounded text-[9px] font-bold bg-zinc-800 text-zinc-500">Inactivo</span>`;
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-4 font-semibold text-white flex items-center">${emailUsr} ${badgeActivo}</td>
+                        <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-500 border border-red-500/20">${u.rol || 'OPERADOR'}</span></td>
+                        <td class="p-4 font-mono text-zinc-400">${new Date(u.created_at || Date.now()).toLocaleDateString()}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="eliminarUsuario('${u.id}', '${emailUsr}')" class="text-zinc-500 hover:text-red-400 transition"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function renderizarGraficoUsuarios(activos, inactivos) {
+            const canvasUsr = document.getElementById('graficoUsuariosEstatus');
+            if (!canvasUsr) return;
+
+            const ctx = canvasUsr.getContext('2d');
+            if (chartUsuariosEstatus) chartUsuariosEstatus.destroy();
+
+            chartUsuariosEstatus = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Llamada', 'Correo', 'WhatsApp', 'Redes Sociales'],
+                    labels: ['Activos (En línea)', 'Inactivos'],
                     datasets: [{
-                        data: [6, 3, 2, 2],
-                        backgroundColor: ['#dc2626', '#10b981', '#a855f7', '#f59e0b'],
+                        data: [activos, inactivos],
+                        backgroundColor: ['#10b981', '#3f3f46'],
                         borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { color: '#a1a1aa', boxWidth: 12 } } }
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#d4d4d8', font: { size: 11 } } }
+                    }
                 }
             });
         }
+
+        document.getElementById('form-usuario').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const opEmail = currentUser ? currentUser.email : 'Administrador';
+            const correo = document.getElementById('usr-correo').value.trim();
+            const password = document.getElementById('usr-password').value.trim();
+            const rol = document.getElementById('usr-rol').value;
+
+            if (!correo.toLowerCase().endsWith('@bancrecer.com.ve')) {
+                alert('El correo debe pertenecer al dominio @bancrecer.com.ve');
+                return;
+            }
+
+            const { data, error } = await _supabase.auth.signUp({ email: correo, password: password });
+            if (error) {
+                alert('Error creando usuario en Auth: ' + error.message);
+                return;
+            }
+
+            await _supabase.from('usuarios_crm').insert([{ correo: correo, rol: rol }]);
+            await registrarAuditoria(opEmail, 'ACCION', `Agregó un nuevo usuario al CRM: ${correo} (Rol: ${rol})`);
+
+            cerrarModalUsuario();
+            document.getElementById('form-usuario').reset();
+            cargarDatosGenerales();
+        });
+
+        async function eliminarUsuario(id, correoUsuario) {
+            if (confirm('¿Deseas eliminar este usuario de la administración?')) {
+                const opEmail = currentUser ? currentUser.email : 'Administrador';
+                await _supabase.from('usuarios_crm').delete().eq('id', id);
+                await registrarAuditoria(opEmail, 'ACCION', `Eliminó al usuario del CRM: ${correoUsuario || id}`);
+                cargarUsuarios();
+            }
+        }
+
+        function renderAuditoriaTab() {
+            const tbody = document.getElementById('tbody-auditoria');
+            if (!tbody) return;
+
+            if (!auditoriaGlobal || auditoriaGlobal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-zinc-500">Sin registros de auditoría recientes.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = auditoriaGlobal.map(log => {
+                const fechaLog = new Date(log.fecha || log.created_at || Date.now()).toLocaleString();
+                const usuarioLog = log.correo || log.email || 'Desconocido';
+                const resultadoLog = (log.resultado || log.status || 'ACCION').toUpperCase();
+                const detalleLog = log.detalle || log.description || log.reason || '-';
+                
+                let colorRes = 'bg-zinc-800 text-zinc-300 border border-zinc-700';
+                if (resultadoLog === 'EXITOSO') colorRes = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                if (resultadoLog === 'FALLIDO' || resultadoLog === 'BLOQUEADO') colorRes = 'bg-red-500/10 text-red-400 border border-red-500/20';
+                if (resultadoLog === 'ACCION') colorRes = 'bg-zinc-800 text-zinc-300 border border-zinc-700';
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-4 font-mono text-zinc-400">${fechaLog}</td>
+                        <td class="p-4 font-semibold text-white">${usuarioLog}</td>
+                        <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${colorRes}">${resultadoLog}</span></td>
+                        <td class="p-4 text-zinc-300">${detalleLog}</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function renderBloqueados() {
+            const tbody = document.getElementById('tbody-bloqueados');
+            if (!tbody) return;
+
+            if (!bloqueadosGlobal || bloqueadosGlobal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-zinc-500">No hay usuarios bloqueados en lista negra.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = bloqueadosGlobal.map(b => {
+                const correoB = b.correo || b.email || 'Desconocido';
+                const motivoB = b.motivo || b.reason || 'Bloqueado por seguridad';
+                const fechaB = new Date(b.fecha || b.created_at || Date.now()).toLocaleString();
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-3 font-semibold text-white">${correoB}</td>
+                        <td class="p-3 text-red-400">${motivoB}</td>
+                        <td class="p-3 font-mono text-zinc-400">${fechaB}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="desbloquearUsuario('${b.id}', '${correoB}')" class="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-lg text-xs font-semibold transition">Desbloquear</button>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        async function desbloquearUsuario(id, correo) {
+            if (confirm(`¿Estás seguro de desbloquear al usuario ${correo}?`)) {
+                await _supabase.from('usuarios_bloqueados').delete().eq('id', id);
+                
+                const adminEmail = currentUser ? currentUser.email : 'Administrador';
+                await registrarAuditoria(adminEmail, 'EXITOSO', `Desbloqueó al usuario: ${correo}`);
+
+                cargarDatosGenerales();
+            }
+        }
+
+        function abrirDetalleDashboard(tipo) {
+            const modal = document.getElementById('modal-filtro-dashboard');
+            const titulo = document.getElementById('modal-filtro-titulo');
+            const tbody = document.getElementById('tbody-modal-filtro');
+            if (!modal || !tbody) return;
+
+            let filtrados = [];
+            let nombreTitulo = '';
+
+            try {
+                if (tipo === 'escalados') {
+                    filtrados = clientesGlobal.filter(c => c && (c.escalado === true || c.escalado === 'true'));
+                    nombreTitulo = 'Casos Escalados Total';
+                } else if (tipo === 'en_proceso') {
+                    filtrados = clientesGlobal.filter(c => c && (c.escalado === true || c.escalado === 'true') && (c.estatus_operaciones === 'EN PROCESO' || c.estatus_operaciones === 'PENDIENTE'));
+                    nombreTitulo = 'Casos En Proceso / Pendientes';
+                } else if (tipo === 'procesados') {
+                    filtrados = clientesGlobal.filter(c => c && (c.escalado === true || c.escalado === 'true') && c.estatus_operaciones === 'PROCESADO');
+                    nombreTitulo = 'Casos Procesados / Cierre';
+                }
+
+                titulo.textContent = `${nombreTitulo} (${filtrados.length} registros)`;
+
+                if (filtrados.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-zinc-500">No hay registros para esta categoría.</td></tr>`;
+                } else {
+                    tbody.innerHTML = filtrados.map(c => {
+                        const estatusOp = c.estatus_operaciones || 'EN PROCESO';
+                        const fechaStr = c.created_at || c.fecha ? new Date(c.created_at || c.fecha).toLocaleDateString() : 'S/F';
+                        return `
+                            <tr class="hover:bg-zinc-900/50 transition">
+                                <td class="p-3 font-mono text-zinc-400">
+                                    <span class="text-amber-400 font-bold block">Ticket: ${c.nro_ticket || 'S/N'}</span>
+                                    <span class="text-[10px] text-zinc-500">${fechaStr}</span>
+                                </td>
+                                <td class="p-3 font-semibold text-white">
+                                    ${c.nombre || 'Sin Nombre'}
+                                    <span class="block text-[11px] font-mono text-zinc-400">CI: ${c.cedula || 'N/A'}</span>
+                                </td>
+                                <td class="p-3 text-zinc-300">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo || 'Consulta'}</span>
+                                    <div class="mt-1 text-zinc-400 text-[11px]">${c.producto || ''} - ${c.subservicio || ''}</div>
+                                </td>
+                                <td class="p-3 text-zinc-300 max-w-xs">
+                                    <div class="bg-zinc-950 p-2 rounded border border-zinc-800 text-xs">${c.observaciones || '-'}</div>
+                                    ${c.respuesta_operaciones ? `<div class="mt-1 text-[10px] text-emerald-400"><strong>Resp:</strong> ${c.respuesta_operaciones}</div>` : ''}
+                                </td>
+                                <td class="p-3 font-bold text-white">
+                                    <span class="px-2 py-1 rounded text-[10px] bg-zinc-800 text-zinc-300">${estatusOp}</span>
+                                </td>
+                            </tr>`;
+                    }).join('');
+                }
+
+                modal.classList.remove('hidden');
+            } catch (err) {
+                console.error("Error al renderizar el detalle del dashboard:", err);
+                alert("Ocurrió un error al cargar los detalles. Revisa la consola (F12).");
+            }
+        }
+
+        function cerrarModalFiltroDashboard() {
+            const modal = document.getElementById('modal-filtro-dashboard');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function switchTab(t) {
+            const esOperaciones = currentUser && currentUser.email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
+            
+            if (esOperaciones) t = 'operaciones-bandeja';
+
+            ['dashboard', 'clientes', 'usuarios', 'auditoria', 'campañas', 'operaciones-bandeja'].forEach(tab => {
+                const sec = document.getElementById(`tab-${tab}`);
+                const nav = document.getElementById(`nav-${tab}`);
+                if (sec) sec.classList.add('hidden');
+                if (nav) nav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition";
+            });
+
+            const activeSec = document.getElementById(`tab-${t}`);
+            const activeNav = document.getElementById(`nav-${t}`);
+            if (activeSec) activeSec.classList.remove('hidden');
+            if (activeNav) activeNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-red-500 bg-red-600/10 border border-red-500/20";
+
+            if (t === 'dashboard') cargarDatosGenerales();
+            if (t === 'clientes') cargarClientes();
+            if (t === 'usuarios') cargarUsuarios();
+            if (t === 'auditoria') refrescarAuditoria(false);
+            if (t === 'operaciones-bandeja') cargarDatosGenerales();
+        }
+
+        function abrirModalCliente() { 
+            const m = document.getElementById('modal-cliente');
+            if (m) m.classList.remove('hidden'); 
+            actualizarSubmenuServicio();
+        }
+        function cerrarModalCliente() { 
+            const m = document.getElementById('modal-cliente');
+            if (m) m.classList.add('hidden'); 
+        }
+        function abrirModalUsuario() { 
+            const m = document.getElementById('modal-usuario');
+            if (m) m.classList.remove('hidden'); 
+        }
+        function cerrarModalUsuario() { 
+            const m = document.getElementById('modal-usuario');
+            if (m) m.classList.add('hidden'); 
+        }
+
+        function exportToExcel(id, name) {
+            XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `${name}.xlsx`);
+        }
+
+        function logout() { location.reload(); }
     </script>
 </body>
 </html>
