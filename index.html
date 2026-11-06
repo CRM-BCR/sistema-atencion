@@ -372,7 +372,7 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Nombre de la Campaña</label>
-                                <input type="text" id="campaña-nombre" placeholder="Ej. Campaña POS Inactivos Q4" class="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
+                                <input type="text" id="campaña-nombre" placeholder="Ej. Campaña POS Inactivos Noviembre" class="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
                             <div>
@@ -1058,7 +1058,7 @@
 
             tbody.innerHTML = campañasGlobal.map(c => {
                 const nombreCamp = c.nombre_campaña || 'Campaña';
-                const nombreCliente = c.nombre_cliente || c.Nombre || 'N/A';
+                const nombreCliente = c.nombre_cliente || c.nombre || c.Nombre || 'N/A';
                 const cedulaRif = c.cedula_rif || c['cedula-Rif'] || c.cedula || 'S/N';
                 const telefono = c.telefono || c.Telefono || '-';
                 const gestorCompleto = c.operador_asignado || c.gestor || '';
@@ -1237,18 +1237,35 @@
                         const operadorAsignado = operadoresSeleccionados[index % totalOperadores];
                         const nombreOperadorLimpio = formatearNombreOperador(operadorAsignado);
 
+                        // Función de búsqueda flexible para nombres de columnas
+                        const obtenerValor = (patrones) => {
+                            const keys = Object.keys(row);
+                            const keyEncontrada = keys.find(k => patrones.some(p => k.toLowerCase().replace(/[^a-z0-9]/g, '').includes(p)));
+                            return keyEncontrada ? row[keyEncontrada] : null;
+                        };
+
+                        const cedulaRifVal = obtenerValor(['cedula', 'rif', 'ci', 'documento']) || 'S/N';
+                        const nombreVal = obtenerValor(['nombre', 'cliente', 'comercio', 'razon']) || 'N/A';
+                        const telefonoVal = obtenerValor(['telefono', 'tlf', 'celular', 'movil']) || '-';
+
                         const rowLimpia = {
                             nombre_campaña: nombreCampaña,
                             operador_asignado: operadorAsignado,
                             gestor: nombreOperadorLimpio,
+                            cedula_rif: String(cedulaRifVal),
+                            nombre_cliente: String(nombreVal),
+                            telefono: String(telefonoVal),
                             estatus: 'PENDIENTE',
                             fecha_gestion: '-',
                             created_at: new Date().toISOString()
                         };
 
+                        // Copiar también el resto de columnas de forma segura
                         Object.keys(row).forEach(key => {
                             const claveSlug = key.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-                            rowLimpia[claveSlug] = row[key];
+                            if (!rowLimpia.hasOwnProperty(claveSlug)) {
+                                rowLimpia[claveSlug] = row[key];
+                            }
                         });
 
                         const { error: insertErr } = await _supabase.from('campañas_crm').insert([rowLimpia]);
