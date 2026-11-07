@@ -42,7 +42,7 @@
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
-                        <input type="email" id="login-email" required placeholder="usuario@bancrecer.com.ve" 
+                        <input type="email" id="login-email" required placeholder="correo@bancrecer.com.ve" value=""
                             class="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm transition">
                     </div>
                 </div>
@@ -53,7 +53,7 @@
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                             <i class="fa-solid fa-lock"></i>
                         </span>
-                        <input type="password" id="login-password" required placeholder="••••••••" 
+                        <input type="password" id="login-password" required placeholder="••••••••" value=""
                             class="w-full pl-10 pr-12 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm placeholder-zinc-600 transition">
                         
                         <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-white transition focus:outline-none cursor-pointer">
@@ -388,7 +388,7 @@
 
                             <div>
                                 <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Archivo Excel (.xlsx / .csv)</label>
-                                <input type="file" id="campaña-file" accept=".xlsx, .xls, .csv" class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 text-xs file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-500 cursor-pointer">
+                                <input type="file" id="campana-file" accept=".xlsx, .xls, .csv" class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 text-xs file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-500 cursor-pointer">
                             </div>
 
                             <button onclick="procesarImportacionCampania()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2 shadow-lg shadow-red-600/30 cursor-pointer">
@@ -616,9 +616,7 @@
                 <button type="button" onclick="cerrarModalFiltroDashboard()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold cursor-pointer">Cerrar</button>
             </div>
         </div>
-    </div>
-
-    <!-- SCRIPTS COMPLETOS DE LÓGICA Y SUPABASE -->
+    </div><!-- SCRIPTS COMPLETOS DE LÓGICA Y SUPABASE -->
     <script>
         const opcionesServicios = {
             "Bdigital": ["Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", "Notificación de Viajes", "OTP no recibido"],
@@ -1154,7 +1152,7 @@
 
         async function procesarImportacionCampania() {
             const nombreCampana = document.getElementById('campaña-nombre').value.trim();
-            const fileInput = document.getElementById('campaña-file');
+            const fileInput = document.getElementById('campana-file');
             
             const checkboxes = document.querySelectorAll('input[name="op-campania-chk"]:checked');
             const operadoresSeleccionados = Array.from(checkboxes).map(chk => chk.value);
@@ -1182,7 +1180,21 @@
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
                     
-                    const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+                    // Lector robusto dual: sheet_to_json estándar con respaldo de matriz
+                    let rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+                    if (!rows || rows.length === 0) {
+                        const rawArray = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        if (rawArray.length > 1) {
+                            const headers = rawArray[0];
+                            rows = rawArray.slice(1).map(r => {
+                                let obj = {};
+                                headers.forEach((h, i) => {
+                                    obj[h || `Col_${i+1}`] = r[i] !== undefined ? r[i] : "";
+                                });
+                                return obj;
+                            });
+                        }
+                    }
 
                     if (!rows || rows.length === 0) {
                         alert('El archivo Excel está vacío o no tiene registros válidos.');
