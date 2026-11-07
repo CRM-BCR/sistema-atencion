@@ -372,7 +372,7 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Nombre de la Campaña</label>
-                                <input type="text" id="campaña-nombre" placeholder="Ej. Campaña POS Inactivos Noviembre" class="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
+                                <input type="text" id="campana-nombre" placeholder="Ej. Campaña POS Inactivos Noviembre" class="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
                             </div>
 
                             <div>
@@ -387,10 +387,10 @@
 
                             <div>
                                 <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Archivo Excel (.xlsx / .csv)</label>
-                                <input type="file" id="campaña-file" accept=".xlsx, .xls, .csv" class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 text-xs file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-500 cursor-pointer">
+                                <input type="file" id="campana-file" accept=".xlsx, .xls, .csv" class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 text-xs file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-500 cursor-pointer">
                             </div>
 
-                            <button onclick="procesarImportacionCampania()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2 shadow-lg shadow-red-600/30">
+                            <button onclick="procesarImportacionCampana()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2 shadow-lg shadow-red-600/30">
                                 <i class="fa-solid fa-upload"></i>
                                 <span>Importar y Distribuir Registros</span>
                             </button>
@@ -408,15 +408,15 @@
                                 <h3 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-list-check mr-2"></i> Mis Prospectos Asignados</h3>
                                 <p class="text-xs text-zinc-400">Listado oficial de la campaña asignada (columnas idénticas al archivo Excel original).</p>
                             </div>
-                            <button onclick="cargarCampañas()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition">Actualizar Lista</button>
+                            <button onclick="cargarCampanas()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition">Actualizar Lista</button>
                         </div>
 
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
-                                <thead id="thead-operador-campañas" class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
+                                <thead id="thead-operador-campanas" class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
                                     <!-- Dinámico con nombres exactos del Excel -->
                                 </thead>
-                                <tbody id="tbody-operador-campañas" class="divide-y divide-zinc-800 text-zinc-300">
+                                <tbody id="tbody-operador-campanas" class="divide-y divide-zinc-800 text-zinc-300">
                                     <tr><td class="p-6 text-center text-zinc-500">No tienes prospectos asignados en este momento.</td></tr>
                                 </tbody>
                             </table>
@@ -789,7 +789,7 @@
                 usuariosGlobal = usuariosData || [];
 
                 configurarMenuLateral(data.user.email);
-                poblarCheckboxesOperadoresCampania();
+                poblarCheckboxesOperadoresCampana();
                 registrarAuditoria(data.user.email, 'EXITOSO', 'Ingreso al sistema autorizado');
 
                 setTimeout(() => {
@@ -885,7 +885,7 @@
                 const { data: clientes } = await _supabase.from('clientes_crm').select('*');
                 const { data: usuarios } = await _supabase.from('usuarios_crm').select('*');
                 await refrescarAuditoria(false);
-                await cargarCampañas();
+                await cargarCampanas();
 
                 clientesGlobal = clientes || [];
                 usuariosGlobal = usuarios || [];
@@ -962,21 +962,21 @@
             checkboxes.forEach(chk => chk.checked = marcar);
         }
 
-        async function cargarCampañas() {
+        async function cargarCampanas() {
             try {
                 const { data, error } = await _supabase.from('campanas_crm').select('*');
                 if (error) {
-                    console.error("Error al cargar campañas desde Supabase:", error);
+                    console.error("Error al cargar campanas desde Supabase:", error);
                     return;
                 }
                 campanasGlobal = data || [];
-                actualizarInterfazCampañas();
+                actualizarInterfazCampanas();
             } catch (err) {
                 console.warn("Error en la conexión de campañas:", err);
             }
         }
 
-        function actualizarInterfazCampañas() {
+        function actualizarInterfazCampanas() {
             const emailUser = currentUser ? currentUser.email.toLowerCase().trim() : '';
             const esOperaciones = emailUser === 'operaciones.atu@bancrecer.com.ve';
             
@@ -1001,12 +1001,12 @@
                 if (adminPanel) adminPanel.classList.add('hidden');
                 if (operadorPanel) operadorPanel.classList.remove('hidden');
 
-                const misCampañas = campanasGlobal.filter(c => {
+                const misCampanas = campanasGlobal.filter(c => {
                     const opAsignado = (c.operador_asignado || c.gestor || '').toLowerCase().trim();
                     return opAsignado === emailUser;
                 });
 
-                const pendientes = misCampañas.filter(c => (c.estatus || 'PENDIENTE').toUpperCase().trim() === 'PENDIENTE');
+                const pendientes = misCampanas.filter(c => (c.estatus || 'PENDIENTE').toUpperCase().trim() === 'PENDIENTE');
 
                 if (badgeCampañas) {
                     if (pendientes.length > 0) {
@@ -1017,14 +1017,14 @@
                     }
                 }
 
-                renderCampañasOperadorTab(misCampañas);
+                renderCampanasOperadorTab(misCampanas);
             }
         }
 
-        function renderCampañasOperadorTab(lista) {
+        function renderCampanasOperadorTab(lista) {
             const containerMinidashboard = document.getElementById('operador-minidashboard');
-            const tbody = document.getElementById('tbody-operador-campañas');
-            const thead = document.getElementById('thead-operador-campañas');
+            const tbody = document.getElementById('tbody-operador-campanas');
+            const thead = document.getElementById('thead-operador-campanas');
             if (!tbody || !thead) return;
 
             const totalAsignados = lista.length;
@@ -1106,7 +1106,7 @@
 
                 return `
                     <tr class="hover:bg-zinc-900/50 transition">
-                        <td class="p-3 font-bold text-white">${c.nombre_campaña || 'Campaña'}</td>
+                        <td class="p-3 font-bold text-white">${c.nombre_campana || 'Campaña'}</td>
                         ${celdasHTML}
                         <td class="p-3 font-mono text-xs text-amber-400" id="lbl-fecha-${c.id}">${fechaGestion}</td>
                         <td class="p-3">
@@ -1144,19 +1144,19 @@
                 return;
             }
 
-            await registrarAuditoria(currentUser.email, 'ACCION', `Gestionó prospecto de campaña "${campItem.nombre_campaña}" - Estatus: ${estatus}`);
+            await registrarAuditoria(currentUser.email, 'ACCION', `Gestionó prospecto de campaña "${campItem.nombre_campana}" - Estatus: ${estatus}`);
             alert('¡Gestión guardada correctamente con su fecha!');
-            cargarCampañas();
+            cargarCampanas();
         }
 
         async function procesarImportacionCampania() {
-            const nombreCampaña = document.getElementById('campaña-nombre').value.trim();
-            const fileInput = document.getElementById('campaña-file');
+            const nombreCampana = document.getElementById('campana-nombre').value.trim();
+            const fileInput = document.getElementById('campana-file');
             
             const checkboxes = document.querySelectorAll('input[name="op-campania-chk"]:checked');
             const operadoresSeleccionados = Array.from(checkboxes).map(chk => chk.value);
 
-            if (!nombreCampaña) {
+            if (!nombreCampana) {
                 alert('Por favor ingresa un nombre para la campaña.');
                 return;
             }
@@ -1179,13 +1179,14 @@
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
                     
-                    const rawHeaderRow = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0];
-                    const rows = XLSX.utils.sheet_to_json(worksheet);
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
-                    if (rows.length === 0 || !rawHeaderRow) {
-                        alert('El archivo Excel está vacío o no tiene cabeceras válidas.');
+                    if (!rows || rows.length === 0) {
+                        alert('El archivo Excel está vacío o no tiene registros válidos.');
                         return;
                     }
+
+                    const rawHeaderRow = Object.keys(rows[0]);
 
                     let registrosImportados = 0;
                     const totalOperadores = operadoresSeleccionados.length;
@@ -1196,7 +1197,7 @@
                         const nombreOperadorLimpio = formatearNombreOperador(operadorAsignado);
 
                         const rowLimpia = {
-                            nombre_campaña: nombreCampaña,
+                            nombre_campana: nombreCampana,
                             operador_asignado: operadorAsignado,
                             gestor: nombreOperadorLimpio,
                             estatus: 'PENDIENTE',
@@ -1215,11 +1216,11 @@
                     }
 
                     alert(`¡Campaña importada con éxito! Se distribuyeron ${registrosImportados} registros equitativamente entre ${totalOperadores} operadores.`);
-                    document.getElementById('campaña-nombre').value = '';
+                    document.getElementById('campana-nombre').value = '';
                     fileInput.value = '';
                     marcarTodosOperadores(false);
-                    cargarCampañas();
-                    registrarAuditoria(currentUser.email, 'ACCION', `Importó campaña "${nombreCampaña}" con ${registrosImportados} registros`);
+                    cargarCampanas();
+                    registrarAuditoria(currentUser.email, 'ACCION', `Importó campaña "${nombreCampana}" con ${registrosImportados} registros`);
 
                 } catch (err) {
                     console.error("Error al procesar el archivo Excel:", err);
@@ -1821,7 +1822,7 @@
             if (t === 'clientes') cargarClientes();
             if (t === 'usuarios') cargarUsuarios();
             if (t === 'auditoria') refrescarAuditoria(false);
-            if (t === 'campañas') cargarCampañas();
+            if (t === 'campañas') cargarCampanas();
             if (t === 'operaciones-bandeja') cargarDatosGenerales();
         }
 
