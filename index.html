@@ -355,7 +355,7 @@
                 </div>
             </section>
 
-            <!-- 5. CAMPAÑAS (PANEL ADMIN Y MINIDASHBOARD OPERADOR EXCLUSIVO AQUÍ) -->
+            <!-- 5. CAMPAÑAS -->
             <section id="tab-campañas" class="hidden space-y-6">
                 <div class="flex items-center justify-between">
                     <div>
@@ -364,10 +364,10 @@
                     </div>
                 </div>
 
-                <!-- PANEL EXCLUSIVO PARA ADMINISTRADOR -->
-                <div id="admin-campaña-panel" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- PANEL ADMIN -->
+                <div id="admin-campaña-panel" class="hidden max-w-xl mx-auto">
                     <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
-                        <h3 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-file-excel mr-2"></i> Importar Base de Excel</h3>
+                        <h3 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-file-excel mr-2"></i> Importar Base de Excel para Campaña</h3>
                         
                         <div class="space-y-4">
                             <div>
@@ -396,42 +396,17 @@
                             </button>
                         </div>
                     </div>
-
-                    <div class="lg:col-span-2 bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-sm font-bold uppercase text-zinc-300"><i class="fa-solid fa-bullhorn text-red-500 mr-2"></i> Campañas Activas y Asignaciones</h3>
-                            <button onclick="cargarCampañas()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition">Actualizar</button>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs">
-                                <thead class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
-                                    <tr>
-                                        <th class="p-3">Campaña</th>
-                                        <th class="p-3">Cliente / Cédula-RIF</th>
-                                        <th class="p-3">Teléfono</th>
-                                        <th class="p-3">Gestor / Operador Asignado</th>
-                                        <th class="p-3">Estatus</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbody-campañas" class="divide-y divide-zinc-800 text-zinc-300">
-                                    <tr><td colspan="5" class="p-4 text-center text-zinc-500">No hay registros de campañas importadas.</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- PANEL EXCLUSIVO PARA OPERADOR (CON MINIDASHBOARD ARRIBA Y LISTA EXACTA DEL EXCEL) -->
+                <!-- PANEL OPERADOR -->
                 <div id="operador-campaña-panel" class="hidden space-y-6">
-                    <!-- Aquí vive el minidashboard exclusivo del operador -->
                     <div id="operador-minidashboard"></div>
 
                     <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
                         <div class="flex items-center justify-between">
                             <div>
                                 <h3 class="text-sm font-bold uppercase text-red-400"><i class="fa-solid fa-list-check mr-2"></i> Mis Prospectos Asignados</h3>
-                                <p class="text-xs text-zinc-400">Listado oficial de la campaña asignada con los campos originales del archivo.</p>
+                                <p class="text-xs text-zinc-400">Listado oficial de la campaña asignada (columnas idénticas al archivo Excel original).</p>
                             </div>
                             <button onclick="cargarCampañas()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition">Actualizar Lista</button>
                         </div>
@@ -439,7 +414,7 @@
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
                                 <thead id="thead-operador-campañas" class="bg-zinc-900 border-b border-zinc-800 text-zinc-400 uppercase font-semibold">
-                                    <!-- Dinámico según columnas del Excel -->
+                                    <!-- Dinámico con nombres exactos del Excel -->
                                 </thead>
                                 <tbody id="tbody-operador-campañas" class="divide-y divide-zinc-800 text-zinc-300">
                                     <tr><td class="p-6 text-center text-zinc-500">No tienes prospectos asignados en este momento.</td></tr>
@@ -744,7 +719,7 @@
         let auditoriaGlobal = [];
         let usuariosGlobal = [];
         let bloqueadosGlobal = [];
-        let campañasGlobal = [];
+        let campanasGlobal = [];
         let chartMotivos = null;
         let chartCanales = null;
         let chartUsuariosEstatus = null;
@@ -989,12 +964,12 @@
 
         async function cargarCampañas() {
             try {
-                const { data, error } = await _supabase.from('campañas_crm').select('*');
+                const { data, error } = await _supabase.from('campanas_crm').select('*');
                 if (error) {
                     console.error("Error al cargar campañas desde Supabase:", error);
                     return;
                 }
-                campañasGlobal = data || [];
+                campanasGlobal = data || [];
                 actualizarInterfazCampañas();
             } catch (err) {
                 console.warn("Error en la conexión de campañas:", err);
@@ -1022,12 +997,11 @@
                 if (adminPanel) adminPanel.classList.remove('hidden');
                 if (operadorPanel) operadorPanel.classList.add('hidden');
                 if (badgeCampañas) badgeCampañas.classList.add('hidden');
-                renderCampañasAdminTab();
             } else {
                 if (adminPanel) adminPanel.classList.add('hidden');
                 if (operadorPanel) operadorPanel.classList.remove('hidden');
 
-                const misCampañas = campañasGlobal.filter(c => {
+                const misCampañas = campanasGlobal.filter(c => {
                     const opAsignado = (c.operador_asignado || c.gestor || '').toLowerCase().trim();
                     return opAsignado === emailUser;
                 });
@@ -1045,36 +1019,6 @@
 
                 renderCampañasOperadorTab(misCampañas);
             }
-        }
-
-        function renderCampañasAdminTab() {
-            const tbody = document.getElementById('tbody-campañas');
-            if (!tbody) return;
-
-            if (campañasGlobal.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-zinc-500">No hay registros de campañas importadas.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = campañasGlobal.map(c => {
-                const nombreCamp = c.nombre_campaña || 'Campaña';
-                const nombreCliente = c.nombre_cliente || c.nombre || c.Nombre || 'N/A';
-                const cedulaRif = c.cedula_rif || c['cedula-Rif'] || c.cedula || 'S/N';
-                const telefono = c.telefono || c.Telefono || '-';
-                const gestorCompleto = c.operador_asignado || c.gestor || '';
-                const gestorNombre = formatearNombreOperador(gestorCompleto);
-                const estatus = c.estatus || 'PENDIENTE';
-
-                return `
-                    <tr class="hover:bg-zinc-900/50 transition">
-                        <td class="p-3 font-bold text-white">${nombreCamp}</td>
-                        <td class="p-3 font-mono text-zinc-300">${nombreCliente} <span class="text-[10px] text-zinc-500 block">CI-RIF: ${cedulaRif}</span></td>
-                        <td class="p-3 text-zinc-400">${telefono}</td>
-                        <td class="p-3 text-red-400 font-semibold">${gestorNombre}</td>
-                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">${estatus}</span></td>
-                    </tr>
-                `;
-            }).join('');
         }
 
         function renderCampañasOperadorTab(lista) {
@@ -1123,14 +1067,24 @@
             }
 
             const primerItem = lista[0];
-            const camposOmitidos = ['id', 'created_at', 'nombre_campaña', 'operador_asignado', 'gestor', 'gestion', 'motivo', 'estatus', 'fecha_gestion', 'observaciones_gestion'];
-            
-            const columnasExcel = Object.keys(primerItem).filter(k => !camposOmitidos.includes(k));
+            let columnasOriginales = [];
+            try {
+                if (Array.isArray(primerItem.columnas_excel)) {
+                    columnasOriginales = primerItem.columnas_excel;
+                } else if (typeof primerItem.columnas_excel === 'string') {
+                    columnasOriginales = JSON.parse(primerItem.columnas_excel);
+                }
+            } catch (err) {
+                columnasOriginales = [];
+            }
+
+            if (columnasOriginales.length === 0 && primerItem.datos) {
+                columnasOriginales = Object.keys(primerItem.datos);
+            }
 
             let headHTML = `<tr><th class="p-3">Campaña</th>`;
-            columnasExcel.forEach(col => {
-                const nombreBonito = col.replace(/_/g, ' ').toUpperCase();
-                headHTML += `<th class="p-3">${nombreBonito}</th>`;
+            columnasOriginales.forEach(col => {
+                headHTML += `<th class="p-3">${col}</th>`;
             });
             headHTML += `
                 <th class="p-3">Fecha Gestión</th>
@@ -1142,16 +1096,18 @@
             tbody.innerHTML = lista.map(c => {
                 const estatusActual = c.estatus || 'PENDIENTE';
                 const fechaGestion = c.fecha_gestion || '-';
+                const datosRow = c.datos || {};
 
-                let celdasExcelHTML = '';
-                columnasExcel.forEach(col => {
-                    celdasExcelHTML += `<td class="p-3 text-zinc-300 font-mono">${c[col] !== undefined && c[col] !== null ? c[col] : '-'}</td>`;
+                let celdasHTML = '';
+                columnasOriginales.forEach(col => {
+                    const valorCelda = datosRow[col] !== undefined ? datosRow[col] : '-';
+                    celdasHTML += `<td class="p-3 text-zinc-300 font-mono">${valorCelda}</td>`;
                 });
 
                 return `
                     <tr class="hover:bg-zinc-900/50 transition">
                         <td class="p-3 font-bold text-white">${c.nombre_campaña || 'Campaña'}</td>
-                        ${celdasExcelHTML}
+                        ${celdasHTML}
                         <td class="p-3 font-mono text-xs text-amber-400" id="lbl-fecha-${c.id}">${fechaGestion}</td>
                         <td class="p-3">
                             <select id="camp-estatus-${c.id}" class="w-full p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-[11px] font-bold outline-none">
@@ -1173,7 +1129,7 @@
             const estatus = document.getElementById(`camp-estatus-${id}`).value;
             const fechaHoy = new Date().toISOString().split('T')[0];
 
-            const campItem = campañasGlobal.find(c => c.id === id);
+            const campItem = campanasGlobal.find(c => c.id === id);
             if (!campItem) return;
 
             const payloadCampania = {
@@ -1181,7 +1137,7 @@
                 fecha_gestion: fechaHoy
             };
 
-            const { error: errCamp } = await _supabase.from('campañas_crm').update(payloadCampania).eq('id', id);
+            const { error: errCamp } = await _supabase.from('campanas_crm').update(payloadCampania).eq('id', id);
             
             if (errCamp) {
                 alert('Error al actualizar la campaña: ' + errCamp.message);
@@ -1222,10 +1178,12 @@
                     const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    const rawHeaderRow = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0];
                     const rows = XLSX.utils.sheet_to_json(worksheet);
 
-                    if (rows.length === 0) {
-                        alert('El archivo Excel está vacío.');
+                    if (rows.length === 0 || !rawHeaderRow) {
+                        alert('El archivo Excel está vacío o no tiene cabeceras válidas.');
                         return;
                     }
 
@@ -1237,38 +1195,18 @@
                         const operadorAsignado = operadoresSeleccionados[index % totalOperadores];
                         const nombreOperadorLimpio = formatearNombreOperador(operadorAsignado);
 
-                        // Función de búsqueda flexible para nombres de columnas
-                        const obtenerValor = (patrones) => {
-                            const keys = Object.keys(row);
-                            const keyEncontrada = keys.find(k => patrones.some(p => k.toLowerCase().replace(/[^a-z0-9]/g, '').includes(p)));
-                            return keyEncontrada ? row[keyEncontrada] : null;
-                        };
-
-                        const cedulaRifVal = obtenerValor(['cedula', 'rif', 'ci', 'documento']) || 'S/N';
-                        const nombreVal = obtenerValor(['nombre', 'cliente', 'comercio', 'razon']) || 'N/A';
-                        const telefonoVal = obtenerValor(['telefono', 'tlf', 'celular', 'movil']) || '-';
-
                         const rowLimpia = {
                             nombre_campaña: nombreCampaña,
                             operador_asignado: operadorAsignado,
                             gestor: nombreOperadorLimpio,
-                            cedula_rif: String(cedulaRifVal),
-                            nombre_cliente: String(nombreVal),
-                            telefono: String(telefonoVal),
                             estatus: 'PENDIENTE',
                             fecha_gestion: '-',
+                            columnas_excel: rawHeaderRow,
+                            datos: row,
                             created_at: new Date().toISOString()
                         };
 
-                        // Copiar también el resto de columnas de forma segura
-                        Object.keys(row).forEach(key => {
-                            const claveSlug = key.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-                            if (!rowLimpia.hasOwnProperty(claveSlug)) {
-                                rowLimpia[claveSlug] = row[key];
-                            }
-                        });
-
-                        const { error: insertErr } = await _supabase.from('campañas_crm').insert([rowLimpia]);
+                        const { error: insertErr } = await _supabase.from('campanas_crm').insert([rowLimpia]);
                         if (insertErr) {
                             console.error("Error insertando registro:", insertErr.message);
                         } else {
