@@ -42,7 +42,7 @@
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
-                        <input type="email" id="login-email" required placeholder="correo@bancrecer.com.ve" value=""
+                        <input type="email" id="login-email" required placeholder="" value="" 
                             class="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm transition">
                     </div>
                 </div>
@@ -1180,7 +1180,6 @@
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
                     
-                    // Lector robusto dual: sheet_to_json estándar con respaldo de matriz
                     let rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
                     if (!rows || rows.length === 0) {
                         const rawArray = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
