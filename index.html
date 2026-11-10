@@ -42,7 +42,6 @@
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
-                        <!-- Campo de correo totalmente limpio -->
                         <input type="email" id="login-email" required placeholder="" value=""
                             class="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm transition">
                     </div>
@@ -461,9 +460,7 @@
                 </div>
             </section>
         </main>
-    </div>
-
-    <!-- MODALES -->
+    </div><!-- MODALES -->
     <div id="modal-cliente" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 p-4">
         <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl">
             <h2 class="text-lg font-bold text-white">Registrar Gestión de Cliente</h2>
@@ -617,7 +614,9 @@
                 <button type="button" onclick="cerrarModalFiltroDashboard()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold cursor-pointer">Cerrar</button>
             </div>
         </div>
-    </div><!-- SCRIPTS COMPLETOS DE LÓGICA Y SUPABASE -->
+    </div>
+
+    <!-- SCRIPTS COMPLETOS DE LÓGICA Y SUPABASE -->
     <script>
         const opcionesServicios = {
             "Bdigital": ["Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", "Notificación de Viajes", "OTP no recibido"],
@@ -912,8 +911,12 @@
 
         async function cargarDatosGenerales() {
             try {
-                const { data: clientes } = await _supabase.from('clientes_crm').select('*');
-                const { data: usuarios } = await _supabase.from('usuarios_crm').select('*');
+                const { data: clientes, error: errClientes } = await _supabase.from('clientes_crm').select('*');
+                if (errClientes) console.error("Error al consultar clientes_crm:", errClientes.message);
+
+                const { data: usuarios, error: errUsuarios } = await _supabase.from('usuarios_crm').select('*');
+                if (errUsuarios) console.error("Error al consultar usuarios_crm:", errUsuarios.message);
+
                 await refrescarAuditoria(false);
                 await cargarCampanas();
 
@@ -932,13 +935,14 @@
                     cargarUsuarios();
                 }
             } catch (err) {
-                console.error("Error general:", err);
+                console.error("Error general al cargar datos:", err);
             }
         }
 
         async function cargarBloqueados() {
             try {
-                const { data } = await _supabase.from('usuarios_bloqueados').select('*');
+                const { data, error } = await _supabase.from('usuarios_bloqueados').select('*');
+                if (error) console.error("Error al consultar usuarios_bloqueados:", error.message);
                 bloqueadosGlobal = data || [];
             } catch (err) {
                 bloqueadosGlobal = [];
@@ -968,7 +972,7 @@
             try {
                 const { data, error } = await _supabase.from('campanas_crm').select('*');
                 if (error) {
-                    console.error("Error al cargar campanas desde Supabase:", error);
+                    console.error("Error al cargar campanas desde Supabase:", error.message);
                     return;
                 }
                 campanasGlobal = data || [];
@@ -1281,9 +1285,9 @@
 
             if (elTotalReg) elTotalReg.textContent = clientes.length;
 
-            const totalEscalados = clientes.filter(c => c.escalado === true || c.escalado === 'true').length;
-            const enProceso = clientes.filter(c => (c.escalado === true || c.escalado === 'true') && (c.estatus_operaciones === 'EN PROCESO' || c.estatus_operaciones === 'PENDIENTE')).length;
-            const procesados = clientes.filter(c => (c.escalado === true || c.escalado === 'true') && c.estatus_operaciones === 'PROCESADO').length;
+            const totalEscalados = clientes.filter(c => c.escalado === true || c.escalado === 'true' || c.escalado === 'SI' || c.escalado === 'Si').length;
+            const enProceso = clientes.filter(c => (c.escalado === true || c.escalado === 'true' || c.escalado === 'SI' || c.escalado === 'Si') && (c.estatus_operaciones === 'EN PROCESO' || c.estatus_operaciones === 'PENDIENTE')).length;
+            const procesados = clientes.filter(c => (c.escalado === true || c.escalado === 'true' || c.escalado === 'SI' || c.escalado === 'Si') && c.estatus_operaciones === 'PROCESADO').length;
 
             if (elTotalEsc) elTotalEsc.textContent = totalEscalados;
             if (elEnProc) elEnProc.textContent = enProceso;
@@ -1403,13 +1407,13 @@
             const tbody = document.getElementById('tbody-clientes');
             if (!tbody) return;
 
-            if (lista.length === 0) {
+            if (!lista || lista.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="11" class="p-4 text-center text-zinc-500">Sin resultados disponibles.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = lista.map(c => {
-                const esEscalado = c.escalado === true || c.escalado === 'true';
+                const esEscalado = c.escalado === true || c.escalado === 'true' || c.escalado === 'SI' || c.escalado === 'Si';
                 const ticketBadge = esEscalado ? `<span class="text-amber-400 font-mono text-[11px] font-bold block"><i class="fa-solid fa-ticket mr-1"></i>Ticket: ${c.nro_ticket || 'S/N'}</span>` : '';
                 const estatusOp = c.estatus_operaciones || (esEscalado ? 'EN PROCESO' : 'N/A');
                 
@@ -1419,20 +1423,22 @@
                 if (estatusOp === 'PROCESADO') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
                 if (estatusOp === 'DADO DE BAJA') badgeColor = 'bg-red-500/10 text-red-400 border border-red-500/20';
 
+                const fechaStr = c.created_at || c.fecha ? new Date(c.created_at || c.fecha).toLocaleDateString() : 'S/F';
+
                 return `
                     <tr class="hover:bg-zinc-900/50 transition">
-                        <td class="p-4 font-mono text-zinc-400">${new Date(c.created_at || c.fecha || Date.now()).toLocaleDateString()}</td>
+                        <td class="p-4 font-mono text-zinc-400">${fechaStr}</td>
                         <td class="p-4 font-mono text-white">
-                            ${c.cedula}
+                            ${c.cedula || 'N/A'}
                             ${ticketBadge}
                         </td>
-                        <td class="p-4 font-semibold text-white">${c.nombre}</td>
-                        <td class="p-4 text-zinc-400">${c.telefono}</td>
+                        <td class="p-4 font-semibold text-white">${c.nombre || 'Sin Nombre'}</td>
+                        <td class="p-4 text-zinc-400">${c.telefono || '-'}</td>
                         <td class="p-4">
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">${c.canal || 'Llamada'}</span>
                             <span class="block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo || 'Consulta'}</span>
                         </td>
-                        <td class="p-4 text-zinc-300">${c.producto} <br><span class="text-[10px] text-zinc-500">${c.subservicio || ''}</span></td>
+                        <td class="p-4 text-zinc-300">${c.producto || '-'} <br><span class="text-[10px] text-zinc-500">${c.subservicio || ''}</span></td>
                         <td class="p-4 text-zinc-400 max-w-xs" title="${c.observaciones || ''}">
                             <div class="truncate">${c.observaciones || '-'}</div>
                             ${c.respuesta_operaciones ? `<div class="mt-1 text-[11px] text-emerald-400 bg-emerald-500/10 p-1.5 rounded border border-emerald-500/20"><strong>Op:</strong> ${c.respuesta_operaciones}</div>` : ''}
@@ -1467,7 +1473,7 @@
             const tbody = document.getElementById('tbody-operaciones');
             if (!tbody) return;
 
-            const escalados = lista.filter(c => c.escalado === true || c.escalado === 'true');
+            const escalados = lista.filter(c => c.escalado === true || c.escalado === 'true' || c.escalado === 'SI' || c.escalado === 'Si');
 
             if (escalados.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-zinc-500">No hay casos escalados a operaciones en este momento.</td></tr>`;
@@ -1481,19 +1487,21 @@
                 if (estatusOp === 'PROCESADO') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
                 if (estatusOp === 'DADO DE BAJA') badgeColor = 'bg-red-500/10 text-red-400 border border-red-500/20';
 
+                const fechaStr = c.created_at || c.fecha ? new Date(c.created_at || c.fecha).toLocaleString() : 'S/F';
+
                 return `
                     <tr class="hover:bg-zinc-900/50 transition">
                         <td class="p-4 font-mono text-zinc-400">
                             <span class="text-amber-400 font-bold block"><i class="fa-solid fa-ticket mr-1"></i>Ticket: ${c.nro_ticket || 'S/N'}</span>
-                            <span class="text-[10px] text-zinc-500">${new Date(c.created_at || c.fecha || Date.now()).toLocaleString()}</span>
+                            <span class="text-[10px] text-zinc-500">${fechaStr}</span>
                         </td>
                         <td class="p-4 font-semibold text-white">
-                            ${c.nombre}
-                            <span class="block text-[11px] font-mono text-zinc-400">CI: ${c.cedula} | Tel: ${c.telefono}</span>
+                            ${c.nombre || 'Sin Nombre'}
+                            <span class="block text-[11px] font-mono text-zinc-400">CI: ${c.cedula || 'N/A'} | Tel: ${c.telefono || '-'}</span>
                         </td>
                         <td class="p-4 text-zinc-300">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo}</span>
-                            <div class="mt-1 text-zinc-400 text-[11px]">${c.producto} - ${c.subservicio || ''}</div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo || 'Consulta'}</span>
+                            <div class="mt-1 text-zinc-400 text-[11px]">${c.producto || ''} - ${c.subservicio || ''}</div>
                         </td>
                         <td class="p-4 text-zinc-300 max-w-xs">
                             <div class="bg-zinc-900 p-2 rounded-lg border border-zinc-800 text-xs">${c.observaciones || 'Sin observaciones detalladas'}</div>
@@ -1551,8 +1559,8 @@
 
             const filtro = inputBuscar.value.toLowerCase();
             const filtrados = clientesGlobal.filter(c => 
-                c.cedula.toLowerCase().includes(filtro) || 
-                c.nombre.toLowerCase().includes(filtro) ||
+                (c.cedula && c.cedula.toLowerCase().includes(filtro)) || 
+                (c.nombre && c.nombre.toLowerCase().includes(filtro)) ||
                 (c.nro_ticket && c.nro_ticket.toLowerCase().includes(filtro))
             );
             renderClientes(filtrados);
@@ -1603,6 +1611,7 @@
 
             const { data, error } = await _supabase.from('usuarios_crm').select('*');
             if (error || !data) {
+                console.error("Error cargando usuarios:", error ? error.message : "Sin datos");
                 tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-zinc-500">No se pudieron cargar los usuarios.</td></tr>`;
                 return;
             }
@@ -1773,13 +1782,13 @@
 
             try {
                 if (tipo === 'escalados') {
-                    filtrados = clientesGlobal.filter(c => c && (c.escalado === true || c.escalado === 'true'));
+                    filtrados = clientesGlobal.filter(c => c && (c.escalado === true || c.escalado === 'true' || c.escalado === 'SI' || c.escalado === 'Si'));
                     nombreTitulo = 'Casos Escalados Total';
                 } else if (tipo === 'en_proceso') {
-                    filtrados = clientesGlobal.filter(c => c && (c.escalado === true || c.escalado === 'true') && (c.estatus_operaciones === 'EN PROCESO' || c.estatus_operaciones === 'PENDIENTE'));
+                    filtrados = clientesGlobal.filter(c => c && (c.escalado === true || c.escalado === 'true' || c.escalado === 'SI' || c.escalado === 'Si') && (c.estatus_operaciones === 'EN PROCESO' || c.estatus_operaciones === 'PENDIENTE'));
                     nombreTitulo = 'Casos En Proceso / Pendientes';
                 } else if (tipo === 'procesados') {
-                    filtrados = clientesGlobal.filter(c => c && (c.escalado === true || c.escalado === 'true') && c.estatus_operaciones === 'PROCESADO');
+                    filtrados = clientesGlobal.filter(c => c && (c.escalado === true || c.escalado === 'true' || c.escalado === 'SI' || c.escalado === 'Si') && c.estatus_operaciones === 'PROCESADO');
                     nombreTitulo = 'Casos Procesados / Cierre';
                 }
 
