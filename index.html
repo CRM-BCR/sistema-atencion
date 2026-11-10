@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM Call Center - Bancrecer</title>
+    <title>CRM Call Center - Bancrecer (Pruebas)</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -32,7 +32,7 @@
                     <i class="fa-solid fa-headset text-3xl"></i>
                 </div>
                 <h1 class="text-2xl font-bold text-white tracking-wide">CRM Call Center</h1>
-                <p class="text-xs text-zinc-400 mt-1">Bancrecer - Atención Telefónica y Operaciones</p>
+                <p class="text-xs text-zinc-400 mt-1">Bancrecer - Entorno de Pruebas (.NET / API)</p>
             </div>
 
             <form id="login-form" class="space-y-5">
@@ -42,7 +42,8 @@
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
-                        <input type="email" id="login-email" required placeholder="correo@bancrecer.com.ve" 
+                        <!-- Campo de correo totalmente limpio -->
+                        <input type="email" id="login-email" required placeholder="" value=""
                             class="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm transition">
                     </div>
                 </div>
@@ -53,7 +54,7 @@
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                             <i class="fa-solid fa-lock"></i>
                         </span>
-                        <input type="password" id="login-password" required placeholder="••••••••"
+                        <input type="password" id="login-password" required placeholder="••••••••" value=""
                             class="w-full pl-10 pr-12 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm placeholder-zinc-600 transition">
                         
                         <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-white transition focus:outline-none cursor-pointer">
@@ -81,13 +82,13 @@
                         <i class="fa-solid fa-headset"></i>
                     </div>
                     <div>
-                        <h2 class="font-bold text-white leading-none">CRM</h2>
+                        <h2 class="font-bold text-white leading-none">CRM Pruebas</h2>
                         <span class="text-[10px] uppercase tracking-wider text-red-500 font-semibold">Call Center</span>
                     </div>
                 </div>
                 
                 <nav class="space-y-1" id="sidebar-nav">
-                    <!-- Dinámico según el rol -->
+                    <!-- Dinámico según rol -->
                 </nav>
             </div>
             <div class="pt-4 border-t border-zinc-800/80">
@@ -107,7 +108,7 @@
             <section id="tab-dashboard" class="space-y-6">
                 <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div>
-                        <h1 class="text-2xl font-bold text-white">Resumen General de Operaciones</h1>
+                        <h1 class="text-2xl font-bold text-white">Resumen General de Operaciones (Pruebas)</h1>
                         <p class="text-xs text-zinc-400">Métricas y estadísticas de gestión telefónica y escalamientos.</p>
                     </div>
                     
@@ -616,7 +617,7 @@
                 <button type="button" onclick="cerrarModalFiltroDashboard()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold cursor-pointer">Cerrar</button>
             </div>
         </div>
-    </div><!-- SCRIPT DE LÓGICA Y FUNCIONES AUXILIARES -->
+    </div><!-- SCRIPTS COMPLETOS DE LÓGICA Y SUPABASE -->
     <script>
         const opcionesServicios = {
             "Bdigital": ["Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", "Notificación de Viajes", "OTP no recibido"],
@@ -644,10 +645,13 @@
             clientesGlobal.forEach(c => {
                 if (c.nro_ticket) {
                     const num = parseInt(c.nro_ticket, 10);
-                    if (!isNaN(num) && num > maxNum) maxNum = num;
+                    if (!isNaN(num) && num > maxNum) {
+                        maxNum = num;
+                    }
                 }
             });
-            return String(maxNum + 1).padStart(8, '0');
+            const siguiente = maxNum + 1;
+            return String(siguiente).padStart(8, '0');
         }
 
         async function toggleEscalamiento() {
@@ -656,7 +660,8 @@
             const inputTicket = document.getElementById('cli-ticket');
             if (isChecked) {
                 container.classList.remove('hidden');
-                inputTicket.value = await generarSiguienteTicket();
+                const nuevoTicket = await generarSiguienteTicket();
+                inputTicket.value = nuevoTicket;
             } else {
                 container.classList.add('hidden');
                 inputTicket.value = '';
@@ -681,10 +686,11 @@
 
             container.innerHTML = operadores.map(op => {
                 const correo = op.correo || op.email;
+                const nombreFormateado = formatearNombreOperador(correo);
                 return `
                     <label class="flex items-center space-x-2 text-xs text-zinc-300 hover:text-white cursor-pointer select-none p-1 bg-zinc-950/40 rounded-lg hover:bg-zinc-950 transition">
                         <input type="checkbox" name="op-campania-chk" value="${correo}" class="w-4 h-4 rounded text-red-600 focus:ring-red-500 bg-zinc-950 border-zinc-700">
-                        <span class="font-medium">${formatearNombreOperador(correo)}</span>
+                        <span class="font-medium">${nombreFormateado}</span>
                         <span class="text-[10px] text-zinc-500 ml-auto">(${correo})</span>
                     </label>
                 `;
@@ -692,31 +698,44 @@
         }
 
         function marcarTodosOperadores(marcar = true) {
-            document.querySelectorAll('input[name="op-campania-chk"]').forEach(chk => chk.checked = marcar);
+            const checkboxes = document.querySelectorAll('input[name="op-campania-chk"]');
+            checkboxes.forEach(chk => chk.checked = marcar);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             actualizarSubmenuServicio();
 
-            const psw = document.getElementById('login-password');
-            const btnPsw = document.getElementById('toggle-password');
-            const iconPsw = document.getElementById('toggle-icon');
-            if (btnPsw && psw) {
-                btnPsw.addEventListener('click', (e) => {
+            const passwordInput = document.getElementById('login-password');
+            const togglePasswordBtn = document.getElementById('toggle-password');
+            const toggleIcon = document.getElementById('toggle-icon');
+
+            if (togglePasswordBtn && passwordInput) {
+                togglePasswordBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    psw.type = psw.type === 'password' ? 'text' : 'password';
-                    iconPsw.className = psw.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        toggleIcon.className = "fa-solid fa-eye-slash";
+                    } else {
+                        passwordInput.type = 'password';
+                        toggleIcon.className = "fa-solid fa-eye";
+                    }
                 });
             }
 
-            const usrPsw = document.getElementById('usr-password');
-            const btnUsrPsw = document.getElementById('toggle-usr-password');
-            const iconUsrPsw = document.getElementById('toggle-usr-icon');
-            if (btnUsrPsw && usrPsw) {
-                btnUsrPsw.addEventListener('click', (e) => {
+            const usrPasswordInput = document.getElementById('usr-password');
+            const toggleUsrBtn = document.getElementById('toggle-usr-password');
+            const toggleUsrIcon = document.getElementById('toggle-usr-icon');
+
+            if (toggleUsrBtn && usrPasswordInput) {
+                toggleUsrBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    usrPsw.type = usrPsw.type === 'password' ? 'text' : 'password';
-                    iconUsrPsw.className = usrPsw.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+                    if (usrPasswordInput.type === 'password') {
+                        usrPasswordInput.type = 'text';
+                        toggleUsrIcon.className = "fa-solid fa-eye-slash";
+                    } else {
+                        usrPasswordInput.type = 'password';
+                        toggleUsrIcon.className = "fa-solid fa-eye";
+                    }
                 });
             }
         });
@@ -724,10 +743,11 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js" onerror="console.log('Usando respaldo interno de configuración')"></script>
 
     <script>
-        const SUPABASE_URL = 'https://mchlteunhcjzuetzyajz.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jaGx0ZXVuaGNqenVldHp5YWp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMzg4MzYsImV4cCI6MjA1NjgxNDgzNn0.T8R1j1n0hJc3c5x5b2v8m4l7k6j9h1g3f2d4s6a8z90'; 
+        const SUPABASE_URL = (typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.URL) ? SUPABASE_CONFIG.URL : 'https://mchlteunhcjzuetzyajz.supabase.co';
+        const SUPABASE_KEY = (typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.KEY) ? SUPABASE_CONFIG.KEY : 'sb_publishable_S5LJcX40QJ8HPVIRU7l75w_LYNzVWQk';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUser = null;
@@ -742,21 +762,22 @@
 
         async function registrarAuditoria(correoUser, resultado, detalle) {
             try {
-                await _supabase.from('auditoria_crm').insert([{ 
+                const payload = { 
                     correo: correoUser, 
                     resultado: resultado, 
                     detalle: detalle, 
                     fecha: new Date().toISOString() 
-                }]);
+                };
+                await _supabase.from('auditoria_crm').insert([payload]);
             } catch (err) {
-                console.warn("Aviso de auditoría:", err);
+                console.warn("Auditoría no guardada:", err);
             }
         }
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const emailInput = document.getElementById('login-email');
-            const email = emailInput.value.trim().toLowerCase();
+            const email = emailInput.value.trim();
             const password = document.getElementById('login-password').value.trim();
             const errorBox = document.getElementById('login-error');
             const btnLogin = document.getElementById('btn-login');
@@ -764,7 +785,7 @@
             errorBox.classList.add('hidden');
             emailInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500', 'border-emerald-500', 'ring-emerald-500');
 
-            if (!email.endsWith('@bancrecer.com.ve')) {
+            if (!email.toLowerCase().endsWith('@bancrecer.com.ve')) {
                 emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
                 errorBox.textContent = "Acceso denegado: Dominio no autorizado.";
                 errorBox.classList.remove('hidden');
@@ -775,44 +796,31 @@
             btnLogin.innerHTML = `<span>Autenticando...</span>`;
 
             try {
-                let autenticadoExitoso = false;
-
-                const { data: authData, error: authError } = await _supabase.auth.signInWithPassword({ 
+                const { data, error } = await _supabase.auth.signInWithPassword({ 
                     email: email, 
                     password: password 
                 });
 
-                if (!authError && authData.user) {
-                    currentUser = authData.user;
-                    autenticadoExitoso = true;
-                } else {
-                    // Bypass seguro para el equipo de Bancrecer si falla la autenticación de Supabase Auth
-                    currentUser = { email: email };
-                    autenticadoExitoso = true;
-                }
-
-                if (!autenticadoExitoso) {
+                if (error || !data.user) {
                     emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
-                    errorBox.textContent = "Credenciales incorrectas.";
+                    errorBox.textContent = "Credenciales incorrectas o usuario no registrado.";
                     errorBox.classList.remove('hidden');
                     btnLogin.disabled = false;
                     btnLogin.innerHTML = `<span>Iniciar Sesión</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
+                    registrarAuditoria(email, 'FALLIDO', 'Intento de contraseña incorrecto');
                     return;
                 }
 
-                try {
-                    const { data: usuariosData } = await _supabase.from('usuarios_crm').select('*');
-                    usuariosGlobal = usuariosData || [];
-                } catch (err) {
-                    usuariosGlobal = [];
-                }
-
                 emailInput.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500');
-                document.getElementById('user-display-email').textContent = email;
+                currentUser = data.user;
+                document.getElementById('user-display-email').textContent = data.user.email;
                 
-                configurarMenuLateral(email);
+                const { data: usuariosData } = await _supabase.from('usuarios_crm').select('*');
+                usuariosGlobal = usuariosData || [];
+
+                configurarMenuLateral(data.user.email);
                 poblarCheckboxesOperadoresCampania();
-                registrarAuditoria(email, 'EXITOSO', 'Ingreso al sistema autorizado');
+                registrarAuditoria(data.user.email, 'EXITOSO', 'Ingreso al sistema autorizado');
 
                 setTimeout(() => {
                     document.getElementById('login-screen').classList.add('hidden');
@@ -822,15 +830,10 @@
 
             } catch (err) {
                 console.error("Error crítico de autenticación:", err);
-                currentUser = { email: email };
-                document.getElementById('user-display-email').textContent = email;
-                configurarMenuLateral(email);
-                
-                setTimeout(() => {
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('app-dashboard').classList.remove('hidden');
-                    cargarDatosGenerales();
-                }, 300);
+                errorBox.textContent = "Error de conexión con la base de datos.";
+                errorBox.classList.remove('hidden');
+                btnLogin.disabled = false;
+                btnLogin.innerHTML = `<span>Iniciar Sesión</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
             }
         });
 
@@ -839,10 +842,15 @@
             const emailLower = email.toLowerCase().trim();
             const esOperaciones = emailLower === 'operaciones.atu@bancrecer.com.ve';
             
-            const usuarioCRM = usuariosGlobal.find(u => (u.correo || u.email || '').toLowerCase().trim() === emailLower);
+            const usuarioCRM = usuariosGlobal.find(u => {
+                const uEmail = (u.correo || u.email || '').toLowerCase().trim();
+                return uEmail === emailLower;
+            });
+
             const rolBD = usuarioCRM ? (usuarioCRM.rol || '').toUpperCase().trim() : '';
             const esAdmin = !esOperaciones && (
-                rolBD === 'ADMINISTRADOR' || rolBD === 'ADMIN' || 
+                rolBD === 'ADMINISTRADOR' || 
+                rolBD === 'ADMIN' || 
                 emailLower === 'elio.ravelo@bancrecer.com.ve' || 
                 emailLower === 'oriany.albarran@bancrecer.com.ve'
             );
@@ -855,6 +863,7 @@
                     </button>
                 `;
                 setTimeout(() => switchTab('operaciones-bandeja'), 100);
+
             } else if (esAdmin) {
                 document.getElementById('user-display-role').textContent = 'ADMINISTRADOR';
                 nav.innerHTML = `
@@ -871,12 +880,15 @@
                         <i class="fa-solid fa-shield-halved w-5"></i><span>Auditoría y Seguridad</span>
                     </button>
                     <button onclick="switchTab('campañas')" id="nav-campañas" class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition cursor-pointer">
-                        <div class="flex items-center space-x-3"><i class="fa-solid fa-bullhorn w-5"></i><span>Campañas</span></div>
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-bullhorn w-5"></i><span>Campañas</span>
+                        </div>
                         <span id="badge-campañas" class="hidden px-2 py-0.5 bg-red-600 text-white font-bold text-[10px] rounded-full shadow-lg shadow-red-600/50">0</span>
                     </button>
                 `;
                 const btnExportar = document.getElementById('btn-exportar-excel-clientes');
                 if (btnExportar) btnExportar.classList.remove('hidden');
+
             } else {
                 document.getElementById('user-display-role').textContent = 'OPERADOR';
                 nav.innerHTML = `
@@ -887,7 +899,9 @@
                         <i class="fa-solid fa-users w-5"></i><span>Gestión Clientes</span>
                     </button>
                     <button onclick="switchTab('campañas')" id="nav-campañas" class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition cursor-pointer">
-                        <div class="flex items-center space-x-3"><i class="fa-solid fa-bullhorn w-5"></i><span>Campañas</span></div>
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-bullhorn w-5"></i><span>Campañas</span>
+                        </div>
                         <span id="badge-campañas" class="hidden px-2 py-0.5 bg-red-600 text-white font-bold text-[10px] rounded-full shadow-lg shadow-red-600/50">0</span>
                     </button>
                 `;
@@ -905,9 +919,11 @@
 
                 clientesGlobal = clientes || [];
                 usuariosGlobal = usuarios || [];
+
                 poblarCheckboxesOperadoresCampania();
 
                 const esOperaciones = currentUser && currentUser.email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
+
                 if (esOperaciones) {
                     renderBandejaOperaciones(clientesGlobal);
                 } else {
@@ -931,34 +947,49 @@
 
         async function refrescarAuditoria(mostrarAlerta = false) {
             try {
-                const { data: auditoria } = await _supabase.from('auditoria_crm').select('*');
+                const { data: auditoria, error } = await _supabase.from('auditoria_crm').select('*');
+                if (error) console.error("Error al consultar auditoría:", error.message);
+
                 auditoriaGlobal = auditoria || [];
                 auditoriaGlobal.sort((a, b) => new Date(b.fecha || b.created_at || 0) - new Date(a.fecha || a.created_at || 0));
+
                 await cargarBloqueados();
+
                 renderAuditoriaTab();
                 renderBloqueados();
+
                 if (mostrarAlerta) alert("¡Datos de auditoría actualizados correctamente!");
             } catch (err) {
-                console.error("Error auditoría:", err);
+                console.error("Error al refrescar auditoría:", err);
             }
         }
 
         async function cargarCampanas() {
             try {
-                const { data } = await _supabase.from('campanas_crm').select('*');
+                const { data, error } = await _supabase.from('campanas_crm').select('*');
+                if (error) {
+                    console.error("Error al cargar campanas desde Supabase:", error);
+                    return;
+                }
                 campanasGlobal = data || [];
                 actualizarInterfazCampanas();
             } catch (err) {
-                console.warn("Error campañas:", err);
+                console.warn("Error en la conexión de campañas:", err);
             }
         }
 
         function actualizarInterfazCampanas() {
             const emailUser = currentUser ? currentUser.email.toLowerCase().trim() : '';
             const esOperaciones = emailUser === 'operaciones.atu@bancrecer.com.ve';
+            
             const usuarioCRM = usuariosGlobal.find(u => (u.correo || u.email || '').toLowerCase().trim() === emailUser);
             const rolBD = usuarioCRM ? (usuarioCRM.rol || '').toUpperCase().trim() : '';
-            const esAdmin = !esOperaciones && (rolBD === 'ADMINISTRADOR' || rolBD === 'ADMIN' || emailUser === 'elio.ravelo@bancrecer.com.ve' || emailUser === 'oriany.albarran@bancrecer.com.ve');
+            const esAdmin = !esOperaciones && (
+                rolBD === 'ADMINISTRADOR' || 
+                rolBD === 'ADMIN' || 
+                emailUser === 'elio.ravelo@bancrecer.com.ve' || 
+                emailUser === 'oriany.albarran@bancrecer.com.ve'
+            );
 
             const adminPanel = document.getElementById('admin-campaña-panel');
             const operadorPanel = document.getElementById('operador-campaña-panel');
@@ -972,7 +1003,11 @@
                 if (adminPanel) adminPanel.classList.add('hidden');
                 if (operadorPanel) operadorPanel.classList.remove('hidden');
 
-                const misCampanas = campanasGlobal.filter(c => (c.operador_asignado || c.gestor || '').toLowerCase().trim() === emailUser);
+                const misCampanas = campanasGlobal.filter(c => {
+                    const opAsignado = (c.operador_asignado || c.gestor || '').toLowerCase().trim();
+                    return opAsignado === emailUser;
+                });
+
                 const pendientes = misCampanas.filter(c => (c.estatus || 'PENDIENTE').toUpperCase().trim() === 'PENDIENTE');
 
                 if (badgeCampañas) {
@@ -983,6 +1018,7 @@
                         badgeCampañas.classList.add('hidden');
                     }
                 }
+
                 renderCampanasOperadorTab(misCampanas);
             }
         }
@@ -1001,10 +1037,27 @@
             if (containerMinidashboard) {
                 containerMinidashboard.innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-                        <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 shadow"><span class="text-[10px] font-bold uppercase text-zinc-400">Total Asignados</span><p class="text-2xl font-extrabold text-white mt-1">${totalAsignados}</p></div>
-                        <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 shadow"><span class="text-[10px] font-bold uppercase text-emerald-400">Gestionados</span><p class="text-2xl font-extrabold text-white mt-1">${gestionados}</p></div>
-                        <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 shadow"><span class="text-[10px] font-bold uppercase text-amber-400">Pendientes</span><p class="text-2xl font-extrabold text-white mt-1">${pendientes}</p></div>
-                        <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 shadow flex flex-col justify-between"><div class="flex justify-between items-center"><span class="text-[10px] font-bold uppercase text-zinc-400">Avance</span><span class="text-xs font-bold text-red-500">${porcentaje}%</span></div><div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden mt-2"><div class="h-full bg-red-600 rounded-full transition-all duration-500" style="width: ${porcentaje}%"></div></div></div>
+                        <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 shadow">
+                            <span class="text-[10px] font-bold uppercase text-zinc-400">Total Asignados</span>
+                            <p class="text-2xl font-extrabold text-white mt-1">${totalAsignados}</p>
+                        </div>
+                        <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 shadow">
+                            <span class="text-[10px] font-bold uppercase text-emerald-400">Gestionados</span>
+                            <p class="text-2xl font-extrabold text-white mt-1">${gestionados}</p>
+                        </div>
+                        <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 shadow">
+                            <span class="text-[10px] font-bold uppercase text-amber-400">Pendientes</span>
+                            <p class="text-2xl font-extrabold text-white mt-1">${pendientes}</p>
+                        </div>
+                        <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 shadow flex flex-col justify-between">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] font-bold uppercase text-zinc-400">Avance</span>
+                                <span class="text-xs font-bold text-red-500">${porcentaje}%</span>
+                            </div>
+                            <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden mt-2">
+                                <div class="h-full bg-red-600 rounded-full transition-all duration-500" style="width: ${porcentaje}%"></div>
+                            </div>
+                        </div>
                     </div>
                 `;
             }
@@ -1018,29 +1071,46 @@
             const primerItem = lista[0];
             let columnasOriginales = [];
             try {
-                columnasOriginales = Array.isArray(primerItem.columnas_excel) ? primerItem.columnas_excel : JSON.parse(primerItem.columnas_excel || '[]');
+                if (Array.isArray(primerItem.columnas_excel)) {
+                    columnasOriginales = primerItem.columnas_excel;
+                } else if (typeof primerItem.columnas_excel === 'string') {
+                    columnasOriginales = JSON.parse(primerItem.columnas_excel);
+                }
             } catch (err) {
                 columnasOriginales = [];
             }
-            if (columnasOriginales.length === 0 && primerItem.datos) columnasOriginales = Object.keys(primerItem.datos);
+
+            if (columnasOriginales.length === 0 && primerItem.datos) {
+                columnasOriginales = Object.keys(primerItem.datos);
+            }
 
             let headHTML = `<tr><th class="p-3">Campaña</th>`;
-            columnasOriginales.forEach(col => { headHTML += `<th class="p-3">${col}</th>`; });
-            headHTML += `<th class="p-3">Fecha Gestión</th><th class="p-3">Estatus</th><th class="p-3 text-center">Acción</th></tr>`;
+            columnasOriginales.forEach(col => {
+                headHTML += `<th class="p-3">${col}</th>`;
+            });
+            headHTML += `
+                <th class="p-3">Fecha Gestión</th>
+                <th class="p-3">Estatus</th>
+                <th class="p-3 text-center">Acción</th>
+            </tr>`;
             thead.innerHTML = headHTML;
 
             tbody.innerHTML = lista.map(c => {
                 const estatusActual = c.estatus || 'PENDIENTE';
+                const fechaGestion = c.fecha_gestion || '-';
                 const datosRow = c.datos || {};
+
                 let celdasHTML = '';
                 columnasOriginales.forEach(col => {
-                    celdasHTML += `<td class="p-3 text-zinc-300 font-mono">${datosRow[col] !== undefined ? datosRow[col] : '-'}</td>`;
+                    const valorCelda = datosRow[col] !== undefined ? datosRow[col] : '-';
+                    celdasHTML += `<td class="p-3 text-zinc-300 font-mono">${valorCelda}</td>`;
                 });
+
                 return `
                     <tr class="hover:bg-zinc-900/50 transition">
                         <td class="p-3 font-bold text-white">${c.nombre_campana || 'Campaña'}</td>
                         ${celdasHTML}
-                        <td class="p-3 font-mono text-xs text-amber-400">${c.fecha_gestion || '-'}</td>
+                        <td class="p-3 font-mono text-xs text-amber-400" id="lbl-fecha-${c.id}">${fechaGestion}</td>
                         <td class="p-3">
                             <select id="camp-estatus-${c.id}" class="w-full p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-[11px] font-bold outline-none">
                                 <option value="PENDIENTE" ${estatusActual === 'PENDIENTE' ? 'selected' : ''}>PENDIENTE</option>
@@ -1052,80 +1122,148 @@
                                 <i class="fa-solid fa-check"></i><span>Guardar</span>
                             </button>
                         </td>
-                    </tr>`;
+                    </tr>
+                `;
             }).join('');
         }
 
         async function guardarGestionCampania(id) {
             const estatus = document.getElementById(`camp-estatus-${id}`).value;
             const fechaHoy = new Date().toISOString().split('T')[0];
+
             const campItem = campanasGlobal.find(c => c.id === id);
             if (!campItem) return;
 
-            const { error: errCamp } = await _supabase.from('campanas_crm').update({ estatus, fecha_gestion: fechaHoy }).eq('id', id);
-            if (errCamp) { alert('Error: ' + errCamp.message); return; }
+            const payloadCampania = {
+                estatus: estatus,
+                fecha_gestion: fechaHoy
+            };
 
-            await registrarAuditoria(currentUser.email, 'ACCION', `Gestionó prospecto de campaña "${campItem.nombre_campana}"`);
-            alert('¡Gestión guardada correctamente!');
+            const { error: errCamp } = await _supabase.from('campanas_crm').update(payloadCampania).eq('id', id);
+            
+            if (errCamp) {
+                alert('Error al actualizar la campaña: ' + errCamp.message);
+                return;
+            }
+
+            await registrarAuditoria(currentUser.email, 'ACCION', `Gestionó prospecto de campaña "${campItem.nombre_campana}" - Estatus: ${estatus}`);
+            alert('¡Gestión guardada correctamente con su fecha!');
             cargarCampanas();
         }
 
         async function procesarImportacionCampania() {
             const nombreCampana = document.getElementById('campaña-nombre').value.trim();
             const fileInput = document.getElementById('campana-file');
-            const operadoresSeleccionados = Array.from(document.querySelectorAll('input[name="op-campania-chk"]:checked')).map(chk => chk.value);
+            
+            const checkboxes = document.querySelectorAll('input[name="op-campania-chk"]:checked');
+            const operadoresSeleccionados = Array.from(checkboxes).map(chk => chk.value);
 
-            if (!nombreCampana || operadoresSeleccionados.length === 0 || !fileInput.files.length) {
-                alert('Por favor complete el nombre, seleccione operadores y cargue un archivo Excel.');
+            if (!nombreCampana) {
+                alert('Por favor ingresa un nombre para la campaña.');
+                return;
+            }
+            if (operadoresSeleccionados.length === 0) {
+                alert('Por favor selecciona al menos un operador destino para la campaña.');
+                return;
+            }
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Por favor selecciona un archivo Excel (.xlsx o .csv).');
                 return;
             }
 
+            const file = fileInput.files[0];
             const reader = new FileReader();
+
             reader.onload = async function(e) {
                 try {
-                    const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-                    let rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
-                    if (!rows.length) return alert('Archivo vacío.');
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    let rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+                    if (!rows || rows.length === 0) {
+                        const rawArray = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        if (rawArray.length > 1) {
+                            const headers = rawArray[0];
+                            rows = rawArray.slice(1).map(r => {
+                                let obj = {};
+                                headers.forEach((h, i) => {
+                                    obj[h || `Col_${i+1}`] = r[i] !== undefined ? r[i] : "";
+                                });
+                                return obj;
+                            });
+                        }
+                    }
+
+                    if (!rows || rows.length === 0) {
+                        alert('El archivo Excel está vacío o no tiene registros válidos.');
+                        return;
+                    }
 
                     const rawHeaderRow = Object.keys(rows[0]);
-                    let importados = 0;
-                    for (let i = 0; i < rows.length; i++) {
-                        const opAsignado = operadoresSeleccionados[i % operadoresSeleccionados.length];
+
+                    let registrosImportados = 0;
+                    const totalOperadores = operadoresSeleccionados.length;
+
+                    for (let index = 0; index < rows.length; index++) {
+                        const row = rows[index];
+                        const operadorAsignado = operadoresSeleccionados[index % totalOperadores];
+                        const nombreOperadorLimpio = formatearNombreOperador(operadorAsignado);
+
                         const rowLimpia = {
                             nombre_campana: nombreCampana,
-                            operador_asignado: opAsignado,
-                            gestor: formatearNombreOperador(opAsignado),
+                            operador_asignado: operadorAsignado,
+                            gestor: nombreOperadorLimpio,
                             estatus: 'PENDIENTE',
                             fecha_gestion: '-',
                             columnas_excel: rawHeaderRow,
-                            datos: rows[i],
+                            datos: row,
                             created_at: new Date().toISOString()
                         };
-                        const { error } = await _supabase.from('campanas_crm').insert([rowLimpia]);
-                        if (!error) importados++;
+
+                        const { error: insertErr } = await _supabase.from('campanas_crm').insert([rowLimpia]);
+                        if (insertErr) {
+                            console.error("Error insertando registro:", insertErr.message);
+                        } else {
+                            registrosImportados++;
+                        }
                     }
-                    alert(`¡Campaña importada! ${importados} registros distribuidos.`);
+
+                    alert(`¡Campaña importada con éxito! Se distribuyeron ${registrosImportados} registros equitativamente entre ${totalOperadores} operadores.`);
                     document.getElementById('campaña-nombre').value = '';
                     fileInput.value = '';
+                    marcarTodosOperadores(false);
                     cargarCampanas();
+                    registrarAuditoria(currentUser.email, 'ACCION', `Importó campaña "${nombreCampana}" con ${registrosImportados} registros`);
+
                 } catch (err) {
-                    alert('Error procesando Excel.');
+                    console.error("Error al procesar el archivo Excel:", err);
+                    alert("Error al procesar el archivo Excel.");
                 }
             };
-            reader.readAsArrayBuffer(fileInput.files[0]);
+
+            reader.readAsArrayBuffer(file);
         }
 
         function aplicarFiltroFechas() {
             const desde = document.getElementById('filtro-fecha-desde').value;
             const hasta = document.getElementById('filtro-fecha-hasta').value;
-            let filtrados = clientesGlobal;
-            if (desde) filtrados = filtrados.filter(c => new Date(c.created_at || c.fecha) >= new Date(desde));
-            if (hasta) {
-                const h = new Date(hasta); h.setHours(23, 59, 59);
-                filtrados = filtrados.filter(c => new Date(c.created_at || c.fecha) <= h);
+
+            let clientesFiltrados = clientesGlobal;
+
+            if (desde) {
+                const d = new Date(desde);
+                clientesFiltrados = clientesFiltrados.filter(c => new Date(c.created_at || c.fecha) >= d);
             }
-            actualizarDashboardConFiltro(filtrados, auditoriaGlobal, usuariosGlobal);
-            renderClientes(filtrados);
+            if (hasta) {
+                const h = new Date(hasta);
+                h.setHours(23, 59, 59);
+                clientesFiltrados = clientesFiltrados.filter(c => new Date(c.created_at || c.fecha) <= h);
+            }
+
+            actualizarDashboardConFiltro(clientesFiltrados, auditoriaGlobal, usuariosGlobal);
+            renderClientes(clientesFiltrados);
         }
 
         function limpiarFiltroFechas() {
@@ -1136,137 +1274,300 @@
         }
 
         function actualizarDashboardConFiltro(clientes, auditoria, usuarios) {
-            document.getElementById('stat-total-registros').textContent = clientes.length;
-            const totalEsc = clientes.filter(c => c.escalado === true || c.escalado === 'true').length;
-            const enProc = clientes.filter(c => (c.escalado === true || c.escalado === 'true') && (c.estatus_operaciones === 'EN PROCESO' || c.estatus_operaciones === 'PENDIENTE')).length;
-            const proc = clientes.filter(c => (c.escalado === true || c.escalado === 'true') && c.estatus_operaciones === 'PROCESADO').length;
+            const elTotalReg = document.getElementById('stat-total-registros');
+            const elTotalEsc = document.getElementById('stat-total-escalados');
+            const elEnProc = document.getElementById('stat-en-proceso');
+            const elProc = document.getElementById('stat-procesados');
 
-            document.getElementById('stat-total-escalados').textContent = totalEsc;
-            document.getElementById('stat-en-proceso').textContent = enProc;
-            document.getElementById('stat-procesados').textContent = proc;
+            if (elTotalReg) elTotalReg.textContent = clientes.length;
 
-            const conteoOps = {};
-            clientes.forEach(c => { const op = c.operador || 'Sistema'; conteoOps[op] = (conteoOps[op] || 0) + 1; });
-            const ranking = Object.entries(conteoOps).sort((a, b) => b[1] - a[1]);
-            const contRank = document.getElementById('contenedor-ranking-operadores');
+            const totalEscalados = clientes.filter(c => c.escalado === true || c.escalado === 'true').length;
+            const enProceso = clientes.filter(c => (c.escalado === true || c.escalado === 'true') && (c.estatus_operaciones === 'EN PROCESO' || c.estatus_operaciones === 'PENDIENTE')).length;
+            const procesados = clientes.filter(c => (c.escalado === true || c.escalado === 'true') && c.estatus_operaciones === 'PROCESADO').length;
 
-            if (contRank) {
-                if (!ranking.length) {
-                    contRank.innerHTML = `<p class="text-zinc-500 text-xs text-center py-4">Sin registros.</p>`;
+            if (elTotalEsc) elTotalEsc.textContent = totalEscalados;
+            if (elEnProc) elEnProc.textContent = enProceso;
+            if (elProc) elProc.textContent = procesados;
+
+            const conteoOperadores = {};
+            clientes.forEach(c => {
+                const op = c.operador || 'Sistema / Sin asignar';
+                conteoOperadores[op] = (conteoOperadores[op] || 0) + 1;
+            });
+
+            const rankingOrdenado = Object.entries(conteoOperadores).sort((a, b) => b[1] - a[1]);
+            const contenedorRanking = document.getElementById('contenedor-ranking-operadores');
+
+            if (contenedorRanking) {
+                if (rankingOrdenado.length === 0) {
+                    contenedorRanking.innerHTML = `<p class="text-zinc-500 text-xs text-center py-4">Sin registros en este periodo.</p>`;
                 } else {
-                    const max = ranking[0][1];
-                    contRank.innerHTML = ranking.map(([op, total], idx) => `
-                        <div class="p-2.5 rounded-xl border ${idx === 0 ? 'border-amber-500/30 bg-amber-500/5' : 'border-zinc-800 bg-zinc-900/40'} space-y-1.5">
-                            <div class="flex items-center justify-between text-xs">
-                                <div class="flex items-center space-x-2 truncate"><span class="font-bold text-zinc-400">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx+1}`}</span><span class="font-semibold text-zinc-200 truncate">${op.split('@')[0]}</span></div>
-                                <span class="font-bold text-red-500">${total}</span>
+                    const maxRegistros = rankingOrdenado[0][1];
+                    contenedorRanking.innerHTML = rankingOrdenado.map(([op, total], idx) => {
+                        const porcentaje = Math.round((total / maxRegistros) * 100);
+                        const esPrimero = idx === 0 ? 'border-amber-500/30 bg-amber-500/5' : 'border-zinc-800 bg-zinc-900/40';
+                        const medalla = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
+                        
+                        return `
+                            <div class="p-2.5 rounded-xl border ${esPrimero} space-y-1.5">
+                                <div class="flex items-center justify-between text-xs">
+                                    <div class="flex items-center space-x-2 truncate">
+                                        <span class="font-bold text-zinc-400 w-5 text-center">${medalla}</span>
+                                        <span class="font-semibold text-zinc-200 truncate" title="${op}">${op.split('@')[0]}</span>
+                                    </div>
+                                    <span class="font-bold text-red-500 ml-2">${total}</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-red-600 rounded-full transition-all duration-500" style="width: ${porcentaje}%"></div>
+                                </div>
                             </div>
-                            <div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-red-600 rounded-full" style="width: ${Math.round((total/max)*100)}%"></div></div>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 }
             }
 
-            const conteoMot = {}, conteoChan = {};
-            clientes.forEach(c => { conteoMot[c.motivo || 'Consulta'] = (conteoMot[c.motivo || 'Consulta'] || 0) + 1; conteoChan[c.canal || 'Llamada'] = (conteoChan[c.canal || 'Llamada'] || 0) + 1; });
-            renderizarGraficos(Object.keys(conteoMot), Object.values(conteoMot), Object.keys(conteoChan), Object.values(conteoChan));
+            const conteoMotivos = {};
+            clientes.forEach(c => {
+                const m = c.motivo || 'Sin Motivo';
+                conteoMotivos[m] = (conteoMotivos[m] || 0) + 1;
+            });
+
+            const conteoCanales = {};
+            clientes.forEach(c => {
+                const ch = c.canal || 'Llamada';
+                conteoCanales[ch] = (conteoCanales[ch] || 0) + 1;
+            });
+
+            renderizarGraficos(
+                Object.keys(conteoMotivos), Object.values(conteoMotivos),
+                Object.keys(conteoCanales), Object.values(conteoCanales)
+            );
         }
 
-        function renderizarGraficos(mLabels, mData, cLabels, cData) {
-            const ctxM = document.getElementById('graficoMotivos')?.getContext('2d');
-            if (ctxM) {
+        function renderizarGraficos(motivosLabels, motivosData, canalesLabels, canalesData) {
+            const canvasMotivos = document.getElementById('graficoMotivos');
+            if (canvasMotivos) {
+                const ctxMotivos = canvasMotivos.getContext('2d');
                 if (chartMotivos) chartMotivos.destroy();
-                chartMotivos = new Chart(ctxM, { type: 'bar', data: { labels: mLabels, datasets: [{ data: mData, backgroundColor: '#dc2626', borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+                chartMotivos = new Chart(ctxMotivos, {
+                    type: 'bar',
+                    data: {
+                        labels: motivosLabels.length ? motivosLabels : ['Sin Datos'],
+                        datasets: [{
+                            label: 'Registros por Motivo',
+                            data: motivosData.length ? motivosData : [0],
+                            backgroundColor: '#dc2626',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { color: '#a1a1aa', font: { size: 10 } }, grid: { display: false } },
+                            y: { ticks: { color: '#a1a1aa', precision: 0 }, grid: { color: '#27272a' } }
+                        }
+                    }
+                });
             }
-            const ctxC = document.getElementById('graficoCanales')?.getContext('2d');
-            if (ctxC) {
+
+            const canvasCanales = document.getElementById('graficoCanales');
+            if (canvasCanales) {
+                const ctxCanales = canvasCanales.getContext('2d');
                 if (chartCanales) chartCanales.destroy();
-                chartCanales = new Chart(ctxC, { type: 'doughnut', data: { labels: cLabels, datasets: [{ data: cData, backgroundColor: ['#dc2626', '#10b981', '#a855f7', '#f59e0b', '#71717a'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#d4d4d8', font: { size: 11 } } } } } });
+                chartCanales = new Chart(ctxCanales, {
+                    type: 'doughnut',
+                    data: {
+                        labels: canalesLabels.length ? canalesLabels : ['Sin Datos'],
+                        datasets: [{
+                            data: canalesData.length ? canalesData : [1],
+                            backgroundColor: ['#dc2626', '#10b981', '#a855f7', '#f59e0b', '#71717a'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: '#d4d4d8', font: { size: 11 } } }
+                        }
+                    }
+                });
             }
         }
 
-        function cargarClientes() { cargarDatosGenerales(); }
+        async function cargarClientes() { await cargarDatosGenerales(); }
 
         function renderClientes(lista) {
             const tbody = document.getElementById('tbody-clientes');
             if (!tbody) return;
-            if (!lista.length) { tbody.innerHTML = `<tr><td colspan="11" class="p-4 text-center text-zinc-500">Sin resultados.</td></tr>`; return; }
+
+            if (lista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="11" class="p-4 text-center text-zinc-500">Sin resultados disponibles.</td></tr>`;
+                return;
+            }
 
             tbody.innerHTML = lista.map(c => {
-                const esc = c.escalado === true || c.escalado === 'true';
-                const estOp = c.estatus_operaciones || (esc ? 'EN PROCESO' : 'N/A');
-                let color = 'bg-zinc-800 text-zinc-400';
-                if (estOp === 'EN PROCESO') color = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
-                if (estOp === 'PROCESADO') color = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-                if (estOp === 'DADO DE BAJA') color = 'bg-red-500/10 text-red-400 border border-red-500/20';
+                const esEscalado = c.escalado === true || c.escalado === 'true';
+                const ticketBadge = esEscalado ? `<span class="text-amber-400 font-mono text-[11px] font-bold block"><i class="fa-solid fa-ticket mr-1"></i>Ticket: ${c.nro_ticket || 'S/N'}</span>` : '';
+                const estatusOp = c.estatus_operaciones || (esEscalado ? 'EN PROCESO' : 'N/A');
+                
+                let badgeColor = 'bg-zinc-800 text-zinc-400';
+                if (estatusOp === 'EN PROCESO') badgeColor = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                if (estatusOp === 'PENDIENTE') badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                if (estatusOp === 'PROCESADO') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                if (estatusOp === 'DADO DE BAJA') badgeColor = 'bg-red-500/10 text-red-400 border border-red-500/20';
 
                 return `
                     <tr class="hover:bg-zinc-900/50 transition">
                         <td class="p-4 font-mono text-zinc-400">${new Date(c.created_at || c.fecha || Date.now()).toLocaleDateString()}</td>
-                        <td class="p-4 font-mono text-white">${c.cedula} ${esc ? `<span class="text-amber-400 block text-[10px]">Ticket: ${c.nro_ticket}</span>` : ''}</td>
+                        <td class="p-4 font-mono text-white">
+                            ${c.cedula}
+                            ${ticketBadge}
+                        </td>
                         <td class="p-4 font-semibold text-white">${c.nombre}</td>
                         <td class="p-4 text-zinc-400">${c.telefono}</td>
-                        <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-300">${c.canal}</span><span class="block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400">${c.motivo}</span></td>
-                        <td class="p-4 text-zinc-300">${c.producto}<br><span class="text-[10px] text-zinc-500">${c.subservicio || ''}</span></td>
-                        <td class="p-4 text-zinc-400 max-w-xs"><div class="truncate">${c.observaciones || '-'}</div>${c.respuesta_operaciones ? `<div class="mt-1 text-[11px] text-emerald-400"><strong>Op:</strong> ${c.respuesta_operaciones}</div>` : ''}</td>
-                        <td class="p-4 text-center">${esc ? '<span class="text-amber-400 font-bold">Sí</span>' : '<span class="text-zinc-600">No</span>'}</td>
-                        <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${color}">${estOp}</span></td>
+                        <td class="p-4">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">${c.canal || 'Llamada'}</span>
+                            <span class="block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo || 'Consulta'}</span>
+                        </td>
+                        <td class="p-4 text-zinc-300">${c.producto} <br><span class="text-[10px] text-zinc-500">${c.subservicio || ''}</span></td>
+                        <td class="p-4 text-zinc-400 max-w-xs" title="${c.observaciones || ''}">
+                            <div class="truncate">${c.observaciones || '-'}</div>
+                            ${c.respuesta_operaciones ? `<div class="mt-1 text-[11px] text-emerald-400 bg-emerald-500/10 p-1.5 rounded border border-emerald-500/20"><strong>Op:</strong> ${c.respuesta_operaciones}</div>` : ''}
+                        </td>
+                        <td class="p-4 text-center">
+                            ${esEscalado ? '<span class="text-amber-400 font-bold"><i class="fa-solid fa-check"></i> Sí</span>' : '<span class="text-zinc-600">No</span>'}
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded text-[10px] font-bold ${badgeColor}">${estatusOp}</span>
+                        </td>
                         <td class="p-4 text-zinc-400">${c.operador || 'Sistema'}</td>
-                        <td class="p-4 text-center"><button onclick="eliminarCliente('${c.id}', '${c.nombre}')" class="text-zinc-500 hover:text-red-400 cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
+                        <td class="p-4 text-center">
+                            <button onclick="eliminarCliente('${c.id}', '${c.nombre}')" class="text-zinc-500 hover:text-red-400 transition cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                        </td>
                     </tr>`;
             }).join('');
         }
 
         async function eliminarCliente(id, nombre) {
-            if (confirm(`¿Eliminar registro de ${nombre}?`)) {
-                await _supabase.from('clientes_crm').delete().eq('id', id);
-                await registrarAuditoria(currentUser.email, 'ACCION', `Eliminó cliente: ${nombre}`);
-                cargarDatosGenerales();
+            if (confirm(`¿Estás seguro de eliminar el registro de ${nombre}?`)) {
+                const { error } = await _supabase.from('clientes_crm').delete().eq('id', id);
+                if (!error) {
+                    await registrarAuditoria(currentUser.email, 'ACCION', `Eliminó el registro de cliente: ${nombre}`);
+                    cargarDatosGenerales();
+                } else {
+                    alert('Error al eliminar: ' + error.message);
+                }
             }
         }
 
         function renderBandejaOperaciones(lista) {
             const tbody = document.getElementById('tbody-operaciones');
             if (!tbody) return;
-            const escalados = lista.filter(c => c.escalado === true || c.escalado === 'true');
-            if (!escalados.length) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-zinc-500">No hay casos escalados.</td></tr>`; return; }
 
-            tbody.innerHTML = escalados.map(c => `
-                <tr class="hover:bg-zinc-900/50 transition">
-                    <td class="p-4 font-mono text-zinc-400"><span class="text-amber-400 font-bold block">Ticket: ${c.nro_ticket}</span><span class="text-[10px]">${new Date(c.created_at || Date.now()).toLocaleString()}</span></td>
-                    <td class="p-4 font-semibold text-white">${c.nombre}<span class="block text-[11px] font-mono text-zinc-400">CI: ${c.cedula} | Tel: ${c.telefono}</span></td>
-                    <td class="p-4 text-zinc-300"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400">${c.motivo}</span><div class="mt-1 text-zinc-400 text-[11px]">${c.producto} - ${c.subservicio || ''}</div></td>
-                    <td class="p-4 text-zinc-300 max-w-xs"><div class="bg-zinc-900 p-2 rounded-lg border border-zinc-800 text-xs">${c.observaciones || 'S/N'}</div><div class="mt-1 text-[10px] text-zinc-500">Por: ${c.operador}</div></td>
-                    <td class="p-4"><span class="px-2.5 py-1 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">${c.estatus_operaciones || 'EN PROCESO'}</span></td>
-                    <td class="p-4 space-y-2">
-                        <textarea id="resp-${c.id}" rows="2" placeholder="Observación o resolución..." class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-xs outline-none">${c.respuesta_operaciones || ''}</textarea>
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="actualizarCasoOperaciones('${c.id}', 'PROCESADO')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-semibold cursor-pointer">Procesar / Cerrar</button>
-                            <button onclick="actualizarCasoOperaciones('${c.id}', 'PENDIENTE')" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-[10px] font-semibold cursor-pointer">Pendiente</button>
-                            <button onclick="actualizarCasoOperaciones('${c.id}', 'DADO DE BAJA')" class="px-3 py-1 bg-red-600/20 text-red-400 border border-red-500/30 rounded-lg text-[10px] font-semibold cursor-pointer">Dar de baja</button>
-                        </div>
-                    </td>
-                </tr>`).join('');
+            const escalados = lista.filter(c => c.escalado === true || c.escalado === 'true');
+
+            if (escalados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-zinc-500">No hay casos escalados a operaciones en este momento.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = escalados.map(c => {
+                const estatusOp = c.estatus_operaciones || 'EN PROCESO';
+                let badgeColor = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                if (estatusOp === 'PENDIENTE') badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                if (estatusOp === 'PROCESADO') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                if (estatusOp === 'DADO DE BAJA') badgeColor = 'bg-red-500/10 text-red-400 border border-red-500/20';
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-4 font-mono text-zinc-400">
+                            <span class="text-amber-400 font-bold block"><i class="fa-solid fa-ticket mr-1"></i>Ticket: ${c.nro_ticket || 'S/N'}</span>
+                            <span class="text-[10px] text-zinc-500">${new Date(c.created_at || c.fecha || Date.now()).toLocaleString()}</span>
+                        </td>
+                        <td class="p-4 font-semibold text-white">
+                            ${c.nombre}
+                            <span class="block text-[11px] font-mono text-zinc-400">CI: ${c.cedula} | Tel: ${c.telefono}</span>
+                        </td>
+                        <td class="p-4 text-zinc-300">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo}</span>
+                            <div class="mt-1 text-zinc-400 text-[11px]">${c.producto} - ${c.subservicio || ''}</div>
+                        </td>
+                        <td class="p-4 text-zinc-300 max-w-xs">
+                            <div class="bg-zinc-900 p-2 rounded-lg border border-zinc-800 text-xs">${c.observaciones || 'Sin observaciones detalladas'}</div>
+                            <div class="mt-1 text-[10px] text-zinc-500">Registrado por: ${c.operador || 'Sistema'}</div>
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded text-[10px] font-bold ${badgeColor}">${estatusOp}</span>
+                        </td>
+                        <td class="p-4 space-y-2">
+                            <textarea id="resp-${c.id}" rows="2" placeholder="Escriba la observación o resolución definitiva..." class="w-full p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-xs outline-none focus:ring-2 focus:ring-red-500">${c.respuesta_operaciones || ''}</textarea>
+                            
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="actualizarCasoOperaciones('${c.id}', 'PROCESADO')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-semibold transition flex items-center space-x-1 cursor-pointer">
+                                    <i class="fa-solid fa-check"></i><span>Procesar / Cerrar</span>
+                                </button>
+                                <button onclick="actualizarCasoOperaciones('${c.id}', 'PENDIENTE')" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-[10px] font-semibold transition flex items-center space-x-1 cursor-pointer">
+                                    <i class="fa-solid fa-clock"></i><span>Pendiente Resp.</span>
+                                </button>
+                                <button onclick="actualizarCasoOperaciones('${c.id}', 'DADO DE BAJA')" class="px-3 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 rounded-lg text-[10px] font-semibold transition cursor-pointer">
+                                    Dar de baja
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+            }).join('');
         }
 
-        async function actualizarCasoOperaciones(id, estatus) {
-            const resp = document.getElementById(`resp-${id}`).value.trim();
-            if (!resp && estatus === 'PROCESADO') return alert('Ingrese la observación o resolución antes de procesar.');
-            await _supabase.from('clientes_crm').update({ estatus_operaciones: estatus, respuesta_operaciones: resp }).eq('id', id);
-            await registrarAuditoria(currentUser.email, 'ACCION', `Actualizó ticket ID ${id} a ${estatus}`);
-            alert('¡Actualizado con éxito!');
-            cargarDatosGenerales();
+        async function actualizarCasoOperaciones(id, nuevoEstatus) {
+            const txtArea = document.getElementById(`resp-${id}`);
+            const respuestaTxt = txtArea ? txtArea.value.trim() : '';
+            if (!respuestaTxt && nuevoEstatus === 'PROCESADO') {
+                alert('Por favor ingrese la observación o resolución definitiva antes de procesar el caso.');
+                return;
+            }
+
+            const opEmail = currentUser ? currentUser.email : 'operaciones.atu@bancrecer.com.ve';
+            const payload = {
+                estatus_operaciones: nuevoEstatus,
+                respuesta_operaciones: respuestaTxt
+            };
+
+            const { error } = await _supabase.from('clientes_crm').update(payload).eq('id', id);
+            if (!error) {
+                await registrarAuditoria(opEmail, 'ACCION', `Operaciones actualizó ticket ID ${id} a estatus ${nuevoEstatus}`);
+                alert('¡Caso actualizado con éxito!');
+                cargarDatosGenerales();
+            } else {
+                alert('Error al actualizar el caso: ' + error.message);
+            }
         }
 
         function filtrarClientes() {
-            const filtro = document.getElementById('input-buscar-cliente').value.toLowerCase();
-            renderClientes(clientesGlobal.filter(c => c.cedula.toLowerCase().includes(filtro) || c.nombre.toLowerCase().includes(filtro) || (c.nro_ticket && c.nro_ticket.toLowerCase().includes(filtro))));
+            const inputBuscar = document.getElementById('input-buscar-cliente');
+            if (!inputBuscar) return;
+
+            const filtro = inputBuscar.value.toLowerCase();
+            const filtrados = clientesGlobal.filter(c => 
+                c.cedula.toLowerCase().includes(filtro) || 
+                c.nombre.toLowerCase().includes(filtro) ||
+                (c.nro_ticket && c.nro_ticket.toLowerCase().includes(filtro))
+            );
+            renderClientes(filtrados);
         }
 
         document.getElementById('form-cliente').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const esc = document.getElementById('cli-escalar').checked;
-            const nuevo = {
+            const opEmail = currentUser ? currentUser.email : 'Sistema';
+            const escalarCheckbox = document.getElementById('cli-escalar');
+            const ticketInput = document.getElementById('cli-ticket');
+            
+            const estaEscalado = escalarCheckbox ? escalarCheckbox.checked : false;
+            const nroTicket = ticketInput ? ticketInput.value.trim() : '';
+
+            const nuevoCliente = {
                 cedula: document.getElementById('cli-cedula').value.trim(),
                 nombre: document.getElementById('cli-nombre').value.trim(),
                 telefono: document.getElementById('cli-telefono').value.trim(),
@@ -1275,71 +1576,123 @@
                 producto: document.getElementById('cli-producto').value,
                 subservicio: document.getElementById('cli-subservicio').value,
                 observaciones: document.getElementById('cli-observaciones').value.trim(),
-                escalado: esc,
-                nro_ticket: esc ? document.getElementById('cli-ticket').value : null,
-                estatus_operaciones: esc ? 'EN PROCESO' : 'REGISTRADO',
-                operador: currentUser.email,
+                escalado: estaEscalado,
+                nro_ticket: estaEscalado ? nroTicket : null,
+                estatus_operaciones: estaEscalado ? 'EN PROCESO' : 'REGISTRADO',
+                operador: opEmail,
                 created_at: new Date().toISOString()
             };
 
-            const { error } = await _supabase.from('clientes_crm').insert([nuevo]);
+            const { error } = await _supabase.from('clientes_crm').insert([nuevoCliente]);
             if (!error) {
-                await registrarAuditoria(currentUser.email, 'ACCION', `Registró gestión de cliente${esc ? ' (Escalado - Ticket: ' + nuevo.nro_ticket + ')' : ''}`);
+                await registrarAuditoria(opEmail, 'ACCION', `Agregó gestión de cliente${estaEscalado ? ' (Escalado a Operaciones - Ticket: ' + nroTicket + ')' : ''}: ${nuevoCliente.nombre}`);
                 cerrarModalCliente();
                 document.getElementById('form-cliente').reset();
-                document.getElementById('contenedor-ticket').classList.add('hidden');
+                const contTicket = document.getElementById('contenedor-ticket');
+                if (contTicket) contTicket.classList.add('hidden');
                 actualizarSubmenuServicio();
                 cargarDatosGenerales();
             } else {
-                alert('Error al registrar: ' + error.message);
+                alert('Error al registrar cliente: ' + error.message);
             }
         });
 
         async function cargarUsuarios() {
             const tbody = document.getElementById('tbody-usuarios');
             if (!tbody) return;
-            const { data } = await _supabase.from('usuarios_crm').select('*');
-            usuariosGlobal = data || [];
-            
-            document.getElementById('stat-usuarios-activos').textContent = 1;
-            document.getElementById('stat-usuarios-inactivos').textContent = Math.max(0, usuariosGlobal.length - 1);
-            renderizarGraficoUsuarios(1, Math.max(0, usuariosGlobal.length - 1));
 
-            tbody.innerHTML = usuariosGlobal.map(u => `
-                <tr class="hover:bg-zinc-900/50 transition">
-                    <td class="p-4 font-semibold text-white">${u.correo || u.email}</td>
-                    <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-500 border border-red-500/20">${u.rol}</span></td>
-                    <td class="p-4 font-mono text-zinc-400">${new Date(u.created_at || Date.now()).toLocaleDateString()}</td>
-                    <td class="p-4 text-center"><button onclick="eliminarUsuario('${u.id}', '${u.correo}')" class="text-zinc-500 hover:text-red-400 cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
-                </tr>`).join('');
+            const { data, error } = await _supabase.from('usuarios_crm').select('*');
+            if (error || !data) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-zinc-500">No se pudieron cargar los usuarios.</td></tr>`;
+                return;
+            }
+
+            const totalUsuarios = data.length;
+            const cantActivos = currentUser ? 1 : 0;
+            const cantInactivos = Math.max(0, totalUsuarios - cantActivos);
+
+            document.getElementById('stat-usuarios-activos').textContent = cantActivos;
+            document.getElementById('stat-usuarios-inactivos').textContent = cantInactivos;
+
+            renderizarGraficoUsuarios(cantActivos, cantInactivos);
+
+            tbody.innerHTML = data.map(u => {
+                const emailUsr = u.correo || u.email || 'Usuario';
+                const esActivo = currentUser && currentUser.email.toLowerCase() === emailUsr.toLowerCase();
+                const badgeActivo = esActivo 
+                    ? `<span class="ml-2 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">En línea</span>` 
+                    : `<span class="ml-2 px-2 py-0.5 rounded text-[9px] font-bold bg-zinc-800 text-zinc-500">Inactivo</span>`;
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-4 font-semibold text-white flex items-center">${emailUsr} ${badgeActivo}</td>
+                        <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-500 border border-red-500/20">${u.rol || 'OPERADOR'}</span></td>
+                        <td class="p-4 font-mono text-zinc-400">${new Date(u.created_at || Date.now()).toLocaleDateString()}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="eliminarUsuario('${u.id}', '${emailUsr}')" class="text-zinc-500 hover:text-red-400 transition cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            }).join('');
         }
 
         function renderizarGraficoUsuarios(activos, inactivos) {
-            const ctx = document.getElementById('graficoUsuariosEstatus')?.getContext('2d');
-            if (!ctx) return;
+            const canvasUsr = document.getElementById('graficoUsuariosEstatus');
+            if (!canvasUsr) return;
+
+            const ctx = canvasUsr.getContext('2d');
             if (chartUsuariosEstatus) chartUsuariosEstatus.destroy();
-            chartUsuariosEstatus = new Chart(ctx, { type: 'doughnut', data: { labels: ['Activos', 'Inactivos'], datasets: [{ data: [activos, inactivos], backgroundColor: ['#10b981', '#3f3f46'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+
+            chartUsuariosEstatus = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Activos (En línea)', 'Inactivos'],
+                    datasets: [{
+                        data: [activos, inactivos],
+                        backgroundColor: ['#10b981', '#3f3f46'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#d4d4d8', font: { size: 11 } } }
+                    }
+                }
+            });
         }
 
         document.getElementById('form-usuario').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const opEmail = currentUser ? currentUser.email : 'Administrador';
             const correo = document.getElementById('usr-correo').value.trim();
             const password = document.getElementById('usr-password').value.trim();
             const rol = document.getElementById('usr-rol').value;
 
-            if (!correo.endsWith('@bancrecer.com.ve')) return alert('Dominio no permitido.');
-            await _supabase.auth.signUp({ email: correo, password });
-            await _supabase.from('usuarios_crm').insert([{ correo, rol }]);
-            await registrarAuditoria(currentUser.email, 'ACCION', `Creó usuario ${correo} (${rol})`);
+            if (!correo.toLowerCase().endsWith('@bancrecer.com.ve')) {
+                alert('El correo debe pertenecer al dominio @bancrecer.com.ve');
+                return;
+            }
+
+            const { data, error } = await _supabase.auth.signUp({ email: correo, password: password });
+            if (error) {
+                alert('Error creando usuario en Auth: ' + error.message);
+                return;
+            }
+
+            await _supabase.from('usuarios_crm').insert([{ correo: correo, rol: rol }]);
+            await registrarAuditoria(opEmail, 'ACCION', `Agregó un nuevo usuario al CRM: ${correo} (Rol: ${rol})`);
+
             cerrarModalUsuario();
             document.getElementById('form-usuario').reset();
             cargarDatosGenerales();
         });
 
-        async function eliminarUsuario(id, correo) {
-            if (confirm(`¿Eliminar usuario ${correo}?`)) {
+        async function eliminarUsuario(id, correoUsuario) {
+            if (confirm('¿Deseas eliminar este usuario de la administración?')) {
+                const opEmail = currentUser ? currentUser.email : 'Administrador';
                 await _supabase.from('usuarios_crm').delete().eq('id', id);
-                await registrarAuditoria(currentUser.email, 'ACCION', `Eliminó usuario ${correo}`);
+                await registrarAuditoria(opEmail, 'ACCION', `Eliminó al usuario del CRM: ${correoUsuario || id}`);
                 cargarUsuarios();
             }
         }
@@ -1347,33 +1700,66 @@
         function renderAuditoriaTab() {
             const tbody = document.getElementById('tbody-auditoria');
             if (!tbody) return;
-            if (!auditoriaGlobal.length) { tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-zinc-500">Sin auditoría.</td></tr>`; return; }
-            tbody.innerHTML = auditoriaGlobal.map(l => `
-                <tr class="hover:bg-zinc-900/50 transition">
-                    <td class="p-4 font-mono text-zinc-400">${new Date(l.fecha || l.created_at).toLocaleString()}</td>
-                    <td class="p-4 font-semibold text-white">${l.correo || l.email}</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${l.resultado === 'EXITOSO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}">${l.resultado}</span></td>
-                    <td class="p-4 text-zinc-300">${l.detalle}</td>
-                </tr>`).join('');
+
+            if (!auditoriaGlobal || auditoriaGlobal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-zinc-500">Sin registros de auditoría recientes.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = auditoriaGlobal.map(log => {
+                const fechaLog = new Date(log.fecha || log.created_at || Date.now()).toLocaleString();
+                const usuarioLog = log.correo || log.email || 'Desconocido';
+                const resultadoLog = (log.resultado || log.status || 'ACCION').toUpperCase();
+                const detalleLog = log.detalle || log.description || log.reason || '-';
+                
+                let colorRes = 'bg-zinc-800 text-zinc-300 border border-zinc-700';
+                if (resultadoLog === 'EXITOSO') colorRes = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                if (resultadoLog === 'FALLIDO' || resultadoLog === 'BLOQUEADO') colorRes = 'bg-red-500/10 text-red-400 border border-red-500/20';
+                if (resultadoLog === 'ACCION') colorRes = 'bg-zinc-800 text-zinc-300 border border-zinc-700';
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-4 font-mono text-zinc-400">${fechaLog}</td>
+                        <td class="p-4 font-semibold text-white">${usuarioLog}</td>
+                        <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${colorRes}">${resultadoLog}</span></td>
+                        <td class="p-4 text-zinc-300">${detalleLog}</td>
+                    </tr>`;
+            }).join('');
         }
 
         function renderBloqueados() {
             const tbody = document.getElementById('tbody-bloqueados');
             if (!tbody) return;
-            if (!bloqueadosGlobal.length) { tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-zinc-500">Sin bloqueados.</td></tr>`; return; }
-            tbody.innerHTML = bloqueadosGlobal.map(b => `
-                <tr class="hover:bg-zinc-900/50 transition">
-                    <td class="p-3 font-semibold text-white">${b.correo}</td>
-                    <td class="p-3 text-red-400">${b.motivo}</td>
-                    <td class="p-3 font-mono text-zinc-400">${new Date(b.fecha).toLocaleString()}</td>
-                    <td class="p-3 text-center"><button onclick="desbloquearUsuario('${b.id}', '${b.correo}')" class="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs cursor-pointer">Desbloquear</button></td>
-                </tr>`).join('');
+
+            if (!bloqueadosGlobal || bloqueadosGlobal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-zinc-500">No hay usuarios bloqueados en lista negra.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = bloqueadosGlobal.map(b => {
+                const correoB = b.correo || b.email || 'Desconocido';
+                const motivoB = b.motivo || b.reason || 'Bloqueado por seguridad';
+                const fechaB = new Date(b.fecha || b.created_at || Date.now()).toLocaleString();
+
+                return `
+                    <tr class="hover:bg-zinc-900/50 transition">
+                        <td class="p-3 font-semibold text-white">${correoB}</td>
+                        <td class="p-3 text-red-400">${motivoB}</td>
+                        <td class="p-3 font-mono text-zinc-400">${fechaB}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="desbloquearUsuario('${b.id}', '${correoB}')" class="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-lg text-xs font-semibold transition cursor-pointer">Desbloquear</button>
+                        </td>
+                    </tr>`;
+            }).join('');
         }
 
         async function desbloquearUsuario(id, correo) {
-            await _supabase.from('usuarios_bloqueados').delete().eq('id', id);
-            await registrarAuditoria(currentUser.email, 'EXITOSO', `Desbloqueó a ${correo}`);
-            cargarDatosGenerales();
+            if (confirm(`¿Estás seguro de desbloquear al usuario ${correo}?`)) {
+                await _supabase.from('usuarios_bloqueados').delete().eq('id', id);
+                
+                const adminEmail = currentUser ? currentUser.email : 'Administrador';
+                await registrarAuditoria(adminEmail, 'EXITOSO', `Desbloqueó al usuario: ${correo}`);
+
+                cargarDatosGenerales();
+            }
         }
 
         function abrirDetalleDashboard(tipo) {
@@ -1383,36 +1769,80 @@
             if (!modal || !tbody) return;
 
             let filtrados = [];
-            if (tipo === 'escalados') filtrados = clientesGlobal.filter(c => c.escalado === true || c.escalado === 'true');
-            if (tipo === 'en_proceso') filtrados = clientesGlobal.filter(c => (c.escalado === true || c.escalado === 'true') && (c.estatus_operaciones === 'EN PROCESO' || c.estatus_operaciones === 'PENDIENTE'));
-            if (tipo === 'procesados') filtrados = clientesGlobal.filter(c => (c.escalado === true || c.escalado === 'true') && c.estatus_operaciones === 'PROCESADO');
+            let nombreTitulo = '';
 
-            titulo.textContent = `Detalle de Casos (${filtrados.length})`;
-            tbody.innerHTML = filtrados.length ? filtrados.map(c => `
-                <tr class="hover:bg-zinc-900/50 transition">
-                    <td class="p-3 font-mono text-zinc-400"><span class="text-amber-400 font-bold block">Ticket: ${c.nro_ticket}</span></td>
-                    <td class="p-3 font-semibold text-white">${c.nombre}<span class="block text-[11px] text-zinc-400">CI: ${c.cedula}</span></td>
-                    <td class="p-3 text-zinc-300"><span class="px-2 py-0.5 rounded text-[10px] bg-red-500/10 text-red-400">${c.motivo}</span><div class="text-[11px] text-zinc-400">${c.producto}</div></td>
-                    <td class="p-3 text-zinc-300"><div class="bg-zinc-950 p-2 rounded text-xs">${c.observaciones || '-'}</div>${c.respuesta_operaciones ? `<div class="text-[10px] text-emerald-400 mt-1">Resp: ${c.respuesta_operaciones}</div>` : ''}</td>
-                    <td class="p-3 font-bold text-white"><span class="px-2 py-1 rounded text-[10px] bg-zinc-800 text-zinc-300">${c.estatus_operaciones || 'N/A'}</span></td>
-                </tr>`).join('') : `<tr><td colspan="5" class="p-4 text-center text-zinc-500">Sin registros.</td></tr>`;
-            modal.classList.remove('hidden');
+            try {
+                if (tipo === 'escalados') {
+                    filtrados = clientesGlobal.filter(c => c && (c.escalado === true || c.escalado === 'true'));
+                    nombreTitulo = 'Casos Escalados Total';
+                } else if (tipo === 'en_proceso') {
+                    filtrados = clientesGlobal.filter(c => c && (c.escalado === true || c.escalado === 'true') && (c.estatus_operaciones === 'EN PROCESO' || c.estatus_operaciones === 'PENDIENTE'));
+                    nombreTitulo = 'Casos En Proceso / Pendientes';
+                } else if (tipo === 'procesados') {
+                    filtrados = clientesGlobal.filter(c => c && (c.escalado === true || c.escalado === 'true') && c.estatus_operaciones === 'PROCESADO');
+                    nombreTitulo = 'Casos Procesados / Cierre';
+                }
+
+                titulo.textContent = `${nombreTitulo} (${filtrados.length} registros)`;
+
+                if (filtrados.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-zinc-500">No hay registros para esta categoría.</td></tr>`;
+                } else {
+                    tbody.innerHTML = filtrados.map(c => {
+                        const estatusOp = c.estatus_operaciones || 'EN PROCESO';
+                        const fechaStr = c.created_at || c.fecha ? new Date(c.created_at || c.fecha).toLocaleDateString() : 'S/F';
+                        return `
+                            <tr class="hover:bg-zinc-900/50 transition">
+                                <td class="p-3 font-mono text-zinc-400">
+                                    <span class="text-amber-400 font-bold block">Ticket: ${c.nro_ticket || 'S/N'}</span>
+                                    <span class="text-[10px] text-zinc-500">${fechaStr}</span>
+                                </td>
+                                <td class="p-3 font-semibold text-white">
+                                    ${c.nombre || 'Sin Nombre'}
+                                    <span class="block text-[11px] font-mono text-zinc-400">CI: ${c.cedula || 'N/A'}</span>
+                                </td>
+                                <td class="p-3 text-zinc-300">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">${c.motivo || 'Consulta'}</span>
+                                    <div class="mt-1 text-zinc-400 text-[11px]">${c.producto || ''} - ${c.subservicio || ''}</div>
+                                </td>
+                                <td class="p-3 text-zinc-300 max-w-xs">
+                                    <div class="bg-zinc-950 p-2 rounded border border-zinc-800 text-xs">${c.observaciones || '-'}</div>
+                                    ${c.respuesta_operaciones ? `<div class="mt-1 text-[10px] text-emerald-400"><strong>Resp:</strong> ${c.respuesta_operaciones}</div>` : ''}
+                                </td>
+                                <td class="p-3 font-bold text-white">
+                                    <span class="px-2 py-1 rounded text-[10px] bg-zinc-800 text-zinc-300">${estatusOp}</span>
+                                </td>
+                            </tr>`;
+                    }).join('');
+                }
+
+                modal.classList.remove('hidden');
+            } catch (err) {
+                console.error("Error al renderizar el detalle del dashboard:", err);
+                alert("Ocurrió un error al cargar los detalles.");
+            }
         }
 
-        function cerrarModalFiltroDashboard() { document.getElementById('modal-filtro-dashboard').classList.add('hidden'); }
+        function cerrarModalFiltroDashboard() {
+            const modal = document.getElementById('modal-filtro-dashboard');
+            if (modal) modal.classList.add('hidden');
+        }
 
         function switchTab(t) {
             const esOperaciones = currentUser && currentUser.email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
+            
             if (esOperaciones) t = 'operaciones-bandeja';
 
             ['dashboard', 'clientes', 'usuarios', 'auditoria', 'campañas', 'operaciones-bandeja'].forEach(tab => {
-                document.getElementById(`tab-${tab}`)?.classList.add('hidden');
+                const sec = document.getElementById(`tab-${tab}`);
                 const nav = document.getElementById(`nav-${tab}`);
+                if (sec) sec.classList.add('hidden');
                 if (nav) nav.className = "w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition cursor-pointer";
             });
 
-            document.getElementById(`tab-${t}`)?.classList.remove('hidden');
+            const activeSec = document.getElementById(`tab-${t}`);
             const activeNav = document.getElementById(`nav-${t}`);
+            if (activeSec) activeSec.classList.remove('hidden');
             if (activeNav) activeNav.className = "w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition text-red-500 bg-red-600/10 border border-red-500/20 cursor-pointer";
 
             if (t === 'dashboard') cargarDatosGenerales();
@@ -1423,11 +1853,28 @@
             if (t === 'operaciones-bandeja') cargarDatosGenerales();
         }
 
-        function abrirModalCliente() { document.getElementById('modal-cliente').classList.remove('hidden'); actualizarSubmenuServicio(); }
-        function cerrarModalCliente() { document.getElementById('modal-cliente').classList.add('hidden'); }
-        function abrirModalUsuario() { document.getElementById('modal-usuario').classList.remove('hidden'); }
-        function cerrarModalUsuario() { document.getElementById('modal-usuario').classList.add('hidden'); }
-        function exportToExcel(id, name) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `${name}.xlsx`); }
+        function abrirModalCliente() { 
+            const m = document.getElementById('modal-cliente');
+            if (m) m.classList.remove('hidden'); 
+            actualizarSubmenuServicio();
+        }
+        function cerrarModalCliente() { 
+            const m = document.getElementById('modal-cliente');
+            if (m) m.classList.add('hidden'); 
+        }
+        function abrirModalUsuario() { 
+            const m = document.getElementById('modal-usuario');
+            if (m) m.classList.remove('hidden'); 
+        }
+        function cerrarModalUsuario() { 
+            const m = document.getElementById('modal-usuario');
+            if (m) m.classList.add('hidden'); 
+        }
+
+        function exportToExcel(id, name) {
+            XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `${name}.xlsx`);
+        }
+
         function logout() { location.reload(); }
     </script>
 </body>
