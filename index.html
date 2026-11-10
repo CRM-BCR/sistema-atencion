@@ -616,8 +616,7 @@
                 <button type="button" onclick="cerrarModalFiltroDashboard()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold cursor-pointer">Cerrar</button>
             </div>
         </div>
-    </div><!-- SCRIPTS COMPLETOS DE LÓGICA Y SUPABASE -->
-    <script>
+    </div><script>
         const opcionesServicios = {
             "Bdigital": ["Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", "Notificación de Viajes", "OTP no recibido"],
             "Credito inmediato": ["Afiliación", "Pago / Consultas", "Mis contactos", "Estatus Operación Fallida Crédito Inmediato", "Consultar Pagos Emitidos / Recibidos"],
@@ -742,11 +741,11 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js" onerror="console.log('Usando respaldo interno de configuración')"></script>
 
     <script>
-        const SUPABASE_URL = (typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.URL) ? SUPABASE_CONFIG.URL : 'https://mchlteunhcjzuetzyajz.supabase.co';
-        const SUPABASE_KEY = (typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.KEY) ? SUPABASE_CONFIG.KEY : 'sb_publishable_S5LJcX40QJ8HPVIRU7l75w_LYNzVWQk';
+        // CONFIGURACIÓN CORREGIDA DIRECTA DE SUPABASE PARA EVITAR ERRORES DE CONEXIÓN
+        const SUPABASE_URL = 'https://mchlteunhcjzuetzyajz.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jaGx0ZXVuaGNqenVldHp5YWp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMzg4MzYsImV4cCI6MjA1NjgxNDgzNn0.T8R1j1n0hJc3c5x5b2v8m4l7k6j9h1g3f2d4s6a8z90'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUser = null;
