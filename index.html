@@ -42,7 +42,7 @@
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
-                        <input type="email" id="login-email" required placeholder="" value=""
+                        <input type="email" id="login-email" required placeholder="correo@ejemplo.com" value=""
                             class="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-white text-sm transition">
                     </div>
                 </div>
@@ -92,7 +92,7 @@
             </div>
             <div class="pt-4 border-t border-zinc-800/80">
                 <div class="px-3 py-2 mb-3 bg-zinc-900/60 rounded-xl border border-zinc-800">
-                    <p id="user-display-email" class="text-xs font-semibold text-zinc-200 truncate">usuario@bancrecer.com.ve</p>
+                    <p id="user-display-email" class="text-xs font-semibold text-zinc-200 truncate">usuario@gmail.com</p>
                     <span id="user-display-role" class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">OPERADOR</span>
                 </div>
                 <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-semibold transition cursor-pointer">
@@ -557,8 +557,8 @@
             <h2 class="text-lg font-bold text-white">Registrar Nuevo Usuario CRM</h2>
             <form id="form-usuario" class="space-y-3">
                 <div>
-                    <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Correo Electrónico (@bancrecer.com.ve)</label>
-                    <input type="email" id="usr-correo" required placeholder="correo@bancrecer.com.ve" class="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
+                    <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Correo Electrónico</label>
+                    <input type="email" id="usr-correo" required placeholder="correo@gmail.com" class="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-red-500">
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Contraseña Temporal</label>
@@ -618,6 +618,23 @@
 
     <!-- SCRIPTS COMPLETOS DE LÓGICA Y SUPABASE -->
     <script>
+        // CONFIGURACIÓN CENTRALIZADA DE USUARIOS
+        const CONFIG_USUARIOS = {
+            ADMINS: [
+                'elio.ravelo@gmail.com',
+                'oriany.albarran@gmail.com'
+            ],
+            OPERACIONES: 'operaciones.atu@gmail.com',
+            USUARIOS_SISTEMA: [
+                'elio.ravelo@gmail.com',
+                'oriany.albarran@gmail.com',
+                'jose.lindarte@gmail.com',
+                'braiyan.pagua@gmail.com',
+                'ninoska.perez@gmail.com',
+                'operaciones.atu@gmail.com'
+            ]
+        };
+
         const opcionesServicios = {
             "Bdigital": ["Afiliación", "Olvido de usuario", "Recuperar contraseña", "Desbloqueo de usuario", "Desafiliación", "Recuperación de preguntas de seguridad", "Solicitud de aumento de límites de operaciones", "Disponibilidad de divisas", "Consulta y Descarga de estado de Cuenta/Conciliación/Referencia Bancaria", "Pago Impuesto", "Pago Digital", "Registro / Actualización de Usuario Adicional", "Pago de servicios", "Notificación de Viajes", "OTP no recibido"],
             "Credito inmediato": ["Afiliación", "Pago / Consultas", "Mis contactos", "Estatus Operación Fallida Crédito Inmediato", "Consultar Pagos Emitidos / Recibidos"],
@@ -784,13 +801,6 @@
             errorBox.classList.add('hidden');
             emailInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500', 'border-emerald-500', 'ring-emerald-500');
 
-            if (!email.toLowerCase().endsWith('@bancrecer.com.ve')) {
-                emailInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
-                errorBox.textContent = "Acceso denegado: Dominio no autorizado.";
-                errorBox.classList.remove('hidden');
-                return;
-            }
-
             btnLogin.disabled = true;
             btnLogin.innerHTML = `<span>Autenticando...</span>`;
 
@@ -839,7 +849,7 @@
         function configurarMenuLateral(email) {
             const nav = document.getElementById('sidebar-nav');
             const emailLower = email.toLowerCase().trim();
-            const esOperaciones = emailLower === 'operaciones.atu@bancrecer.com.ve';
+            const esOperaciones = emailLower === CONFIG_USUARIOS.OPERACIONES.toLowerCase();
             
             const usuarioCRM = usuariosGlobal.find(u => {
                 const uEmail = (u.correo || u.email || '').toLowerCase().trim();
@@ -850,8 +860,7 @@
             const esAdmin = !esOperaciones && (
                 rolBD === 'ADMINISTRADOR' || 
                 rolBD === 'ADMIN' || 
-                emailLower === 'elio.ravelo@bancrecer.com.ve' || 
-                emailLower === 'oriany.albarran@bancrecer.com.ve'
+                CONFIG_USUARIOS.ADMINS.some(adminEmail => adminEmail.toLowerCase() === emailLower)
             );
 
             if (esOperaciones) {
@@ -925,7 +934,7 @@
 
                 poblarCheckboxesOperadoresCampania();
 
-                const esOperaciones = currentUser && currentUser.email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
+                const esOperaciones = currentUser && currentUser.email.toLowerCase() === CONFIG_USUARIOS.OPERACIONES.toLowerCase();
 
                 if (esOperaciones) {
                     renderBandejaOperaciones(clientesGlobal);
@@ -984,15 +993,14 @@
 
         function actualizarInterfazCampanas() {
             const emailUser = currentUser ? currentUser.email.toLowerCase().trim() : '';
-            const esOperaciones = emailUser === 'operaciones.atu@bancrecer.com.ve';
+            const esOperaciones = emailUser === CONFIG_USUARIOS.OPERACIONES.toLowerCase();
             
             const usuarioCRM = usuariosGlobal.find(u => (u.correo || u.email || '').toLowerCase().trim() === emailUser);
             const rolBD = usuarioCRM ? (usuarioCRM.rol || '').toUpperCase().trim() : '';
             const esAdmin = !esOperaciones && (
                 rolBD === 'ADMINISTRADOR' || 
                 rolBD === 'ADMIN' || 
-                emailUser === 'elio.ravelo@bancrecer.com.ve' || 
-                emailUser === 'oriany.albarran@bancrecer.com.ve'
+                CONFIG_USUARIOS.ADMINS.some(adminEmail => adminEmail.toLowerCase() === emailUser)
             );
 
             const adminPanel = document.getElementById('admin-campaña-panel');
@@ -1537,7 +1545,7 @@
                 return;
             }
 
-            const opEmail = currentUser ? currentUser.email : 'operaciones.atu@bancrecer.com.ve';
+            const opEmail = currentUser ? currentUser.email : CONFIG_USUARIOS.OPERACIONES;
             const payload = {
                 estatus_operaciones: nuevoEstatus,
                 respuesta_operaciones: respuestaTxt
@@ -1677,11 +1685,6 @@
             const correo = document.getElementById('usr-correo').value.trim();
             const password = document.getElementById('usr-password').value.trim();
             const rol = document.getElementById('usr-rol').value;
-
-            if (!correo.toLowerCase().endsWith('@bancrecer.com.ve')) {
-                alert('El correo debe pertenecer al dominio @bancrecer.com.ve');
-                return;
-            }
 
             const { data, error } = await _supabase.auth.signUp({ email: correo, password: password });
             if (error) {
@@ -1838,7 +1841,7 @@
         }
 
         function switchTab(t) {
-            const esOperaciones = currentUser && currentUser.email.toLowerCase() === 'operaciones.atu@bancrecer.com.ve';
+            const esOperaciones = currentUser && currentUser.email.toLowerCase() === CONFIG_USUARIOS.OPERACIONES.toLowerCase();
             
             if (esOperaciones) t = 'operaciones-bandeja';
 
